@@ -218,13 +218,190 @@ function renderCodingStudents() {
   document.querySelectorAll('[data-coding-profile]').forEach((item) => item.onclick = () => renderCodingProfile(state.codingStudents[Number(item.dataset.codingProfile)]));
 }
 
+function numericLevel(value) {
+  const match = String(value ?? '').match(/\d+/);
+  return match ? Number(match[0]) : null;
+}
+
+function getCurriculumForStudent(student) {
+  const course = String(student.course || '').trim();
+  const rows = [...state.curriculum].filter((row) => row && String(row['Program name'] || '').trim());
+  if (!course) return rows.sort((a, b) => Number(a.Level) - Number(b.Level));
+
+  const upperCourse = course.toUpperCase();
+  if (/^CS\d+$/i.test(course)) {
+    return rows.filter((row) => String(row['Program name'] || '').toUpperCase() === upperCourse).sort((a, b) => Number(a.Level) - Number(b.Level));
+  }
+  if (/codemonkey/i.test(course)) {
+    return rows.filter((row) => /codemonkey/i.test(String(row['Program name'] || ''))).sort((a, b) => Number(a.Level) - Number(b.Level));
+  }
+  return rows.sort((a, b) => Number(a.Level) - Number(b.Level));
+}
+
+function buildCodingDashboard(student, lessons) {
+  const curriculum = getCurriculumForStudent(student);
+  const ordered = [...curriculum].sort((a, b) => Number(a.Level) - Number(b.Level));
+  const maxLevel = Math.max(1, ...ordered.map((row) => Number(row.Level) || 0));
+  const lessonLevels = lessons
+    .map((lesson) => numericLevel(lesson.sourceRow?.['Completed ending level'] ?? lesson.sourceRow?.['Ending level'] ?? lesson.progress ?? lesson.next))
+    .filter((value) => Number.isFinite(value));
+  const inferredCurrent = lessonLevels.length ? Math.max(...lessonLevels) : (numericLevel(student.nextLevel) ? Math.max(1, numericLevel(student.nextLevel) - 1) : 1);
+  const currentLevel = Math.max(1, Math.min(maxLevel, inferredCurrent));
+
+  const completedRowEntries = ordered.filter((row) => Number(row.Level) < currentLevel);
+  const currentRow = ordered.find((row) => Number(row.Level) === currentLevel) || ordered.filter((row) => Number(row.Level) <= currentLevel).pop() || ordered[0];
+  const upcomingEntries = ordered.filter((row) => Number(row.Level) > currentLevel);
+
+  const completedConcepts = [...new Set(completedRowEntries.map((row) => String(row.Topic || '').trim()).filter(Boolean))];
+  const currentConcept = String(currentRow?.Topic || 'Foundations').trim() || 'Foundations';
+  const upcomingConcepts = [...new Set(upcomingEntries.map((row) => String(row.Topic || '').trim()).filter(Boolean))];
+  const nextConcept = upcomingConcepts[0] || 'Capstone / revision';
+  const knownConcepts = completedConcepts.slice(-6);
+
+  const lessonDates = lessons
+    .map((row) => row.sourceRow?.['Lesson time'] || row.sourceRow?.Date || row.project || '')
+    .filter(Boolean)
+    .slice(-10);
+  const lastLessonDate = lessonDates[lessonDates.length - 1] || student.lastUpdated || 'No recent lessons';
+  const progressPercent = Math.min(100, Math.max(0, Math.round((currentLevel / maxLevel) * 100)));
+
+  return {
+    currentLevel,
+    maxLevel,
+    currentConcept,
+    nextConcept,
+    knownConcepts,
+    upcomingConcepts,
+    completedConcepts,
+    lastLessonDate,
+    progressPercent
+  };
+}
+
 function renderCodingProfile(student) {
   const lessons = state.codingProgress.filter((row) => row.sourceId === student.sourceId || (!row.sourceId && row.name === student.name));
-  const topics = [...new Set(lessons.flatMap((row) => String(row.topics || '').split('→').map((topic) => topic.trim()).filter(Boolean)))];
-  content.innerHTML = header(student.name, 'Coding progress shown as a compact lesson timeline and cumulative topic map.', button('← Coding students', 'coding-students', 'mini-button')) + `<div class="profile-grid"><div class="profile-panel"><span class="eyebrow">CODING PROFILE</span><h2>${text(student.course || 'Course not set')}</h2><p>Completion: <strong>${text(student.completion)}</strong></p><p>Next starting level: <strong>${text(student.nextLevel)}</strong></p><p>${text(student.attendance)}</p></div><div class="profile-panel"><span class="eyebrow">ALL TOPICS LEARNT</span><h2>${text(topics.join(' · ') || student.topics || 'No topics recorded')}</h2><p>${topics.length} unique topic${topics.length === 1 ? '' : 's'} across all lessons.</p></div></div><div id="codingAnalytics"></div><div class="section-heading"><h2>Progress calendar</h2></div>${table(['Date', 'Lesson', 'Status', 'Level', 'Topics', 'Remarks'], lessons.map((row) => [text(row.sourceRow?.['Lesson time']), text(row.project), text(row.status), `${text(row.next)} → ${text(row.progress)}`, text(row.topics), text(row.sourceRow?.Remarks)]), 'calendar-table')}`;
-  const topicCounts = topics.reduce((counts, topic) => { counts[topic] = (counts[topic] || 0) + 1; return counts; }, {});
-  const maxTopics = Math.max(1, ...Object.values(topicCounts));
-  document.querySelector('#codingAnalytics').innerHTML = `<div class="analytics-grid"><div class="analytics-panel"><span class="eyebrow">TOPICS BY CATEGORY</span>${Object.entries(topicCounts).map(([topic, count]) => `<div class="bar-row"><span>${text(topic)}</span><i style="width:${Math.round(count / maxTopics * 100)}%"></i><b>${count}</b></div>`).join('') || '<div class="empty">No lesson topics recorded.</div>'}</div><div class="analytics-panel"><span class="eyebrow">LEVEL SUMMARY</span><div class="level-cards"><div><strong>${text(student.nextLevel || '—')}</strong><span>Current / next level</span></div><div><strong>${lessons.filter((lesson) => String(lesson.status).toLowerCase() === 'done').length}</strong><span>Completed lessons</span></div><div><strong>${topics.length}</strong><span>Unique topics</span></div></div></div></div>`;
+  const history = lessons
+    .filter((row) => row.sourceRow?.['Lesson time'] || row.project || row.sourceRow?.Date)
+    .slice()
+    .reverse()
+    .slice(0, 8);
+  const dashboard = buildCodingDashboard(student, lessons);
+
+  const historyMarkup = history.length
+    ? `<div class="history-list">${history.map((row) => {
+        const date = text(row.sourceRow?.['Lesson time'] || row.project || row.sourceRow?.Date || '—');
+        const level = text(row.sourceRow?.['Completed ending level'] || row.sourceRow?.['Ending level'] || row.progress || row.next || '—');
+        const topic = text((String(row.topics || '').split('→').map((item) => item.trim()).filter(Boolean).pop()) || '—');
+        return `<div class="history-row"><span>${date}</span><span>${level}</span><span>${topic}</span></div>`;
+      }).join('')}</div>`
+    : '<div class="empty-state">No recent lessons recorded for this student.</div>';
+
+  const roadmapMarkup = `
+    <div class="roadmap-card">
+      <div class="section-header compact">
+        <div>
+          <span class="eyebrow">LEARNING ROADMAP</span>
+          <h2>What the student has learnt and what comes next</h2>
+        </div>
+      </div>
+      <div class="roadmap-track">
+        ${dashboard.completedConcepts.length ? dashboard.completedConcepts.map((topic) => `<div class="roadmap-step completed"><span class="roadmap-icon">✅</span><div><strong>${text(topic)}</strong><small>Completed</small></div></div>`).join('') : '<div class="roadmap-step neutral"><span class="roadmap-icon">○</span><div><strong>Starting point</strong><small>Warm-up</small></div></div>'}
+        <div class="roadmap-step current"><span class="roadmap-icon">🟡</span><div><strong>${text(dashboard.currentConcept)}</strong><small>Current concept</small></div></div>
+        ${dashboard.upcomingConcepts.slice(0, 4).map((topic) => `<div class="roadmap-step upcoming"><span class="roadmap-icon">⬜</span><div><strong>${text(topic)}</strong><small>Upcoming</small></div></div>`).join('')}
+      </div>
+    </div>
+  `;
+
+  const knownContextMarkup = dashboard.knownConcepts.length
+    ? dashboard.knownConcepts.map((topic) => `<span class="chip chip-success">${text(topic)}</span>`).join('')
+    : '<span class="chip chip-neutral">Foundations</span>';
+
+  const nextContextMarkup = dashboard.upcomingConcepts.slice(0, 3).length
+    ? dashboard.upcomingConcepts.slice(0, 3).map((topic) => `<span class="chip chip-muted">${text(topic)}</span>`).join('')
+    : '<span class="chip chip-neutral">Capstone / revision</span>';
+
+  content.innerHTML = header(student.name, 'Tutor view for fast learning status checks without logging into the student platform.', button('← Coding students', 'coding-students', 'mini-button')) + `
+    <div class="coding-dashboard">
+      <div class="student-snapshot-card">
+        <div class="student-summary">
+          <div class="student-identity">
+            <div class="student-avatar">${text(student.name).charAt(0).toUpperCase() || 'S'}</div>
+            <div>
+              <span class="eyebrow">STUDENT</span>
+              <h2>${text(student.name)}</h2>
+            </div>
+          </div>
+          <div class="snapshot-grid">
+            <div class="snapshot-item">
+              <span class="snapshot-label">Programme</span>
+              <strong>${text(student.course || 'Course not set')}</strong>
+            </div>
+            <div class="snapshot-item accent-item">
+              <span class="snapshot-label">Current Level</span>
+              <strong>${dashboard.currentLevel}</strong>
+            </div>
+            <div class="snapshot-item accent-item">
+              <span class="snapshot-label">Current Topic</span>
+              <strong>${text(dashboard.currentConcept)}</strong>
+            </div>
+            <div class="snapshot-item">
+              <span class="snapshot-label">Progress</span>
+              <strong>${dashboard.progressPercent}%</strong>
+            </div>
+            <div class="snapshot-item">
+              <span class="snapshot-label">Last Active</span>
+              <strong>${text(dashboard.lastLessonDate)}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="main-column">
+          ${roadmapMarkup}
+        </div>
+
+        <div class="side-column">
+          <div class="context-card">
+            <div class="section-header compact">
+              <div>
+                <span class="eyebrow">CURRENT LEARNING CONTEXT</span>
+                <h2>What the tutor needs to know</h2>
+              </div>
+            </div>
+            <div class="context-stack">
+              <div class="context-row">
+                <span class="context-label">Level</span>
+                <strong>${dashboard.currentLevel}</strong>
+              </div>
+              <div class="context-row">
+                <span class="context-label">Current concept</span>
+                <strong>${text(dashboard.currentConcept)}</strong>
+              </div>
+              <div class="context-row muted">
+                <span class="context-label">Should already know</span>
+                <div class="chip-list">${knownContextMarkup}</div>
+              </div>
+              <div class="context-row muted">
+                <span class="context-label">Will encounter next</span>
+                <div class="chip-list">${nextContextMarkup}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="history-card">
+            <div class="section-header compact">
+              <div>
+                <span class="eyebrow">LESSON HISTORY</span>
+                <h2>Recent progress</h2>
+              </div>
+            </div>
+            ${historyMarkup}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderComponents() {
