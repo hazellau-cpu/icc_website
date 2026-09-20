@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ICC Control Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">I</span><span>ICC <small>(CWB)</small></span></div>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav id="nav"></nav>
+      <div class="workspace-label tools-label">TOOLS</div>
+      <nav id="toolNav"></nav>
+      <div class="sidebar-bottom">
+        <div class="sync-status"><span></span><div><strong>Local workspace</strong><small>Changes saved in this browser</small></div></div>
+        <button class="outline-button" id="exportButton">Export workspace <span>↗</span></button>
+      </div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" aria-label="Toggle navigation">☰</button>
+        <div class="breadcrumbs"><span>ICC (CWB)</span><b>/</b><strong id="breadcrumb">Overview</strong></div>
+        <div class="top-actions"><label class="search"><span>⌕</span><input id="globalSearch" placeholder="Search workspace" aria-label="Search workspace"><kbd>⌘ K</kbd></label><button class="icon-button" aria-label="Notifications">◌</button><div class="avatar">HL</div></div>
+      </header>
+      <section class="content" id="content"></section>
+    </main>
+  </div>
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="close-button" id="closeModal" aria-label="Close">×</button>
+      <div class="eyebrow">NEW RECORD</div><h2 id="modalTitle">Add a record</h2>
+      <form id="recordForm"><label>Record name<input name="name" required placeholder="e.g. Introduction to Python"></label><label>Collection<select name="collection" id="collectionSelect"></select></label><label>Status<select name="status"><option>Active</option><option>In progress</option><option>Draft</option></select></label><label>Notes<textarea name="notes" rows="4" placeholder="Add a short description"></textarea></label><button class="primary-button" type="submit">Create record <span>→</span></button></form>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
