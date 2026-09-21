@@ -3,6 +3,7 @@ const groups = [
   { name: 'Robot Students', icon: '◎' },
   { name: 'Coding Students', icon: '⌘' },
   { name: 'Libraries & Curriculum', icon: '▦' },
+  { name: 'Component Inventory', icon: '▤' },
   { name: 'Borrowing Log', icon: '↗' },
 ];
 const tools = [];
@@ -175,7 +176,7 @@ function render() {
   else if (activeView === 'Coding Students') renderCodingStudents();
   else if (activeView === 'Libraries & Curriculum' || activeView === 'AIKIRO' || activeView === 'UARO' || activeView === 'ROBOKIT' || /^CS[1-5] curriculum$/.test(activeView) || activeView === 'CodeMonkey curriculum') renderLibraries(activeView);
   else if (activeView === 'Borrowing Log') renderOperations();
-  else if (activeView === 'Component inventory') renderComponents();
+  else if (activeView === 'Component Inventory') renderComponents();
   else renderStudents();
 }
 
