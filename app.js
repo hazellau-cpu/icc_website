@@ -758,6 +758,14 @@ function renderCodingProfile(student) {
 }
 
 function renderComponents() {
+  const inventoryKeys = new Set(state.inventory.map((item) => `${item.Kit}:${item.Component}`));
+  state.componentLibrary.forEach((item) => {
+    const key = `${item.Kit}:${item.Component}`;
+    if (!inventoryKeys.has(key)) {
+      state.inventory.push({ Component: item.Component, Kit: item.Kit, Category: item.Category || '', Colour: item.Colour || '', Tier: item.Tier || '', 'Total center qty': '0', 'Last counted': '', Notes: '', 'Unit Price': item['Unit Price'] || '' });
+      inventoryKeys.add(key);
+    }
+  });
   const query = document.querySelector('#componentSearch')?.value?.toLowerCase() || '';
   const tier = document.querySelector('#componentTier')?.value || '';
   const kit = document.querySelector('#componentKit')?.value || '';
@@ -785,7 +793,7 @@ function renderComponents() {
     });
     return `<section class="inventory-kit-group"><div class="inventory-kit-heading"><div><span class="eyebrow">KIT INVENTORY</span><h2>${text(kitName)}</h2></div><span>${kitRows.length} components</span></div>${tableMarkup(['Component', 'Price', 'Colour', 'Category', 'Tier', 'Centre qty', 'Last counted', 'Notes'], inventoryRows)}</section>`;
   }).join('');
-  content.innerHTML = header('Component Inventory', 'Centre-owned stock ledger. Grouped by kit and not linked to students.') + `<div class="inventory-summary"><strong>${state.inventory.length}</strong><span>Centre inventory items</span></div><div class="table-tools"><input id="componentSearch" class="table-search" placeholder="Search component, category, colour, or price..." value="${text(query)}"><select id="componentKit" class="table-filter"><option value="">All kits</option>${kits.map((value) => `<option ${kit === value ? 'selected' : ''}>${text(value)}</option>`).join('')}</select><select id="componentTier" class="table-filter"><option value="">All tiers</option><option ${tier === 'Tier A' ? 'selected' : ''}>Tier A</option><option ${tier === 'Tier B' ? 'selected' : ''}>Tier B</option><option ${tier === 'Tier C' ? 'selected' : ''}>Tier C</option></select><span>Page ${componentPage} / ${pageCount}</span><button class="mini-button" data-component-page="prev">←</button><button class="mini-button" data-component-page="next">→</button></div><div class="inventory-groups">${groupedRows || '<div class="empty-state">No inventory items match the current filters.</div>'}</div>`;
+  content.innerHTML = header('Component Inventory', 'Centre-owned stock ledger. Grouped by kit and not linked to students.') + `<div class="inventory-summary"><strong>${state.inventory.length}</strong><span>Centre inventory items</span></div><div class="table-tools"><input id="componentSearch" class="table-search" placeholder="Search component, category, colour, or price..." value="${escapeHtml(query)}"><select id="componentKit" class="table-filter"><option value="">All kits</option>${kits.map((value) => `<option ${kit === value ? 'selected' : ''}>${text(value)}</option>`).join('')}</select><select id="componentTier" class="table-filter"><option value="">All tiers</option><option ${tier === 'Tier A' ? 'selected' : ''}>Tier A</option><option ${tier === 'Tier B' ? 'selected' : ''}>Tier B</option><option ${tier === 'Tier C' ? 'selected' : ''}>Tier C</option></select><span>Page ${componentPage} / ${pageCount}</span><button class="mini-button" data-component-page="prev">←</button><button class="mini-button" data-component-page="next">→</button></div><div class="inventory-groups">${groupedRows || '<div class="empty-state">No inventory items match the current filters.</div>'}</div>`;
   document.querySelectorAll('#componentSearch, #componentKit, #componentTier').forEach((control) => control.onchange = control.oninput = () => { componentPage = 1; renderComponents(); document.querySelector('#componentSearch')?.focus(); });
   document.querySelectorAll('[data-component-page]').forEach((item) => item.onclick = () => { componentPage += item.dataset.componentPage === 'next' ? 1 : -1; renderComponents(); });
   document.querySelectorAll('[data-center-inventory-qty]').forEach((input) => input.onchange = () => { state.inventory[Number(input.dataset.centerInventoryQty)]['Total center qty'] = input.value; save('inventory', state.inventory); });
