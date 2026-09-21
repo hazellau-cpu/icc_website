@@ -1,5 +1,6 @@
 const groups = [
   { name: 'Students', icon: '◎' },
+  { name: "Today's Students", icon: '◔' },
   { name: 'Libraries & curriculum', icon: '⌘' },
   { name: 'Operations', icon: '↗' },
 ];
@@ -132,6 +133,7 @@ function render() {
   renderNav();
   document.querySelector('#breadcrumb').textContent = activeView;
   if (activeView === 'Students') renderStudents();
+  else if (activeView === "Today's Students") renderTodaysStudents();
   else if (activeView === 'Coding Students') renderCodingStudents();
   else if (activeView === 'Libraries & curriculum' || activeView === 'AIKIRO' || activeView === 'UARO' || activeView === 'ROBOKIT' || /^CS[1-5] curriculum$/.test(activeView) || activeView === 'CodeMonkey curriculum') renderLibraries(activeView);
   else if (activeView === 'Operations') renderOperations();
@@ -140,12 +142,124 @@ function render() {
   else renderStudents();
 }
 
+function getCarryStatus(student) {
+  return student?.carryStatus || 'Leave Kit At Centre';
+}
+
+function getCarryStatusClass(status) {
+  if (status === 'Take Robot Home') return 'status-blue';
+  if (status === 'Take Whole Kit Home') return 'status-orange';
+  return 'status-green';
+}
+
+function getStudentAttendance(student) {
+  if (student && student.sourceRow?.['Monthly attendance']) return student.sourceRow['Monthly attendance'];
+  if (student && student.attendance) return student.attendance;
+  return '—';
+}
+
+function renderTodaysStudents() {
+  const rows = [
+    ...state.robotStudents.map((student, index) => ({
+      type: 'Robot',
+      name: student.name,
+      programme: student.program || '—',
+      lessonTime: student.sourceRow?.['Today lesson time'] || '—',
+      tutor: student.sourceRow?.Tutor || 'Tutor',
+      attendance: getStudentAttendance(student),
+      progress: student.completion || '0%',
+      id: index,
+      source: 'robot'
+    })),
+    ...state.codingStudents.map((student, index) => ({
+      type: 'Coding',
+      name: student.name,
+      programme: student.course || '—',
+      lessonTime: student.lastUpdated || '—',
+      tutor: 'Tutor',
+      attendance: student.attendance || '—',
+      progress: student.completion || '0%',
+      id: index,
+      source: 'coding'
+    }))
+  ];
+
+  const searchValue = document.querySelector('#todaySearch')?.value || '';
+  const typeValue = document.querySelector('#todayType')?.value || '';
+  const programmeValue = document.querySelector('#todayProgramme')?.value || '';
+  const tutorValue = document.querySelector('#todayTutor')?.value || '';
+  const attendanceValue = document.querySelector('#todayAttendance')?.value || '';
+  const sortValue = document.querySelector('#todaySort')?.value || 'name';
+
+  const filteredRows = rows.filter((row) => {
+    const matchesSearch = `${row.name} ${row.programme} ${row.type}`.toLowerCase().includes(searchValue.toLowerCase());
+    const matchesType = !typeValue || row.type === typeValue;
+    const matchesProgramme = !programmeValue || row.programme === programmeValue;
+    const matchesTutor = !tutorValue || row.tutor === tutorValue;
+    const matchesAttendance = !attendanceValue || row.attendance.includes(attendanceValue) || row.attendance === attendanceValue;
+    return matchesSearch && matchesType && matchesProgramme && matchesTutor && matchesAttendance;
+  });
+
+  const sortedRows = [...filteredRows].sort((a, b) => {
+    if (sortValue === 'name') return a.name.localeCompare(b.name);
+    if (sortValue === 'progress') return Number.parseInt(b.progress, 10) - Number.parseInt(a.progress, 10);
+    return a.lessonTime.localeCompare(b.lessonTime);
+  });
+
+  const programmeOptions = [...new Set(rows.map((row) => row.programme))].filter(Boolean).sort();
+  const tutorOptions = [...new Set(rows.map((row) => row.tutor))].filter(Boolean).sort();
+  const attendanceOptions = [...new Set(rows.map((row) => row.attendance))].filter(Boolean).sort();
+
+  content.innerHTML = header("Today's Students", 'Tutor operating view for students attending today, with current progress and quick actions.', button('New record +', 'new-robot', 'primary-button')) + `
+    <div class="today-panel">
+      <div class="toolbar-row compact">
+        <input id="todaySearch" class="table-search" placeholder="Search student or programme" value="${escapeHtml(searchValue)}">
+        <select id="todayType" class="table-filter"><option value="">All student types</option><option ${typeValue === 'Coding' ? 'selected' : ''}>Coding</option><option ${typeValue === 'Robot' ? 'selected' : ''}>Robot</option></select>
+        <select id="todayProgramme" class="table-filter"><option value="">All programmes</option>${programmeOptions.map((value) => `<option ${programmeValue === value ? 'selected' : ''}>${text(value)}</option>`).join('')}</select>
+        <select id="todayTutor" class="table-filter"><option value="">All tutors</option>${tutorOptions.map((value) => `<option ${tutorValue === value ? 'selected' : ''}>${text(value)}</option>`).join('')}</select>
+        <select id="todayAttendance" class="table-filter"><option value="">All attendance</option>${attendanceOptions.map((value) => `<option ${attendanceValue === value ? 'selected' : ''}>${text(value)}</option>`).join('')}</select>
+        <select id="todaySort" class="table-filter"><option value="name" ${sortValue === 'name' ? 'selected' : ''}>Sort: name</option><option value="time" ${sortValue === 'time' ? 'selected' : ''}>Sort: lesson time</option><option value="progress" ${sortValue === 'progress' ? 'selected' : ''}>Sort: progress</option></select>
+      </div>
+      <div class="stats-grid compact">
+        <div class="stat-box"><span>Students Today</span><strong>${rows.length}</strong></div>
+        <div class="stat-box"><span>Coding Students</span><strong>${rows.filter((row) => row.type === 'Coding').length}</strong></div>
+        <div class="stat-box"><span>Robot Students</span><strong>${rows.filter((row) => row.type === 'Robot').length}</strong></div>
+        <div class="stat-box warning"><span>Absent Students</span><strong>${rows.filter((row) => /absent|no lessons|not attended/i.test(String(row.attendance))).length}</strong></div>
+      </div>
+      <div class="records today-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Student Name</th><th>Programme</th><th>Today's Lesson Time</th><th>Tutor</th><th>Attendance Status</th><th>Student Type</th><th>Current Progress</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${sortedRows.map((row) => `
+              <tr>
+                <td>${text(row.name)}</td>
+                <td>${text(row.programme)}</td>
+                <td>${text(row.lessonTime)}</td>
+                <td>${text(row.tutor)}</td>
+                <td><span class="status-badge ${/absent|no lessons/i.test(String(row.attendance)) ? 'badge-absent' : 'badge-present'}">${text(row.attendance)}</span></td>
+                <td><span class="type-pill ${row.type === 'Coding' ? 'type-coding' : 'type-robot'}">${row.type}</span></td>
+                <td>${text(row.progress)}</td>
+                <td>${row.source === 'robot' ? `<button class="mini-button" data-profile="${row.id}">Open</button>` : `<button class="mini-button" data-coding-profile="${row.id}">Open</button>`}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="8"><div class="empty-state">No students match the current filters.</div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('#todaySearch, #todayType, #todayProgramme, #todayTutor, #todayAttendance, #todaySort').forEach((control) => {
+    control.oninput = control.onchange = () => renderTodaysStudents();
+  });
+}
+
 function renderStudents() {
   const rows = state.robotStudents.map((student, index) => [`<button class="link-button" data-profile="${index}">${text(student.name)}</button>`, text(programmeLabel(student.program)), text(student.nextRobot), text(student.completion), text(student.sourceRow?.Check), text(student.sourceRow?.['Monthly attendance'])]);
   content.innerHTML = header('Robot students', '24 student profiles with programme, progress, next robot, attendance, and checks.', button('New profile +', 'new-robot', 'primary-button')) + tableFilters([{ label: 'Programme', index: 1 }, { label: 'Check', index: 4 }], rows, ['Student', 'Programme', 'Next robot', 'Completion', 'Check', 'Monthly attendance']);
   bindTableFilters();
 }
 
+/*
 function renderStudentProfile() {
   const student = state.robotStudents.find((row) => row.name === selectedStudent);
   if (!student) return renderStudents();
@@ -183,33 +297,154 @@ function renderStudentProfile() {
     student.completion = `${Math.round((ordered.filter((entry) => String(entry.Status).toLowerCase() === 'done').length / Math.max(ordered.length, 1)) * 100)}%`;
     save('robot-students', state.robotStudents);
     renderStudentProfile();
-  });
+      const programmeProgress = progress.filter((row) => !row.Level || String(row.Level).toLowerCase() === exactLevel || (!exactLevel.includes('_') && String(row.Level).toLowerCase().startsWith(levelFamily))).sort((a, b) => Number(a.Sequence || 0) - Number(b.Sequence || 0));
   document.querySelectorAll('[data-component-qty], [data-component-note], [data-inventory-qty], [data-progress-notes], [data-progress-date]').forEach((input) => input.onchange = () => {
-    if (input.dataset.componentQty !== undefined) {
       const row = state.componentItems[Number(input.dataset.componentQty)];
-      row.studentQty = input.value;
-      row.quantityStatus = quantityResult(row.requiredQty, input.value);
-      row.sourceRow['Student Qty'] = input.value;
-      row.sourceRow['Qty status'] = row.quantityStatus;
-    } else if (input.dataset.componentNote !== undefined) {
-      state.componentItems[Number(input.dataset.componentNote)].sourceRow.Notes = input.value;
-    } else if (input.dataset.inventoryQty !== undefined) {
-      const row = state.inventory[Number(input.dataset.inventoryQty)];
-      row['Total center qty'] = input.value;
-      save('inventory', state.inventory);
-      showLibrary('Component inventory');
-      return;
-    } else if (input.dataset.progressDate !== undefined) {
-      progressFinishDates[input.dataset.progressDate] = input.value;
-      save('progress-finish-dates', progressFinishDates);
-      return;
-    } else {
-      progress[Number(input.dataset.progressNotes)].Notes = input.value;
-    }
-    save('component-items', state.componentItems);
-    renderStudentProfile();
-    save('robot-progress', state.robotProgress);
+      const currentRobot = student.nextRobot || programmeProgress.find((row) => String(row.Status).toLowerCase() !== 'done')?.Robot || programmeProgress[0]?.Robot || '—';
+      const completedRobots = programmeProgress.filter((row) => String(row.Status).toLowerCase() === 'done').length;
+      const totalRobots = Math.max(1, programmeProgress.length);
+      const percentComplete = Math.round((completedRobots / totalRobots) * 100);
+      const carryStatus = getCarryStatus(student);
+      const checklistCost = checklist.reduce((sum, row) => {
+        const unit = Number(String(row.unitPrice || '').replace(/[^\d.]/g, '')) || 0;
+        const qty = Number(row.requiredQty) || 0;
+        return sum + (unit * qty);
+      }, 0);
+      const checklistStatus = student.sourceRow?.Check || (missing === 0 ? 'Checked' : 'Not Yet Checked');
+      const journeySteps = programmeProgress.map((row) => {
+        const status = String(row.Status || '').toLowerCase();
+        let label = 'upcoming';
+        if (status === 'done') label = 'completed';
+        else if (row.Robot === currentRobot) label = 'current';
+        return { row, label };
+      });
+
+      content.innerHTML = header(student.name, 'Operational view of the robot student’s current progress and what needs to be checked today.', button('← Students', 'students', 'mini-button')) + `
+        <div class="robot-profile">
+          <div class="robot-summary-card">
+            <div class="summary-header">
+              <div class="student-meta">
+                <span class="eyebrow">STUDENT</span>
+                <h2>${text(student.name)}</h2>
+              </div>
+              <div class="summary-pill ${getCarryStatusClass(carryStatus)}">${text(carryStatus)}</div>
+            </div>
+            <div class="summary-grid">
+              <div class="summary-item"><span>Programme</span><strong>${text(programmeLabel(student.program))}</strong></div>
+              <div class="summary-item"><span>Current Robot</span><strong>${text(currentRobot)}</strong></div>
+              <div class="summary-item"><span>Robot Completion</span><strong>${text(student.completion || `${percentComplete}%`)}</strong></div>
+              <div class="summary-item"><span>Completed Robots</span><strong>${completedRobots} / ${totalRobots}</strong></div>
+              <div class="summary-item"><span>Attendance</span><strong>${text(getStudentAttendance(student))}</strong></div>
+            </div>
+          </div>
+
+          <div class="journey-layout">
+            <div class="journey-panel">
+              <div class="section-header compact">
+                <div>
+                  <span class="eyebrow">ROBOT LEARNING JOURNEY</span>
+                  <h2>Current path</h2>
+                </div>
+              </div>
+              <div class="journey-track">
+                ${journeySteps.length ? journeySteps.map(({ row, label }) => `
+                  <div class="journey-step ${label === 'completed' ? 'completed' : label === 'current' ? 'current' : 'upcoming'}">
+                    <span class="journey-icon">${label === 'completed' ? '✅' : label === 'current' ? '🟡' : '⬜'}</span>
+                    <div>
+                      <strong>${text(row.Robot || 'Robot')}</strong>
+                      <small>${label === 'completed' ? 'Completed' : label === 'current' ? 'Current robot' : 'Upcoming'}</small>
+                    </div>
+                  </div>
+                `).join('') : '<div class="empty-state">No robot learning path is available yet.</div>'}
+              </div>
+            </div>
+
+            <div class="check-panel">
+              <div class="section-header compact">
+                <div>
+                  <span class="eyebrow">CHECKLIST STATUS</span>
+                  <h2>Today's status</h2>
+                </div>
+              </div>
+              <div class="check-status-box">
+                <div class="mini-row"><span>Status</span><strong>${text(checklistStatus)}</strong></div>
+                <div class="mini-row"><span>Missing Components</span><strong>${missing}</strong></div>
+                <div class="mini-row"><span>Estimated Cost</span><strong>${checklistCost ? `HK$${checklistCost.toLocaleString()}` : 'HK$0'}</strong></div>
+              </div>
+              <div class="carry-status-block">
+                <label class="field-label" for="carryStatusSelect">Robot Carry Status</label>
+                <select id="carryStatusSelect" class="carry-status-select" data-carry-status="${student.name}">
+                  <option ${carryStatus === 'Take Robot Home' ? 'selected' : ''}>Take Robot Home</option>
+                  <option ${carryStatus === 'Take Whole Kit Home' ? 'selected' : ''}>Take Whole Kit Home</option>
+                  <option ${carryStatus === 'Leave Kit At Centre' ? 'selected' : ''}>Leave Kit At Centre</option>
+                </select>
+              </div>
+              <button class="primary-button" data-action="check-components">Open Checklist</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.querySelector('#carryStatusSelect')?.addEventListener('change', (event) => {
+        const targetStudent = state.robotStudents.find((row) => row.name === selectedStudent);
+        if (!targetStudent) return;
+        targetStudent.carryStatus = event.target.value;
+        save('robot-students', state.robotStudents);
+        renderStudentProfile();
+      });
+  return rows.sort((a, b) => Number(a.Level) - Number(b.Level));
+}
+
+*/
+
+function renderStudentProfile() {
+  const student = state.robotStudents.find((row) => row.name === selectedStudent);
+  if (!student) return renderStudents();
+  const hasProgress = state.robotProgress.some((row) => display(row.Student || row['Student (linked)']) === selectedStudent);
+  const hasChecklist = state.componentItems.some((row) => row.student === selectedStudent);
+  if (!hasProgress || !hasChecklist) replaceStudentProgramme(student, student.program);
+
+  const progress = state.robotProgress.filter((row) => display(row.Student || row['Student (linked)']).startsWith(selectedStudent));
+  const programLevel = display(student.program).match(/^(AIKIRO|ROBOKIT|UARO)\s+Lv\d+(?:_[a-z]+)?/i)?.[0] || '';
+  const exactLevel = programLevel.toLowerCase();
+  const levelFamily = exactLevel.replace(/_original|_additional/i, '');
+  const programmeProgress = progress.filter((row) => !row.Level || String(row.Level).toLowerCase() === exactLevel || (!exactLevel.includes('_') && String(row.Level).toLowerCase().startsWith(levelFamily))).sort((a, b) => Number(a.Sequence || 0) - Number(b.Sequence || 0));
+  const checklist = state.componentItems.filter((row) => display(row.student) === selectedStudent);
+  const missing = checklist.filter((row) => quantityResult(row.requiredQty, row.studentQty) === 'Missing').length;
+  const currentRobot = student.nextRobot || programmeProgress.find((row) => String(row.Status).toLowerCase() !== 'done')?.Robot || programmeProgress[0]?.Robot || '—';
+  const completedRobots = programmeProgress.filter((row) => String(row.Status).toLowerCase() === 'done').length;
+  const totalRobots = Math.max(1, programmeProgress.length);
+  const carryStatus = getCarryStatus(student);
+  const checklistStatus = student.sourceRow?.Check || (missing === 0 ? 'Checked' : 'Not Yet Checked');
+  const journeySteps = programmeProgress.map((row) => {
+    const status = String(row.Status || '').toLowerCase();
+    const label = status === 'done' ? 'completed' : row.Robot === currentRobot ? 'current' : 'upcoming';
+    return { row, label };
   });
+
+  content.innerHTML = header(student.name, 'Operational view of the robot student’s current progress and what needs to be checked today.', button('← Students', 'students', 'mini-button')) + `
+    <div class="robot-profile">
+      <div class="robot-summary-card">
+        <div class="summary-header"><div class="student-meta"><span class="eyebrow">STUDENT</span><h2>${text(student.name)}</h2></div><div class="summary-pill ${getCarryStatusClass(carryStatus)}">${text(carryStatus)}</div></div>
+        <div class="summary-grid">
+          <div class="summary-item"><span>Programme</span><strong>${text(programmeLabel(student.program))}</strong></div>
+          <div class="summary-item"><span>Current Robot</span><strong>${text(currentRobot)}</strong></div>
+          <div class="summary-item"><span>Robot Completion</span><strong>${text(student.completion || '0%')}</strong></div>
+          <div class="summary-item"><span>Completed Robots</span><strong>${completedRobots} / ${totalRobots}</strong></div>
+          <div class="summary-item"><span>Attendance</span><strong>${text(getStudentAttendance(student))}</strong></div>
+        </div>
+      </div>
+      <div class="journey-layout">
+        <div class="journey-panel"><div class="section-header compact"><div><span class="eyebrow">ROBOT LEARNING JOURNEY</span><h2>Current path</h2></div></div><div class="journey-track">
+          ${journeySteps.length ? journeySteps.map(({ row, label }) => `<div class="journey-step ${label}"><span class="journey-icon">${label === 'completed' ? '✅' : label === 'current' ? '🟡' : '⬜'}</span><div><strong>${text(row.Robot || 'Robot')}</strong><small>${label === 'completed' ? 'Completed' : label === 'current' ? 'Current robot' : 'Upcoming'}</small></div></div>`).join('') : '<div class="empty-state">No robot learning path is available yet.</div>'}
+        </div></div>
+        <div class="check-panel"><div class="section-header compact"><div><span class="eyebrow">CHECKLIST STATUS</span><h2>Today’s status</h2></div></div>
+          <div class="check-status-box"><div class="mini-row"><span>Status</span><strong>${text(checklistStatus)}</strong></div><div class="mini-row"><span>Missing Components</span><strong>${missing}</strong></div></div>
+          <div class="carry-status-block"><label class="field-label" for="carryStatusSelect">Robot Carry Status</label><select id="carryStatusSelect" class="carry-status-select" data-carry-status="${escapeHtml(student.name)}"><option ${carryStatus === 'Take Robot Home' ? 'selected' : ''}>Take Robot Home</option><option ${carryStatus === 'Take Whole Kit Home' ? 'selected' : ''}>Take Whole Kit Home</option><option ${carryStatus === 'Leave Kit At Centre' ? 'selected' : ''}>Leave Kit At Centre</option></select></div>
+          <button class="primary-button" data-action="check-components">Open Checklist</button>
+        </div>
+      </div>
+    </div>`;
 }
 
 function renderCodingStudents() {
@@ -227,14 +462,9 @@ function getCurriculumForStudent(student) {
   const course = String(student.course || '').trim();
   const rows = [...state.curriculum].filter((row) => row && String(row['Program name'] || '').trim());
   if (!course) return rows.sort((a, b) => Number(a.Level) - Number(b.Level));
-
   const upperCourse = course.toUpperCase();
-  if (/^CS\d+$/i.test(course)) {
-    return rows.filter((row) => String(row['Program name'] || '').toUpperCase() === upperCourse).sort((a, b) => Number(a.Level) - Number(b.Level));
-  }
-  if (/codemonkey/i.test(course)) {
-    return rows.filter((row) => /codemonkey/i.test(String(row['Program name'] || ''))).sort((a, b) => Number(a.Level) - Number(b.Level));
-  }
+  if (/^CS\d+$/i.test(course)) return rows.filter((row) => String(row['Program name'] || '').toUpperCase() === upperCourse).sort((a, b) => Number(a.Level) - Number(b.Level));
+  if (/codemonkey/i.test(course)) return rows.filter((row) => /codemonkey/i.test(String(row['Program name'] || ''))).sort((a, b) => Number(a.Level) - Number(b.Level));
   return rows.sort((a, b) => Number(a.Level) - Number(b.Level));
 }
 
@@ -590,6 +820,7 @@ function repairStudentLinks() {
 
 function handleAction(action) {
   if (action === 'students') { activeView = 'Students'; render(); }
+  if (action === "today-students") { activeView = "Today's Students"; renderTodaysStudents(); }
   if (action === 'regenerate-programme') { const student = state.robotStudents.find((row) => row.name === selectedStudent); if (student) { replaceStudentProgramme(student, student.program); renderStudentProfile(); } }
   if (action === 'coding-students') { activeView = 'Coding Student Profiles'; render(); }
   if (action === 'new-robot') openForm('Add robot student', [{ label: 'Student name', name: 'name', required: true }, { label: 'Programme', name: 'program', type: 'select', options: [...new Set(state.robotPrograms.map((row) => row.Program))].map((program) => `<option>${text(program)}</option>`).join(''), required: true }], (data) => { createProgrammeRecords(data.name, data.program); state.robotStudents.push({ name: data.name, program: data.program, nextRobot: state.robotProgress.find((row) => row.Student === data.name)?.Robot || '', completion: '0%', sourceRow: { Student: data.name, Program: data.program, Check: 'Not yet checked' } }); save('robot-students', state.robotStudents); save('robot-progress', state.robotProgress); save('component-items', state.componentItems); selectedStudent = data.name; renderStudentProfile(); });
@@ -607,8 +838,8 @@ function handleAction(action) {
 
 document.addEventListener('click', (event) => { const action = event.target.closest('[data-action]')?.dataset.action; if (action) handleAction(action); });
 content.addEventListener('click', (event) => { const profile = event.target.closest('[data-profile]'); if (profile) { selectedStudent = state.robotStudents[Number(profile.dataset.profile)].name; renderStudentProfile(); } });
+content.addEventListener('change', (event) => { if (event.target.matches('[data-carry-status]')) { const student = state.robotStudents.find((row) => row.name === selectedStudent); if (student) { student.carryStatus = event.target.value; save('robot-students', state.robotStudents); renderStudentProfile(); } } if (event.target.matches('.universal-sort')) refreshUniversalTable(event.target.closest('.universal-table')); });
 content.addEventListener('input', (event) => { if (event.target.matches('.universal-search')) refreshUniversalTable(event.target.closest('.universal-table')); });
-content.addEventListener('change', (event) => { if (event.target.matches('.universal-sort')) refreshUniversalTable(event.target.closest('.universal-table')); });
 content.addEventListener('click', (event) => { if (event.target.matches('.universal-clear')) { const container = event.target.closest('.universal-table'); container.querySelector('.universal-search').value = ''; container.querySelector('.universal-sort').value = 'asc'; refreshUniversalTable(container); } });
 document.querySelector('#closeModal').onclick = () => { document.querySelector('#modalBackdrop').hidden = true; };
 document.querySelector('#modalBackdrop').onclick = (event) => { if (event.target.id === 'modalBackdrop') document.querySelector('#modalBackdrop').hidden = true; };

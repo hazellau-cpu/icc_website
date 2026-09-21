@@ -976,6 +976,42 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .profile-panel h2 { margin: 8px 0 12px; font-size: 1.1rem; color: var(--text); }
 .profile-panel p { color: var(--text-soft); font-size: 13px; }
 .profile-panel strong { color: var(--accent); }
+.robot-profile { display: flex; flex-direction: column; gap: 16px; margin-top: 18px; }
+.robot-summary-card { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(135deg, rgba(99,240,214,.08), rgba(112,183,255,.06)); }
+.summary-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.student-meta h2 { margin: 8px 0 0; color: var(--text); font-size: 1.5rem; }
+.summary-pill { display: inline-flex; align-items: center; justify-content: center; padding: 6px 10px; border-radius: 999px; font: 600 11px 'Space Grotesk'; border: 1px solid var(--line); }
+.status-blue { background: rgba(112,183,255,.12); color: #8ec9ff; }
+.status-orange { background: rgba(209,132,63,.12); color: #f7bf78; }
+.status-green { background: rgba(99,240,214,.08); color: #7de7d1; }
+.summary-grid { display: grid; grid-template-columns: repeat(5, minmax(120px, 1fr)); gap: 12px; margin-top: 16px; }
+.summary-item { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.05); }
+.summary-item span { color: var(--muted); font: 10px 'DM Mono', monospace; text-transform: uppercase; }
+.summary-item strong { color: var(--text); font-size: .96rem; }
+.journey-layout { display: grid; grid-template-columns: 1.5fr .9fr; gap: 16px; }
+.journey-panel, .check-panel { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.journey-track { display: grid; gap: 10px; margin-top: 12px; }
+.journey-step { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.03); }
+.journey-step.completed { border-color: rgba(99,240,214,.3); background: rgba(99,240,214,.06); }
+.journey-step.current { border-color: rgba(247,191,120,.3); background: rgba(247,191,120,.08); }
+.journey-step.upcoming { opacity: .82; }
+.journey-icon { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,.05); font-size: 15px; }
+.journey-step strong { display: block; color: var(--text); }
+.journey-step small { color: var(--text-soft); }
+.check-status-box { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.mini-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.03); }
+.mini-row span { color: var(--muted); font: 11px 'DM Mono', monospace; text-transform: uppercase; }
+.mini-row strong { color: var(--text); }
+.carry-status-block { margin-top: 16px; }
+.field-label { display: block; margin-bottom: 8px; color: var(--muted); font: 10px 'DM Mono', monospace; text-transform: uppercase; }
+.carry-status-select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--text); }
+.primary-button { margin-top: 16px; }
+
+.status-badge, .type-pill { display: inline-flex; align-items: center; justify-content: center; padding: 5px 8px; border-radius: 999px; font: 600 11px 'Space Grotesk'; }
+.badge-present { background: rgba(99,240,214,.12); color: #7de7d1; }
+.badge-absent { background: rgba(244,92,92,.12); color: #ff9a9a; }
+.type-coding { background: rgba(112,183,255,.12); color: #9ed0ff; }
+.type-robot { background: rgba(99,240,214,.12); color: #7de7d1; }
 .link-button { padding: 0; border: 0; background: transparent; color: var(--accent); cursor: pointer; font: inherit; text-align: left; }
 .library-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 18px; }
 .tab-button { border: 1px solid var(--line); background: var(--panel); color: var(--text-soft); border-radius: 7px; padding: 8px 11px; cursor: pointer; font: 600 12px 'Space Grotesk'; }
