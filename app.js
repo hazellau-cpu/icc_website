@@ -226,6 +226,17 @@ function todayLessonRows() {
     const student = codingByName.get(name);
     if (student) rows.push({ type: 'Coding', name, student, lesson, programme: student.course || '—', tutor: lesson.Tutor || student.tutor || '', carryStatus: 'N/A', notes: lesson.Remarks || '' });
   });
+  rows.push({
+    type: 'Robot',
+    name: 'Test Student (Demo)',
+    student: { name: 'Test Student (Demo)', program: 'AIKIRO Lv1', nextRobot: 'Demo Robot', completion: '60%', carryStatus: 'Take Robot Home', sourceRow: { Tutor: 'Demo Tutor', 'Monthly attendance': 'Upcoming Lesson', Check: 'Not yet checked' } },
+    lesson: { 'Lesson time': todayKey, Tutor: 'Demo Tutor', Remarks: 'Demo row for table testing' },
+    programme: 'AIKIRO Lv1',
+    tutor: 'Demo Tutor',
+    carryStatus: 'Take Robot Home',
+    notes: 'Demo row for table testing',
+    demo: true
+  });
   return rows;
 }
 
@@ -236,7 +247,7 @@ function renderTodaysStudents() {
   const sortValue = document.querySelector('#todaySort')?.value || 'name';
   const filteredRows = rows.filter((row) => (!typeValue || row.type === typeValue) && `${row.name} ${row.programme} ${row.tutor} ${row.notes}`.toLowerCase().includes(searchValue.toLowerCase()));
   const sortedRows = [...filteredRows].sort((a, b) => sortValue === 'type' ? a.type.localeCompare(b.type) : a.name.localeCompare(b.name));
-  content.innerHTML = header("Today's Students", 'Daily workload for students with a lesson scheduled today.') + `
+  content.innerHTML = header("Today's Students", 'Daily workload for students with a lesson scheduled today.') + `<div class="demo-banner">Demo row active for layout testing</div>
     <div class="today-panel"><div class="toolbar-row compact"><input id="todaySearch" class="table-search" placeholder="Search today’s workload" value="${escapeHtml(searchValue)}"><select id="todayType" class="table-filter"><option value="">All student types</option><option ${typeValue === 'Coding' ? 'selected' : ''}>Coding</option><option ${typeValue === 'Robot' ? 'selected' : ''}>Robot</option></select><select id="todaySort" class="table-filter"><option value="name" ${sortValue === 'name' ? 'selected' : ''}>Sort: name</option><option value="type" ${sortValue === 'type' ? 'selected' : ''}>Sort: type</option></select></div>
       <div class="dashboard-strip"><div><strong>${rows.length}</strong><span>Students Today</span></div><div><strong>${rows.filter((row) => row.type === 'Coding').length}</strong><span>Coding Students Today</span></div><div><strong>${rows.filter((row) => row.type === 'Robot').length}</strong><span>Robot Students Today</span></div></div>
       <div class="records today-table-wrap"><table class="data-table"><thead><tr><th>Student Name</th><th>Student Type</th><th>Programme</th><th>Tutor Name</th><th>Robot Carry Status</th><th>Quick Notes</th><th>Actions</th></tr></thead><tbody>${sortedRows.map((row) => `<tr><td>${text(row.name)}</td><td><span class="type-pill ${row.type === 'Coding' ? 'type-coding' : 'type-robot'}">${row.type}</span></td><td>${text(row.programme)}</td><td><input class="inline-input today-tutor-input" data-tutor-student="${escapeHtml(row.name)}" value="${escapeHtml(row.tutor)}" placeholder="Tutor name"></td><td>${row.type === 'Robot' ? `<select class="inline-input carry-status-select" data-carry-status-student="${escapeHtml(row.name)}"><option ${row.carryStatus === 'Take Robot Home' ? 'selected' : ''}>Take Robot Home</option><option ${row.carryStatus === 'Take Whole Kit Home' ? 'selected' : ''}>Take Whole Kit Home</option><option ${row.carryStatus === 'Leave Kit At Centre' ? 'selected' : ''}>Leave Kit At Centre</option></select>` : '<span class="status-badge">N/A</span>'}</td><td><input class="inline-input today-notes-input" data-lesson-notes="${escapeHtml(row.name)}" value="${escapeHtml(row.notes)}" placeholder="Quick note"></td><td><button class="mini-button" data-action="${row.type === 'Robot' ? 'checklist' : 'coding-profile'}" data-student-name="${escapeHtml(row.name)}">${row.type === 'Robot' ? 'Checklist' : 'Open'}</button></td></tr>`).join('') || '<tr><td colspan="7"><div class="empty-state">No students are scheduled for today.</div></td></tr>'}</tbody></table></div></div>`;
