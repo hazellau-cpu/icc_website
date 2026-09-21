@@ -1020,8 +1020,8 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .student-link > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .student-link strong { color: var(--text); font-size: 12px; }
 .student-link small { color: var(--muted); font: 10px 'DM Mono', monospace; }
-.student-avatar { display: inline-grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 8px; background: #dcecf3; color: var(--accent); font: 700 12px 'Space Grotesk'; }
-.coding-avatar { background: #f5e6d6; color: #a86125; }
+.student-avatar { display: inline-grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border: 1px solid #a9c8d4; border-radius: 8px; background: #e8f2f5; color: #23657f; font: 700 12px 'Space Grotesk'; }
+.coding-avatar { border-color: #dfc6a9; background: #fbf1e7; color: #955f2d; }
 .ui-icon { width: 14px; height: 14px; flex: 0 0 14px; }
 .programme-chip, .robot-chip, .topic-chip { display: inline-flex; align-items: center; gap: 6px; width: fit-content; max-width: 220px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 7px; font-size: 11px; }
 .programme-chip { background: #f0f6f8; color: #426473; }
@@ -1064,7 +1064,7 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .student-snapshot-card { padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(135deg, #f4fbff, #fdf9f3); box-shadow: var(--shadow); }
 .student-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; }
 .student-identity { display: flex; align-items: center; gap: 12px; min-width: 220px; }
-.student-avatar { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; font-weight: 700; }
+.coding-dashboard .student-avatar { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #dfc6a9; border-radius: 12px; background: #fbf1e7; color: #955f2d; font-weight: 700; }
 .student-identity h2 { margin: 4px 0 0; font-size: 1.6rem; color: var(--text); }
 .snapshot-grid { display: grid; grid-template-columns: repeat(5, minmax(110px, 1fr)); gap: 10px; flex: 1; min-width: 0; }
 .snapshot-item { display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.7); }
