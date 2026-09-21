@@ -1072,6 +1072,7 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .library-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 18px; }
 .tab-button { border: 1px solid var(--line); background: var(--panel); color: var(--text-soft); border-radius: 7px; padding: 8px 11px; cursor: pointer; font: 600 12px 'Space Grotesk'; }
 .tab-button:hover { border-color: var(--line-strong); color: var(--accent); }
+.tab-button.active { background: #dcecf3; border-color: #a9cad8; color: var(--accent); box-shadow: inset 0 -2px var(--accent); }
 .status-button { border: 1px solid var(--line); background: rgba(99,240,214,.08); color: var(--accent); border-radius: 5px; padding: 5px 8px; cursor: pointer; font: 11px 'DM Mono', monospace; }
 .source-table-block { margin-bottom: 24px; }
 

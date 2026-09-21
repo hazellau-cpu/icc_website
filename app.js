@@ -18,6 +18,7 @@ let componentPage = 1;
 const componentPageSize = 25;
 let progressFinishDates = {};
 let activeLibrarySection = 'Robot Library';
+let activeInventoryKit = 'ALL';
 const content = document.querySelector('#content');
 const nav = document.querySelector('#nav');
 const toolNav = document.querySelector('#toolNav');
@@ -39,9 +40,9 @@ const display = (value) => {
 
 const universalTableRegistry = new Map();
 let universalTableId = 0;
-function tableMarkup(headers, rows, className = '') {
+function tableMarkup(headers, rows, className = '', sortRows = true) {
   const sortableValue = (cell) => display(String(cell ?? '').replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ''));
-  const sortedRows = [...rows].sort((left, right) => sortableValue(left[0]).localeCompare(sortableValue(right[0]), undefined, { numeric: true, sensitivity: 'base' }));
+  const sortedRows = sortRows ? [...rows].sort((left, right) => sortableValue(left[0]).localeCompare(sortableValue(right[0]), undefined, { numeric: true, sensitivity: 'base' })) : rows;
   const formatCell = (cell) => /<(?:button|input|select|option|textarea|span|div|svg)\b/i.test(String(cell)) ? cell : escapeHtml(display(cell));
   return `<div class="records source-table ${className}"><table class="data-table"><thead><tr>${headers.map((header) => `<th>${escapeHtml(display(header))}</th>`).join('')}</tr></thead><tbody>${sortedRows.map((row) => `<tr>${row.map((cell) => `<td>${formatCell(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
@@ -62,7 +63,7 @@ function refreshUniversalTable(container) {
     return direction === 'desc' ? -result : result;
   });
   container.querySelector('.active-filter-label').textContent = query ? `${ordered.length} matching records` : 'All records';
-  container.querySelector('.records').outerHTML = tableMarkup(data.headers, ordered);
+  container.querySelector('.records').outerHTML = tableMarkup(data.headers, ordered, '', false);
 }
 const tableFilterRegistry = new Map();
 let tableFilterId = 0;
@@ -766,36 +767,15 @@ function renderComponents() {
       inventoryKeys.add(key);
     }
   });
-  const query = document.querySelector('#componentSearch')?.value?.toLowerCase() || '';
   const tier = document.querySelector('#componentTier')?.value || '';
-  const kit = document.querySelector('#componentKit')?.value || '';
+  const kit = activeInventoryKit;
   const priceFor = (item) => item['Unit Price'] || state.componentLibrary.find((libraryItem) => libraryItem.Component === item.Component && libraryItem.Kit === item.Kit)?.['Unit Price'] || '';
-  const filtered = state.inventory.filter((item) => `${item.Component} ${item.Kit} ${item.Category} ${item.Colour} ${item.Notes} ${priceFor(item)}`.toLowerCase().includes(query) && (!tier || item.Tier === tier) && (!kit || item.Kit === kit));
-  const pageCount = Math.max(1, Math.ceil(filtered.length / componentPageSize));
-  componentPage = Math.max(1, Math.min(componentPage, pageCount));
-  const pageRows = filtered.slice((componentPage - 1) * componentPageSize, componentPage * componentPageSize);
+  const filtered = state.inventory.filter((item) => (!tier || item.Tier === tier) && (kit === 'ALL' || item.Kit === kit));
   const kits = [...new Set(state.inventory.map((item) => item.Kit).filter(Boolean))].sort();
-  const groupedRows = [...new Set(pageRows.map((item) => item.Kit).filter(Boolean))].sort().map((kitName) => {
-    const kitRows = pageRows.filter((item) => item.Kit === kitName);
-    const inventoryRows = kitRows.map((item) => {
-      const index = state.inventory.indexOf(item);
-      const itemPrice = priceFor(item);
-      return [
-        item.Component,
-        itemPrice ? `HK$${itemPrice}` : 'Not priced',
-        item.Colour || '—',
-        item.Category || '—',
-        item.Tier || '—',
-        `<input class="inline-input inventory-qty-input" type="number" min="0" data-center-inventory-qty="${index}" value="${escapeHtml(item['Total center qty'] || '0')}">`,
-        `<input class="inline-input inventory-date-input" type="date" data-center-inventory-date="${index}" value="${escapeHtml(item['Last counted'] || '')}">`,
-        `<textarea class="inventory-note-input" data-center-inventory-note="${index}" rows="2" placeholder="Add note">${escapeHtml(item.Notes || '')}</textarea>`
-      ];
-    });
-    return `<section class="inventory-kit-group"><div class="inventory-kit-heading"><div><span class="eyebrow">KIT INVENTORY</span><h2>${text(kitName)}</h2></div><span>${kitRows.length} components</span></div>${tableMarkup(['Component', 'Price', 'Colour', 'Category', 'Tier', 'Centre qty', 'Last counted', 'Notes'], inventoryRows)}</section>`;
-  }).join('');
-  content.innerHTML = header('Component Inventory', 'Centre-owned stock ledger. Grouped by kit and not linked to students.') + `<div class="inventory-summary"><strong>${state.inventory.length}</strong><span>Centre inventory items</span></div><div class="table-tools"><input id="componentSearch" class="table-search" placeholder="Search component, category, colour, or price..." value="${escapeHtml(query)}"><select id="componentKit" class="table-filter"><option value="">All kits</option>${kits.map((value) => `<option ${kit === value ? 'selected' : ''}>${text(value)}</option>`).join('')}</select><select id="componentTier" class="table-filter"><option value="">All tiers</option><option ${tier === 'Tier A' ? 'selected' : ''}>Tier A</option><option ${tier === 'Tier B' ? 'selected' : ''}>Tier B</option><option ${tier === 'Tier C' ? 'selected' : ''}>Tier C</option></select><span>Page ${componentPage} / ${pageCount}</span><button class="mini-button" data-component-page="prev">←</button><button class="mini-button" data-component-page="next">→</button></div><div class="inventory-groups">${groupedRows || '<div class="empty-state">No inventory items match the current filters.</div>'}</div>`;
-  document.querySelectorAll('#componentSearch, #componentKit, #componentTier').forEach((control) => control.onchange = control.oninput = () => { componentPage = 1; renderComponents(); document.querySelector('#componentSearch')?.focus(); });
-  document.querySelectorAll('[data-component-page]').forEach((item) => item.onclick = () => { componentPage += item.dataset.componentPage === 'next' ? 1 : -1; renderComponents(); });
+  const inventoryRows = filtered.map((item) => { const index = state.inventory.indexOf(item); const itemPrice = priceFor(item); return [item.Component, itemPrice ? `HK$${itemPrice}` : 'Not priced', item.Colour || '—', item.Category || '—', item.Tier || '—', `<input class="inline-input inventory-qty-input" type="number" min="0" data-center-inventory-qty="${index}" value="${escapeHtml(item['Total center qty'] || '0')}">`, `<input class="inline-input inventory-date-input" type="date" data-center-inventory-date="${index}" value="${escapeHtml(item['Last counted'] || '')}">`, `<textarea class="inventory-note-input" data-center-inventory-note="${index}" rows="2" placeholder="Add note">${escapeHtml(item.Notes || '')}</textarea>`]; });
+  const kitTabs = ['ALL', ...kits].map((value) => `<button class="tab-button ${activeInventoryKit === value ? 'active' : ''}" data-action="inventory-kit:${value}">${value === 'ALL' ? 'All Kits' : text(value)}</button>`).join('');
+  content.innerHTML = header('Component Inventory', 'Centre-owned stock ledger. Choose a kit to inspect its components.') + `<div class="library-tabs inventory-kit-tabs">${kitTabs}</div><div class="inventory-summary"><strong>${filtered.length}</strong><span>${activeInventoryKit === 'ALL' ? 'All kit components' : `${activeInventoryKit} components`}</span></div><div class="table-tools"><select id="componentTier" class="table-filter"><option value="">All tiers</option><option ${tier === 'Tier A' ? 'selected' : ''}>Tier A</option><option ${tier === 'Tier B' ? 'selected' : ''}>Tier B</option><option ${tier === 'Tier C' ? 'selected' : ''}>Tier C</option></select></div>${table(['Component', 'Price', 'Colour', 'Category', 'Tier', 'Centre qty', 'Last counted', 'Notes'], inventoryRows)}`;
+  document.querySelectorAll('#componentTier').forEach((control) => control.onchange = () => { renderComponents(); });
   document.querySelectorAll('[data-center-inventory-qty]').forEach((input) => input.onchange = () => { state.inventory[Number(input.dataset.centerInventoryQty)]['Total center qty'] = input.value; save('inventory', state.inventory); });
   document.querySelectorAll('[data-center-inventory-date]').forEach((input) => input.onchange = () => { state.inventory[Number(input.dataset.centerInventoryDate)]['Last counted'] = input.value; save('inventory', state.inventory); });
   document.querySelectorAll('[data-center-inventory-note]').forEach((input) => input.onchange = () => { state.inventory[Number(input.dataset.centerInventoryNote)].Notes = input.value; save('inventory', state.inventory); });
@@ -975,6 +955,7 @@ function repairStudentLinks() {
 function handleAction(action) {
   if (action === 'robot-students') { activeView = 'Robot Students'; render(); }
   if (action === "today-students") { activeView = "Today's Students"; renderTodaysStudents(); }
+  if (action.startsWith('inventory-kit:')) { activeInventoryKit = action.slice(14); renderComponents(); }
   if (action === 'checklist') { activeView = 'Student Checklist'; renderStudentChecklist(); }
   if (action === 'regenerate-programme') { const student = state.robotStudents.find((row) => row.name === selectedStudent); if (student) { replaceStudentProgramme(student, student.program); renderStudentProfile(); } }
   if (action === 'coding-students') { activeView = 'Coding Students'; render(); }
