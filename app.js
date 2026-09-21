@@ -1,18 +1,17 @@
 const groups = [
-  { name: 'Students', icon: '◎' },
   { name: "Today's Students", icon: '◔' },
-  { name: 'Libraries & curriculum', icon: '⌘' },
-  { name: 'Operations', icon: '↗' },
+  { name: 'Robot Students', icon: '◎' },
+  { name: 'Coding Students', icon: '⌘' },
+  { name: 'Libraries & Curriculum', icon: '▦' },
+  { name: 'Borrowing Log', icon: '↗' },
 ];
-const tools = [
-  { name: 'Coding Student Profiles', icon: '⌘' },
-];
+const tools = [];
 const state = {
   files: [], robotStudents: [], codingStudents: [], codingProgress: [], borrowings: [],
   componentItems: [], robotProgress: [], codingLessons: [], robotLessons: [], curriculum: [],
   componentLibrary: [], inventory: [], robotPrograms: [], robots: [], reminders: [],
 };
-let activeView = 'Students';
+let activeView = "Today's Students";
 let selectedStudent = '';
 let componentPage = 1;
 const componentPageSize = 25;
@@ -25,7 +24,7 @@ const toolNav = document.querySelector('#toolNav');
 const escapeHtml = (value) => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 const save = (key, value) => localStorage.setItem(`icc-${key}`, JSON.stringify(value));
 const load = (key, fallback) => { try { return JSON.parse(localStorage.getItem(`icc-${key}`)) ?? fallback; } catch { return fallback; } };
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => { const date = new Date(); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
 const display = (value) => {
   let result = String(value ?? '');
   try { result = decodeURIComponent(result); } catch {}
@@ -122,8 +121,8 @@ function button(label, action, className = 'mini-button') { return `<button clas
 
 function renderNav() {
   nav.innerHTML = groups.map((group) => `<button data-view="${group.name}"><span class="nav-icon">${group.icon}</span>${group.name}</button>`).join('');
-  toolNav.innerHTML = tools.map((tool) => `<button data-view="${tool.name}"><span class="nav-icon">${tool.icon}</span>${tool.name}</button>`).join('');
-  document.querySelectorAll('#nav button, #toolNav button').forEach((item) => {
+  if (toolNav) toolNav.innerHTML = tools.map((tool) => `<button data-view="${tool.name}"><span class="nav-icon">${tool.icon}</span>${tool.name}</button>`).join('');
+  document.querySelectorAll('#nav button').forEach((item) => {
     item.classList.toggle('active', item.dataset.view === activeView);
     item.onclick = () => { activeView = item.dataset.view; selectedStudent = ''; render(); if (window.innerWidth <= 760) closeSidebar(); };
   });
@@ -132,13 +131,12 @@ function renderNav() {
 function render() {
   renderNav();
   document.querySelector('#breadcrumb').textContent = activeView;
-  if (activeView === 'Students') renderStudents();
-  else if (activeView === "Today's Students") renderTodaysStudents();
+  if (activeView === "Today's Students") renderTodaysStudents();
+  else if (activeView === 'Robot Students') renderStudents();
   else if (activeView === 'Coding Students') renderCodingStudents();
-  else if (activeView === 'Libraries & curriculum' || activeView === 'AIKIRO' || activeView === 'UARO' || activeView === 'ROBOKIT' || /^CS[1-5] curriculum$/.test(activeView) || activeView === 'CodeMonkey curriculum') renderLibraries(activeView);
-  else if (activeView === 'Operations') renderOperations();
+  else if (activeView === 'Libraries & Curriculum' || activeView === 'AIKIRO' || activeView === 'UARO' || activeView === 'ROBOKIT' || /^CS[1-5] curriculum$/.test(activeView) || activeView === 'CodeMonkey curriculum') renderLibraries(activeView);
+  else if (activeView === 'Borrowing Log') renderOperations();
   else if (activeView === 'Component inventory') renderComponents();
-  else if (tools.some((tool) => tool.name === activeView)) renderTool(activeView);
   else renderStudents();
 }
 
@@ -158,87 +156,125 @@ function getStudentAttendance(student) {
   return '—';
 }
 
-function renderTodaysStudents() {
-  const rows = [
-    ...state.robotStudents.map((student, index) => ({
-      type: 'Robot',
-      name: student.name,
-      programme: student.program || '—',
-      lessonTime: student.sourceRow?.['Today lesson time'] || '—',
-      tutor: student.sourceRow?.Tutor || 'Tutor',
-      attendance: getStudentAttendance(student),
-      progress: student.completion || '0%',
-      id: index,
-      source: 'robot'
-    })),
-    ...state.codingStudents.map((student, index) => ({
-      type: 'Coding',
-      name: student.name,
-      programme: student.course || '—',
-      lessonTime: student.lastUpdated || '—',
-      tutor: 'Tutor',
-      attendance: student.attendance || '—',
-      progress: student.completion || '0%',
-      id: index,
-      source: 'coding'
-    }))
-  ];
+function lessonDateKey(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const firstDate = raw.split('→')[0].trim();
+  const parsed = new Date(firstDate);
+  if (!Number.isNaN(parsed.getTime())) return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+  const shortDate = firstDate.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+  if (!shortDate) return '';
+  const year = shortDate[3] ? Number(shortDate[3].length === 2 ? `20${shortDate[3]}` : shortDate[3]) : new Date().getFullYear();
+  return `${year}-${String(Number(shortDate[2])).padStart(2, '0')}-${String(Number(shortDate[1])).padStart(2, '0')}`;
+}
 
+function lessonStudentName(value) {
+  return display(value).replace(/\s+\(.*$/, '').trim();
+}
+
+function todayLessonRows() {
+  const todayKey = today();
+  const robotByName = new Map(state.robotStudents.map((student) => [student.name, student]));
+  const codingByName = new Map(state.codingStudents.map((student) => [student.name, student]));
+  const rows = [];
+  state.robotLessons.filter((lesson) => lesson['Lesson time'] && lessonDateKey(lesson['Lesson time']) === todayKey).forEach((lesson) => {
+    const name = lessonStudentName(lesson['Student name']);
+    const student = robotByName.get(name);
+    if (student) rows.push({ type: 'Robot', name, student, lesson, programme: student.program || '—', tutor: lesson.Tutor || student.tutor || '', carryStatus: getCarryStatus(student), notes: lesson.Remarks || '' });
+  });
+  state.codingLessons.filter((lesson) => lesson['Lesson time'] && lessonDateKey(lesson['Lesson time']) === todayKey).forEach((lesson) => {
+    const name = lessonStudentName(lesson['Student (Coding)']);
+    const student = codingByName.get(name);
+    if (student) rows.push({ type: 'Coding', name, student, lesson, programme: student.course || '—', tutor: lesson.Tutor || student.tutor || '', carryStatus: 'N/A', notes: lesson.Remarks || '' });
+  });
+  return rows;
+}
+
+function renderTodaysStudents() {
+  const rows = todayLessonRows();
   const searchValue = document.querySelector('#todaySearch')?.value || '';
   const typeValue = document.querySelector('#todayType')?.value || '';
-  const programmeValue = document.querySelector('#todayProgramme')?.value || '';
-  const tutorValue = document.querySelector('#todayTutor')?.value || '';
-  const attendanceValue = document.querySelector('#todayAttendance')?.value || '';
   const sortValue = document.querySelector('#todaySort')?.value || 'name';
+  const filteredRows = rows.filter((row) => (!typeValue || row.type === typeValue) && `${row.name} ${row.programme} ${row.tutor} ${row.notes}`.toLowerCase().includes(searchValue.toLowerCase()));
+  const sortedRows = [...filteredRows].sort((a, b) => sortValue === 'type' ? a.type.localeCompare(b.type) : a.name.localeCompare(b.name));
+  content.innerHTML = header("Today's Students", 'Daily workload for students with a lesson scheduled today.') + `
+    <div class="today-panel"><div class="toolbar-row compact"><input id="todaySearch" class="table-search" placeholder="Search today’s workload" value="${escapeHtml(searchValue)}"><select id="todayType" class="table-filter"><option value="">All student types</option><option ${typeValue === 'Coding' ? 'selected' : ''}>Coding</option><option ${typeValue === 'Robot' ? 'selected' : ''}>Robot</option></select><select id="todaySort" class="table-filter"><option value="name" ${sortValue === 'name' ? 'selected' : ''}>Sort: name</option><option value="type" ${sortValue === 'type' ? 'selected' : ''}>Sort: type</option></select></div>
+      <div class="stats-grid compact"><div class="stat-box"><span>Students Today</span><strong>${rows.length}</strong></div><div class="stat-box"><span>Coding Students Today</span><strong>${rows.filter((row) => row.type === 'Coding').length}</strong></div><div class="stat-box"><span>Robot Students Today</span><strong>${rows.filter((row) => row.type === 'Robot').length}</strong></div></div>
+      <div class="records today-table-wrap"><table class="data-table"><thead><tr><th>Student Name</th><th>Student Type</th><th>Programme</th><th>Tutor Name</th><th>Robot Carry Status</th><th>Quick Notes</th><th>Actions</th></tr></thead><tbody>${sortedRows.map((row) => `<tr><td>${text(row.name)}</td><td><span class="type-pill ${row.type === 'Coding' ? 'type-coding' : 'type-robot'}">${row.type}</span></td><td>${text(row.programme)}</td><td><input class="inline-input today-tutor-input" data-tutor-student="${escapeHtml(row.name)}" value="${escapeHtml(row.tutor)}" placeholder="Tutor name"></td><td>${row.type === 'Robot' ? `<select class="inline-input carry-status-select" data-carry-status-student="${escapeHtml(row.name)}"><option ${row.carryStatus === 'Take Robot Home' ? 'selected' : ''}>Take Robot Home</option><option ${row.carryStatus === 'Take Whole Kit Home' ? 'selected' : ''}>Take Whole Kit Home</option><option ${row.carryStatus === 'Leave Kit At Centre' ? 'selected' : ''}>Leave Kit At Centre</option></select>` : '<span class="status-badge">N/A</span>'}</td><td><input class="inline-input today-notes-input" data-lesson-notes="${escapeHtml(row.name)}" value="${escapeHtml(row.notes)}" placeholder="Quick note"></td><td><button class="mini-button" data-action="${row.type === 'Robot' ? 'checklist' : 'coding-profile'}" data-student-name="${escapeHtml(row.name)}">${row.type === 'Robot' ? 'Checklist' : 'Open'}</button></td></tr>`).join('') || '<tr><td colspan="7"><div class="empty-state">No students are scheduled for today.</div></td></tr>'}</tbody></table></div></div>`;
+  document.querySelectorAll('#todaySearch, #todayType, #todaySort').forEach((control) => control.oninput = control.onchange = () => renderTodaysStudents());
+}
 
-  const filteredRows = rows.filter((row) => {
-    const matchesSearch = `${row.name} ${row.programme} ${row.type}`.toLowerCase().includes(searchValue.toLowerCase());
-    const matchesType = !typeValue || row.type === typeValue;
-    const matchesProgramme = !programmeValue || row.programme === programmeValue;
-    const matchesTutor = !tutorValue || row.tutor === tutorValue;
-    const matchesAttendance = !attendanceValue || row.attendance.includes(attendanceValue) || row.attendance === attendanceValue;
-    return matchesSearch && matchesType && matchesProgramme && matchesTutor && matchesAttendance;
-  });
+/*
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const firstDate = raw.split('→')[0].trim();
+    const parsed = new Date(firstDate);
+    if (!Number.isNaN(parsed.getTime())) return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+    const shortDate = firstDate.match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+    if (!shortDate) return '';
+    const year = shortDate[3] ? Number(shortDate[3].length === 2 ? `20${shortDate[3]}` : shortDate[3]) : new Date().getFullYear();
+    return `${year}-${String(Number(shortDate[2])).padStart(2, '0')}-${String(Number(shortDate[1])).padStart(2, '0')}`;
+  }
 
-  const sortedRows = [...filteredRows].sort((a, b) => {
-    if (sortValue === 'name') return a.name.localeCompare(b.name);
-    if (sortValue === 'progress') return Number.parseInt(b.progress, 10) - Number.parseInt(a.progress, 10);
-    return a.lessonTime.localeCompare(b.lessonTime);
-  });
+  function lessonStudentName(value) {
+    return display(value).replace(/\s+\(.*$/, '').trim();
+  }
 
-  const programmeOptions = [...new Set(rows.map((row) => row.programme))].filter(Boolean).sort();
-  const tutorOptions = [...new Set(rows.map((row) => row.tutor))].filter(Boolean).sort();
+  function todayLessonRows() {
+    const todayKey = today();
+    const robotByName = new Map(state.robotStudents.map((student) => [student.name, student]));
+    const codingByName = new Map(state.codingStudents.map((student) => [student.name, student]));
+    const rows = [];
+    state.robotLessons.filter((lesson) => lesson['Lesson time'] && lessonDateKey(lesson['Lesson time']) === todayKey).forEach((lesson) => {
+      const name = lessonStudentName(lesson['Student name']);
+      const student = robotByName.get(name);
+      if (!student) return;
+      rows.push({ type: 'Robot', name, student, lesson, programme: student.program || '—', tutor: lesson.Tutor || student.sourceRow?.Tutor || '', carryStatus: getCarryStatus(student), notes: lesson.Remarks || '' });
+    });
+    state.codingLessons.filter((lesson) => lesson['Lesson time'] && lessonDateKey(lesson['Lesson time']) === todayKey).forEach((lesson) => {
+      const name = lessonStudentName(lesson['Student (Coding)']);
+      const student = codingByName.get(name);
+      if (!student) return;
+      rows.push({ type: 'Coding', name, student, lesson, programme: student.course || '—', tutor: lesson.Tutor || student.tutor || '', carryStatus: 'N/A', notes: lesson.Remarks || '' });
+    });
+    return rows;
+  }
+
+  return '—';
+    const rows = todayLessonRows();
+    const searchValue = document.querySelector('#todaySearch')?.value || '';
+    const typeValue = document.querySelector('#todayType')?.value || '';
+    const sortValue = document.querySelector('#todaySort')?.value || 'name';
+    const filteredRows = rows.filter((row) => (!typeValue || row.type === typeValue) && `${row.name} ${row.programme} ${row.tutor} ${row.notes}`.toLowerCase().includes(searchValue.toLowerCase()));
+    const sortedRows = [...filteredRows].sort((a, b) => sortValue === 'type' ? a.type.localeCompare(b.type) : a.name.localeCompare(b.name));
+
+    content.innerHTML = header("Today's Students", 'Daily workload for students with a lesson scheduled today.') + `
   const attendanceOptions = [...new Set(rows.map((row) => row.attendance))].filter(Boolean).sort();
 
-  content.innerHTML = header("Today's Students", 'Tutor operating view for students attending today, with current progress and quick actions.', button('New record +', 'new-robot', 'primary-button')) + `
+          <input id="todaySearch" class="table-search" placeholder="Search today’s workload" value="${escapeHtml(searchValue)}">
     <div class="today-panel">
-      <div class="toolbar-row compact">
-        <input id="todaySearch" class="table-search" placeholder="Search student or programme" value="${escapeHtml(searchValue)}">
-        <select id="todayType" class="table-filter"><option value="">All student types</option><option ${typeValue === 'Coding' ? 'selected' : ''}>Coding</option><option ${typeValue === 'Robot' ? 'selected' : ''}>Robot</option></select>
-        <select id="todayProgramme" class="table-filter"><option value="">All programmes</option>${programmeOptions.map((value) => `<option ${programmeValue === value ? 'selected' : ''}>${text(value)}</option>`).join('')}</select>
+          <select id="todaySort" class="table-filter"><option value="name" ${sortValue === 'name' ? 'selected' : ''}>Sort: name</option><option value="type" ${sortValue === 'type' ? 'selected' : ''}>Sort: type</option></select>
         <select id="todayTutor" class="table-filter"><option value="">All tutors</option>${tutorOptions.map((value) => `<option ${tutorValue === value ? 'selected' : ''}>${text(value)}</option>`).join('')}</select>
         <select id="todayAttendance" class="table-filter"><option value="">All attendance</option>${attendanceOptions.map((value) => `<option ${attendanceValue === value ? 'selected' : ''}>${text(value)}</option>`).join('')}</select>
         <select id="todaySort" class="table-filter"><option value="name" ${sortValue === 'name' ? 'selected' : ''}>Sort: name</option><option value="time" ${sortValue === 'time' ? 'selected' : ''}>Sort: lesson time</option><option value="progress" ${sortValue === 'progress' ? 'selected' : ''}>Sort: progress</option></select>
       </div>
       <div class="stats-grid compact">
-        <div class="stat-box"><span>Students Today</span><strong>${rows.length}</strong></div>
         <div class="stat-box"><span>Coding Students</span><strong>${rows.filter((row) => row.type === 'Coding').length}</strong></div>
         <div class="stat-box"><span>Robot Students</span><strong>${rows.filter((row) => row.type === 'Robot').length}</strong></div>
         <div class="stat-box warning"><span>Absent Students</span><strong>${rows.filter((row) => /absent|no lessons|not attended/i.test(String(row.attendance))).length}</strong></div>
-      </div>
+            <thead><tr><th>Student Name</th><th>Student Type</th><th>Programme</th><th>Tutor Name</th><th>Robot Carry Status</th><th>Quick Notes</th><th>Actions</th></tr></thead>
       <div class="records today-table-wrap">
         <table class="data-table">
           <thead><tr><th>Student Name</th><th>Programme</th><th>Today's Lesson Time</th><th>Tutor</th><th>Attendance Status</th><th>Student Type</th><th>Current Progress</th><th>Actions</th></tr></thead>
           <tbody>
-            ${sortedRows.map((row) => `
-              <tr>
-                <td>${text(row.name)}</td>
-                <td>${text(row.programme)}</td>
                 <td>${text(row.lessonTime)}</td>
-                <td>${text(row.tutor)}</td>
-                <td><span class="status-badge ${/absent|no lessons/i.test(String(row.attendance)) ? 'badge-absent' : 'badge-present'}">${text(row.attendance)}</span></td>
+                  <td>${text(row.programme)}</td>
+                  <td><input class="inline-input today-tutor-input" data-tutor-student="${escapeHtml(row.name)}" value="${escapeHtml(row.tutor)}" placeholder="Tutor name"></td>
+                  <td>${row.type === 'Robot' ? `<select class="inline-input carry-status-select" data-carry-status-student="${escapeHtml(row.name)}"><option ${row.carryStatus === 'Take Robot Home' ? 'selected' : ''}>Take Robot Home</option><option ${row.carryStatus === 'Take Whole Kit Home' ? 'selected' : ''}>Take Whole Kit Home</option><option ${row.carryStatus === 'Leave Kit At Centre' ? 'selected' : ''}>Leave Kit At Centre</option></select>` : '<span class="status-badge">N/A</span>'}</td>
+                  <td><input class="inline-input today-notes-input" data-lesson-notes="${escapeHtml(row.name)}" value="${escapeHtml(row.notes)}" placeholder="Quick note"></td>
+                  <td><button class="mini-button" data-action="${row.type === 'Robot' ? 'checklist' : 'coding-profile'}" data-student-name="${escapeHtml(row.name)}">${row.type === 'Robot' ? 'Checklist' : 'Open'}</button></td>
                 <td><span class="type-pill ${row.type === 'Coding' ? 'type-coding' : 'type-robot'}">${row.type}</span></td>
-                <td>${text(row.progress)}</td>
+              `).join('') || '<tr><td colspan="7"><div class="empty-state">No students are scheduled for today.</div></td></tr>'}
                 <td>${row.source === 'robot' ? `<button class="mini-button" data-profile="${row.id}">Open</button>` : `<button class="mini-button" data-coding-profile="${row.id}">Open</button>`}</td>
               </tr>
             `).join('') || '<tr><td colspan="8"><div class="empty-state">No students match the current filters.</div></td></tr>'}
@@ -248,15 +284,38 @@ function renderTodaysStudents() {
     </div>
   `;
 
-  document.querySelectorAll('#todaySearch, #todayType, #todayProgramme, #todayTutor, #todayAttendance, #todaySort').forEach((control) => {
+  document.querySelectorAll('#todaySearch, #todayType, #todaySort').forEach((control) => {
     control.oninput = control.onchange = () => renderTodaysStudents();
   });
 }
 
+*/
+
 function renderStudents() {
-  const rows = state.robotStudents.map((student, index) => [`<button class="link-button" data-profile="${index}">${text(student.name)}</button>`, text(programmeLabel(student.program)), text(student.nextRobot), text(student.completion), text(student.sourceRow?.Check), text(student.sourceRow?.['Monthly attendance'])]);
-  content.innerHTML = header('Robot students', '24 student profiles with programme, progress, next robot, attendance, and checks.', button('New profile +', 'new-robot', 'primary-button')) + tableFilters([{ label: 'Programme', index: 1 }, { label: 'Check', index: 4 }], rows, ['Student', 'Programme', 'Next robot', 'Completion', 'Check', 'Monthly attendance']);
+  const rows = state.robotStudents.map((student, index) => [
+    `<button class="link-button" data-profile="${index}">${text(student.name)}</button>`,
+    text(programmeLabel(student.program)),
+    text(student.nextRobot),
+    text(student.completion),
+    text(getStudentAttendance(student)),
+    text(student.sourceRow?.Check)
+  ]);
+  content.innerHTML = header('Robot Students', 'Master database of every robot student.', button('New profile +', 'new-robot', 'primary-button')) + tableFilters([{ label: 'Programme', index: 1 }, { label: 'Attendance', index: 4 }], rows, ['Student', 'Programme', 'Current robot', 'Completion', 'Attendance', 'Check']);
   bindTableFilters();
+}
+
+function renderStudentChecklist() {
+  const student = state.robotStudents.find((row) => row.name === selectedStudent);
+  if (!student) return renderStudents();
+  const checklist = state.componentItems.filter((row) => display(row.student) === selectedStudent);
+  content.innerHTML = header(`${student.name} · Checklist`, 'Confirm components and quantities for this robot student.', button('← Robot Students', 'robot-students', 'mini-button')) + `
+    <div class="section-heading"><h2>Student checklist</h2><span class="table-hint">Update quantities and notes as the kit is checked.</span></div>
+    ${table(['Item', 'Tier', 'Required', 'Student qty', 'Status', 'Notes'], checklist.map((row) => {
+      const index = state.componentItems.indexOf(row);
+      const quantity = Number(row.requiredQty) || 20;
+      const options = Array.from({ length: Math.max(quantity, 20) + 1 }, (_, value) => `<option value="${value}" ${String(row.studentQty) === String(value) ? 'selected' : ''}>${value}</option>`).join('');
+      return [text(row.item), text(row.tier), text(row.requiredQty), `<select class="inline-input" data-checklist-qty="${index}">${options}</select>`, text(quantityResult(row.requiredQty, row.studentQty)), `<input class="inline-input checklist-note" data-checklist-note="${index}" value="${escapeHtml(row.sourceRow?.Notes || '')}" placeholder="Notes">`];
+    }))}`;
 }
 
 /*
@@ -422,7 +481,7 @@ function renderStudentProfile() {
     return { row, label };
   });
 
-  content.innerHTML = header(student.name, 'Operational view of the robot student’s current progress and what needs to be checked today.', button('← Students', 'students', 'mini-button')) + `
+  content.innerHTML = header(student.name, 'Operational view of the robot student’s current progress and what needs to be checked today.', button('← Robot Students', 'robot-students', 'mini-button')) + `
     <div class="robot-profile">
       <div class="robot-summary-card">
         <div class="summary-header"><div class="student-meta"><span class="eyebrow">STUDENT</span><h2>${text(student.name)}</h2></div><div class="summary-pill ${getCarryStatusClass(carryStatus)}">${text(carryStatus)}</div></div>
@@ -819,17 +878,18 @@ function repairStudentLinks() {
 }
 
 function handleAction(action) {
-  if (action === 'students') { activeView = 'Students'; render(); }
+  if (action === 'robot-students') { activeView = 'Robot Students'; render(); }
   if (action === "today-students") { activeView = "Today's Students"; renderTodaysStudents(); }
+  if (action === 'checklist') { activeView = 'Student Checklist'; renderStudentChecklist(); }
   if (action === 'regenerate-programme') { const student = state.robotStudents.find((row) => row.name === selectedStudent); if (student) { replaceStudentProgramme(student, student.program); renderStudentProfile(); } }
-  if (action === 'coding-students') { activeView = 'Coding Student Profiles'; render(); }
+  if (action === 'coding-students') { activeView = 'Coding Students'; render(); }
   if (action === 'new-robot') openForm('Add robot student', [{ label: 'Student name', name: 'name', required: true }, { label: 'Programme', name: 'program', type: 'select', options: [...new Set(state.robotPrograms.map((row) => row.Program))].map((program) => `<option>${text(program)}</option>`).join(''), required: true }], (data) => { createProgrammeRecords(data.name, data.program); state.robotStudents.push({ name: data.name, program: data.program, nextRobot: state.robotProgress.find((row) => row.Student === data.name)?.Robot || '', completion: '0%', sourceRow: { Student: data.name, Program: data.program, Check: 'Not yet checked' } }); save('robot-students', state.robotStudents); save('robot-progress', state.robotProgress); save('component-items', state.componentItems); selectedStudent = data.name; renderStudentProfile(); });
   if (action === 'new-borrowing') {
     const studentOptions = state.robotStudents.map((row) => `<option value="${escapeHtml(row.name)}">${text(row.name)} · ${text(programmeLabel(row.program))}</option>`).join('');
     openBorrowingForm(studentOptions);
   }
   if (action === 'change-programme') openForm('Change programme', [{ label: 'Programme', name: 'program', type: 'select', options: [...new Set(state.robotPrograms.map((row) => row.Program))].map((program) => `<option>${text(program)}</option>`).join(''), required: true }], (data) => { const student = state.robotStudents.find((row) => row.name === selectedStudent); if (student) { replaceStudentProgramme(student, data.program); renderStudentProfile(); } });
-  if (action === 'check-components') { const student = state.robotStudents.find((row) => row.name === selectedStudent); const items = state.componentItems.filter((row) => row.student === selectedStudent); const valid = items.length > 0 && items.every((row) => row.studentQty !== ''); if (student) student.sourceRow.Check = valid ? 'Checked' : 'Not yet checked'; renderStudentProfile(); }
+  if (action === 'check-components') { const student = state.robotStudents.find((row) => row.name === selectedStudent); const items = state.componentItems.filter((row) => row.student === selectedStudent); const valid = items.length > 0 && items.every((row) => row.studentQty !== ''); if (student) student.sourceRow.Check = valid ? 'Checked' : 'Not yet checked'; renderStudentChecklist(); }
   if (action.startsWith('view:')) { activeView = action.slice(5); render(); }
   if (action.startsWith('library:')) showLibrary(action.slice(8));
   if (action.startsWith('library-section:')) showLibrarySection(action.slice(16));
@@ -837,8 +897,42 @@ function handleAction(action) {
 }
 
 document.addEventListener('click', (event) => { const action = event.target.closest('[data-action]')?.dataset.action; if (action) handleAction(action); });
-content.addEventListener('click', (event) => { const profile = event.target.closest('[data-profile]'); if (profile) { selectedStudent = state.robotStudents[Number(profile.dataset.profile)].name; renderStudentProfile(); } });
-content.addEventListener('change', (event) => { if (event.target.matches('[data-carry-status]')) { const student = state.robotStudents.find((row) => row.name === selectedStudent); if (student) { student.carryStatus = event.target.value; save('robot-students', state.robotStudents); renderStudentProfile(); } } if (event.target.matches('.universal-sort')) refreshUniversalTable(event.target.closest('.universal-table')); });
+content.addEventListener('click', (event) => {
+  const profile = event.target.closest('[data-profile]');
+  if (profile) { selectedStudent = state.robotStudents[Number(profile.dataset.profile)].name; renderStudentProfile(); }
+  const action = event.target.closest('[data-action]');
+  if (action?.dataset.studentName) {
+    selectedStudent = action.dataset.studentName;
+    if (action.dataset.action === 'coding-profile') renderCodingProfile(state.codingStudents.find((row) => row.name === selectedStudent));
+  }
+});
+content.addEventListener('change', (event) => {
+  if (event.target.matches('[data-carry-status]')) {
+    const student = state.robotStudents.find((row) => row.name === selectedStudent);
+    if (student) { student.carryStatus = event.target.value; save('robot-students', state.robotStudents); renderStudentProfile(); }
+  }
+  if (event.target.matches('[data-carry-status-student]')) {
+    const student = state.robotStudents.find((row) => row.name === event.target.dataset.carryStatusStudent);
+    if (student) { student.carryStatus = event.target.value; save('robot-students', state.robotStudents); }
+  }
+  if (event.target.matches('[data-tutor-student]')) {
+    const name = event.target.dataset.tutorStudent;
+    const robot = state.robotStudents.find((row) => row.name === name);
+    const coding = state.codingStudents.find((row) => row.name === name);
+    if (robot) { robot.tutor = event.target.value; robot.sourceRow.Tutor = event.target.value; save('robot-students', state.robotStudents); }
+    if (coding) { coding.tutor = event.target.value; save('coding-students', state.codingStudents); }
+  }
+  if (event.target.matches('[data-lesson-notes]')) {
+    const row = todayLessonRows().find((item) => item.name === event.target.dataset.lessonNotes);
+    if (row?.lesson) { row.lesson.Remarks = event.target.value; save(row.type === 'Robot' ? 'robot-lessons' : 'coding-lessons', row.type === 'Robot' ? state.robotLessons : state.codingLessons); }
+  }
+  if (event.target.matches('[data-checklist-qty]')) {
+    const row = state.componentItems[Number(event.target.dataset.checklistQty)];
+    row.studentQty = event.target.value; row.quantityStatus = quantityResult(row.requiredQty, event.target.value); row.sourceRow['Student Qty'] = event.target.value; row.sourceRow['Qty status'] = row.quantityStatus; save('component-items', state.componentItems); renderStudentChecklist();
+  }
+  if (event.target.matches('[data-checklist-note]')) { state.componentItems[Number(event.target.dataset.checklistNote)].sourceRow.Notes = event.target.value; save('component-items', state.componentItems); }
+  if (event.target.matches('.universal-sort')) refreshUniversalTable(event.target.closest('.universal-table'));
+});
 content.addEventListener('input', (event) => { if (event.target.matches('.universal-search')) refreshUniversalTable(event.target.closest('.universal-table')); });
 content.addEventListener('click', (event) => { if (event.target.matches('.universal-clear')) { const container = event.target.closest('.universal-table'); container.querySelector('.universal-search').value = ''; container.querySelector('.universal-sort').value = 'asc'; refreshUniversalTable(container); } });
 document.querySelector('#closeModal').onclick = () => { document.querySelector('#modalBackdrop').hidden = true; };
@@ -867,4 +961,4 @@ function renderDataLoadError(error) {
   content.innerHTML = header('Database unavailable', 'Safari could not load workspace-db.json. Open the website through its web URL, not by double-clicking index.html.') + `<div class="empty"><p>Use the published URL or start a local server in the website folder:</p><code>python3 -m http.server 4173</code><p>${text(error?.message || 'Database request failed')}</p></div>`;
 }
 
-fetch(`./workspace-db.json?v=${Date.now()}`, { cache: 'no-store' }).then((response) => { if (!response.ok) throw new Error(`Database request returned ${response.status}`); return response.json(); }).then((value) => { Object.assign(state, value); const savedStudents = load('robot-students', []); if (savedStudents.length) state.robotStudents = savedStudents; const savedLessons = load('robot-lessons', []); if (savedLessons.length) state.robotLessons = savedLessons; const savedItems = load('component-items', []); const savedByKey = new Map(savedItems.map((row) => [`${row.student}:${row.item}`, row])); state.componentItems = state.componentItems.map((row) => { const saved = savedByKey.get(`${row.student}:${row.item}`); return saved ? { ...row, studentQty: saved.studentQty, quantityStatus: quantityResult(row.requiredQty, saved.studentQty), sourceRow: { ...row.sourceRow, Notes: saved.sourceRow?.Notes || row.sourceRow?.Notes || '' } } : row; }); const savedInventory = load('inventory', []); const savedQuantities = new Map(savedInventory.map((row) => [row.Component, row['Total center qty']])); state.inventory = state.inventory.map((row) => ({ ...row, 'Total center qty': savedQuantities.has(row.Component) ? savedQuantities.get(row.Component) : row['Total center qty'] })); const savedProgress = load('robot-progress', []); if (savedProgress.length) state.robotProgress = savedProgress; progressFinishDates = load('progress-finish-dates', {}); repairStudentLinks(); render(); }).catch(renderDataLoadError);
+fetch(`./workspace-db.json?v=${Date.now()}`, { cache: 'no-store' }).then((response) => { if (!response.ok) throw new Error(`Database request returned ${response.status}`); return response.json(); }).then((value) => { Object.assign(state, value); const savedStudents = load('robot-students', []); if (savedStudents.length) state.robotStudents = savedStudents; const savedCodingStudents = load('coding-students', []); if (savedCodingStudents.length) state.codingStudents = savedCodingStudents; const savedLessons = load('robot-lessons', []); if (savedLessons.length) state.robotLessons = savedLessons; const savedCodingLessons = load('coding-lessons', []); if (savedCodingLessons.length) state.codingLessons = savedCodingLessons; const savedItems = load('component-items', []); const savedByKey = new Map(savedItems.map((row) => [`${row.student}:${row.item}`, row])); state.componentItems = state.componentItems.map((row) => { const saved = savedByKey.get(`${row.student}:${row.item}`); return saved ? { ...row, studentQty: saved.studentQty, quantityStatus: quantityResult(row.requiredQty, saved.studentQty), sourceRow: { ...row.sourceRow, Notes: saved.sourceRow?.Notes || row.sourceRow?.Notes || '' } } : row; }); const savedInventory = load('inventory', []); const savedQuantities = new Map(savedInventory.map((row) => [row.Component, row['Total center qty']])); state.inventory = state.inventory.map((row) => ({ ...row, 'Total center qty': savedQuantities.has(row.Component) ? savedQuantities.get(row.Component) : row['Total center qty'] })); const savedProgress = load('robot-progress', []); if (savedProgress.length) state.robotProgress = savedProgress; progressFinishDates = load('progress-finish-dates', {}); repairStudentLinks(); render(); }).catch(renderDataLoadError);
