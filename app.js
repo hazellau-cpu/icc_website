@@ -41,7 +41,7 @@ let universalTableId = 0;
 function tableMarkup(headers, rows, className = '') {
   const sortableValue = (cell) => display(String(cell ?? '').replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ''));
   const sortedRows = [...rows].sort((left, right) => sortableValue(left[0]).localeCompare(sortableValue(right[0]), undefined, { numeric: true, sensitivity: 'base' }));
-  const formatCell = (cell) => /<(?:button|input|select|option|textarea)\b/i.test(String(cell)) ? cell : escapeHtml(display(cell));
+  const formatCell = (cell) => /<(?:button|input|select|option|textarea|span|div|svg)\b/i.test(String(cell)) ? cell : escapeHtml(display(cell));
   return `<div class="records source-table ${className}"><table class="data-table"><thead><tr>${headers.map((header) => `<th>${escapeHtml(display(header))}</th>`).join('')}</tr></thead><tbody>${sortedRows.map((row) => `<tr>${row.map((cell) => `<td>${formatCell(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 function table(headers, rows, className = '') {
@@ -68,7 +68,8 @@ let tableFilterId = 0;
 function tableFilters(options, rows, headers) {
   const id = `filter-${tableFilterId++}`;
   tableFilterRegistry.set(id, { headers, rows });
-  const controls = options.map((option) => `<select class="table-filter" data-filter-index="${option.index}"><option value="">All ${escapeHtml(option.label)}</option>${[...new Set(rows.map((row) => display(row[option.index])))] .filter((value) => value !== '—').sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })).map((value) => `<option>${escapeHtml(value)}</option>`).join('')}</select>`).join('');
+  const cellText = (value) => display(String(value ?? '').replace(/<svg[\s\S]*?<\/svg>/gi, '').replace(/<[^>]*>/g, ''));
+  const controls = options.map((option) => `<select class="table-filter" data-filter-index="${option.index}"><option value="">All ${escapeHtml(option.label)}</option>${[...new Set(rows.map((row) => cellText(row[option.index])))] .filter((value) => value !== '—').sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })).map((value) => `<option>${escapeHtml(value)}</option>`).join('')}</select>`).join('');
   return `<div class="table-tools filter-tools">${controls}</div><div class="filtered-table" data-filter-id="${id}">${table(headers, rows)}</div>`;
 }
 function bindTableFilters() {
@@ -79,11 +80,49 @@ function bindTableFilters() {
     const data = tableFilterRegistry.get(wrapper.dataset.filterId);
     if (!data) return;
     const { headers, rows } = data;
-    const filtered = rows.filter((row) => filters.every((item) => !item.value || display(row[Number(item.dataset.filterIndex)]) === item.value));
+    const filtered = rows.filter((row) => filters.every((item) => !item.value || display(String(row[Number(item.dataset.filterIndex)]).replace(/<svg[\s\S]*?<\/svg>/gi, '').replace(/<[^>]*>/g, '')) === item.value));
     wrapper.innerHTML = table(headers, filtered);
   });
 }
 function text(value) { return escapeHtml(display(value)); }
+function icon(name) {
+  const paths = {
+    bot: '<rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M8 5V3m8 2V3M7 12h.01M17 12h.01M9 16h6"></path>',
+    code: '<path d="m8 9-3 3 3 3M16 9l3 3-3 3M14 5l-4 14"></path>',
+    check: '<path d="m5 12 4 4L19 6"></path><circle cx="12" cy="12" r="9"></circle>',
+    clock: '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
+    calendarX: '<rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18m5 4-4 4m0-4 4 4"></path>',
+    off: '<circle cx="12" cy="12" r="9"></circle><path d="m5 5 14 14"></path>',
+    clipboard: '<rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2M9 12h6M9 16h4"></path>',
+    clipboardCheck: '<rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4V2h6v2m-6 9 2 2 4-4"></path>',
+    alert: '<path d="M10.3 3.8 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"></path><path d="M12 9v4m0 4h.01"></path>',
+    home: '<path d="m3 11 9-8 9 8v9H3z"></path><path d="M9 20v-6h6v6"></path>',
+    package: '<path d="m4 7 8-4 8 4-8 4-8-4Z"></path><path d="M4 7v10l8 4 8-4V7M12 11v10"></path>',
+    warehouse: '<path d="m3 10 9-6 9 6v10H3z"></path><path d="M7 20v-6h10v6M7 10h.01M12 10h.01M17 10h.01"></path>'
+  };
+  return `<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[name] || paths.code}</svg>`;
+}
+function progressMarkup(value, label = '') {
+  const percent = Math.max(0, Math.min(100, Number.parseInt(String(value), 10) || 0));
+  return `<div class="progress-cell"><div class="progress-track"><span style="width:${percent}%"></span></div><strong>${percent}%</strong>${label ? `<small>${text(label)}</small>` : ''}</div>`;
+}
+function attendanceMarkup(value) {
+  const raw = String(value || '').toLowerCase();
+  const status = /done\s+[1-9]/.test(raw) ? ['present', 'Present', 'check'] : /absent\s+[1-9]/.test(raw) ? ['absent', 'Absent', 'off'] : /planned\s+[1-9]|upcoming/.test(raw) ? ['upcoming', 'Upcoming Lesson', 'clock'] : /no lessons|no lesson|not scheduled/.test(raw) ? ['none', 'No Lesson Scheduled', 'calendarX'] : ['present', 'Present', 'check'];
+  return `<span class="status-badge attendance-${status[0]}">${icon(status[2])}<span>${status[1]}</span></span>`;
+}
+function checklistMarkup(student) {
+  const items = state.componentItems.filter((row) => display(row.student) === student.name);
+  const missing = items.filter((row) => quantityResult(row.requiredQty, row.studentQty) === 'Missing').length;
+  if (missing) return `<span class="status-badge checklist-missing">${icon('alert')}<span>Missing ${missing}</span></span>`;
+  if (items.length) return `<span class="status-badge checklist-checked">${icon('clipboardCheck')}<span>Checked</span></span>`;
+  return `<span class="status-badge checklist-pending">${icon('clipboard')}<span>Pending</span></span>`;
+}
+function carryMarkup(student) {
+  const status = getCarryStatus(student);
+  const config = status === 'Take Robot Home' ? ['carry-blue', 'home'] : status === 'Take Whole Kit Home' ? ['carry-orange', 'package'] : ['carry-green', 'warehouse'];
+  return `<select class="status-select ${config[0]}" data-carry-status-student="${escapeHtml(student.name)}"><option ${status === 'Take Robot Home' ? 'selected' : ''}>Take Robot Home</option><option ${status === 'Take Whole Kit Home' ? 'selected' : ''}>Take Whole Kit Home</option><option ${status === 'Leave Kit At Centre' ? 'selected' : ''}>Leave Kit At Centre</option></select><span class="carry-icon">${icon(config[1])}</span>`;
+}
 function programmeLabel(value) {
   const clean = display(value);
   const kit = clean.match(/^(AIKIRO|ROBOKIT|UARO)/i)?.[1]?.toUpperCase() || '';
@@ -293,14 +332,15 @@ function renderTodaysStudents() {
 
 function renderStudents() {
   const rows = state.robotStudents.map((student, index) => [
-    `<button class="link-button" data-profile="${index}">${text(student.name)}</button>`,
-    text(programmeLabel(student.program)),
-    text(student.nextRobot),
-    text(student.completion),
-    text(getStudentAttendance(student)),
-    text(student.sourceRow?.Check)
+    `<button class="student-link" data-profile="${index}"><span class="student-avatar">${text(student.name).charAt(0)}</span><span><strong>${text(student.name)}</strong><small>${text(student.sourceRow?.Tutor || student.tutor || 'Robot student')}</small></span></button>`,
+    `<span class="programme-chip">${icon('bot')}<span>${text(programmeLabel(student.program))}</span></span>`,
+    `<span class="robot-chip">${icon('bot')}<span>${text(student.nextRobot || 'Not assigned')}</span></span>`,
+    progressMarkup(student.completion),
+    attendanceMarkup(getStudentAttendance(student)),
+    checklistMarkup(student),
+    carryMarkup(student)
   ]);
-  content.innerHTML = header('Robot Students', 'Master database of every robot student.', button('New profile +', 'new-robot', 'primary-button')) + tableFilters([{ label: 'Programme', index: 1 }, { label: 'Attendance', index: 4 }], rows, ['Student', 'Programme', 'Current robot', 'Completion', 'Attendance', 'Check']);
+  content.innerHTML = header('Robot Students', 'Tutor control center for every robot student and current kit status.', button('New profile +', 'new-robot', 'primary-button')) + `<div class="dashboard-strip"><div><strong>${state.robotStudents.length}</strong><span>Robot students</span></div><div><strong>${state.robotStudents.filter((student) => /absent|no lessons/i.test(getStudentAttendance(student))).length}</strong><span>Need attention</span></div><div><strong>${state.robotStudents.filter((student) => checklistMarkup(student).includes('checklist-missing')).length}</strong><span>Missing components</span></div></div>` + tableFilters([{ label: 'Programme', index: 1 }, { label: 'Attendance', index: 4 }], rows, ['Student', 'Programme', 'Current robot', 'Progress', 'Attendance status', 'Checklist status', 'Robot carry status']);
   bindTableFilters();
 }
 
@@ -507,8 +547,20 @@ function renderStudentProfile() {
 }
 
 function renderCodingStudents() {
-  const rows = state.codingStudents.map((student, index) => [`<button class="link-button" data-coding-profile="${index}">${text(student.name)}</button>`, text(student.course), text(student.completion), text(student.lastUpdated), text(student.attendance), text(student.nextLevel), text(student.topics)]);
-  content.innerHTML = header('Coding students', 'Coding profiles generated from the prepared student templates and progress files.') + table(['Student profile', 'Course', 'Completion', 'Last updated', 'Attendance', 'Next level', 'Topics learnt'], rows);
+  const rows = state.codingStudents.map((student, index) => {
+    const lessons = state.codingProgress.filter((row) => row.sourceId === student.sourceId || (!row.sourceId && row.name === student.name));
+    const dashboard = buildCodingDashboard(student, lessons);
+    const topic = String(student.topics || dashboard.currentConcept || 'Foundations').split('→').map((item) => item.trim()).filter(Boolean).pop() || 'Foundations';
+    const level = Math.max(1, Number(student.nextLevel || dashboard.currentLevel) - 1);
+    return [
+      `<button class="student-link" data-coding-profile="${index}"><span class="student-avatar coding-avatar">${text(student.name).charAt(0)}</span><span><strong>${text(student.name)}</strong><small>Coding student</small></span></button>`,
+      `<span class="programme-chip">${icon('code')}<span>${text(student.course || 'Programme not set')}</span></span>`,
+      `<span class="topic-chip">${icon('code')}<span>${text(topic)}</span></span>`,
+      progressMarkup(student.completion, `Level ${level} / ${dashboard.maxLevel}`),
+      attendanceMarkup(student.attendance)
+    ];
+  });
+  content.innerHTML = header('Coding Students', 'Tutor control center for current coding concepts, progress, and attendance.') + `<div class="dashboard-strip"><div><strong>${state.codingStudents.length}</strong><span>Coding students</span></div><div><strong>${state.codingStudents.filter((student) => /absent|no lessons/i.test(student.attendance)).length}</strong><span>Need attention</span></div><div><strong>${state.codingStudents.filter((student) => Number.parseInt(student.completion, 10) >= 80).length}</strong><span>Near next level</span></div></div>` + table(['Student', 'Programme', 'Current topic', 'Progress', 'Attendance status'], rows);
   document.querySelectorAll('[data-coding-profile]').forEach((item) => item.onclick = () => renderCodingProfile(state.codingStudents[Number(item.dataset.codingProfile)]));
 }
 

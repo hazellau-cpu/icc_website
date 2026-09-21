@@ -1012,6 +1012,47 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .badge-absent { background: rgba(244,92,92,.12); color: #ff9a9a; }
 .type-coding { background: rgba(112,183,255,.12); color: #9ed0ff; }
 .type-robot { background: rgba(99,240,214,.12); color: #7de7d1; }
+.dashboard-strip { display: grid; grid-template-columns: repeat(3, minmax(140px, 1fr)); gap: 10px; margin: 16px 0; }
+.dashboard-strip > div { display: flex; flex-direction: column; gap: 3px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: 0 4px 14px rgba(44,65,75,.06); }
+.dashboard-strip strong { color: var(--text); font-size: 1.25rem; }
+.dashboard-strip span { color: var(--muted); font: 10px 'DM Mono', monospace; letter-spacing: .06em; text-transform: uppercase; }
+.student-link { display: inline-flex; align-items: center; gap: 9px; padding: 0; border: 0; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
+.student-link > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.student-link strong { color: var(--text); font-size: 12px; }
+.student-link small { color: var(--muted); font: 10px 'DM Mono', monospace; }
+.student-avatar { display: inline-grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 8px; background: #dcecf3; color: var(--accent); font: 700 12px 'Space Grotesk'; }
+.coding-avatar { background: #f5e6d6; color: #a86125; }
+.ui-icon { width: 14px; height: 14px; flex: 0 0 14px; }
+.programme-chip, .robot-chip, .topic-chip { display: inline-flex; align-items: center; gap: 6px; width: fit-content; max-width: 220px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 7px; font-size: 11px; }
+.programme-chip { background: #f0f6f8; color: #426473; }
+.robot-chip { background: #e7f2fb; border-color: #bad7ec; color: #1b6a9a; }
+.topic-chip { background: #f8eee5; border-color: #e8d1ba; color: #995b28; }
+.programme-chip span:last-child, .robot-chip span:last-child, .topic-chip span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.progress-cell { display: grid; grid-template-columns: minmax(74px, 1fr) auto; align-items: center; gap: 7px; min-width: 125px; }
+.progress-track { height: 7px; overflow: hidden; border-radius: 99px; background: #dfe8eb; }
+.progress-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1676a8, #48b9b0); }
+.progress-cell strong { color: var(--text); font: 600 11px 'DM Mono', monospace; }
+.progress-cell small { grid-column: 1 / -1; color: var(--muted); font: 10px 'DM Mono', monospace; }
+.attendance-present { background: #e4f4ed; color: #237653; }
+.attendance-upcoming { background: #fff3d9; color: #95651d; }
+.attendance-none { background: #fbe4e3; color: #a33e3b; }
+.attendance-absent { background: #e9ecee; color: #64737a; }
+.checklist-checked { background: #e4f4ed; color: #237653; }
+.checklist-pending { background: #fff3d9; color: #95651d; }
+.checklist-missing { background: #fbe4e3; color: #a33e3b; }
+.status-badge .ui-icon { width: 13px; height: 13px; }
+.status-select { min-width: 138px; padding: 5px 22px 5px 8px; border: 1px solid currentColor; border-radius: 999px; font: 600 10px 'Space Grotesk'; }
+.carry-blue { color: #1b6a9a; background: #e7f2fb; }
+.carry-orange { color: #995b28; background: #f8eee5; }
+.carry-green { color: #237653; background: #e4f4ed; }
+.carry-icon { display: inline-flex; margin-left: 5px; vertical-align: middle; color: inherit; }
+.carry-icon .ui-icon { width: 14px; height: 14px; }
+.data-table tbody tr { transition: background .16s ease, box-shadow .16s ease; }
+.data-table tbody tr:hover { background: #f4f9fb; box-shadow: inset 3px 0 var(--accent); }
+.data-table tbody tr:hover .student-link strong { color: var(--accent); }
+.data-table td { vertical-align: middle; }
+.data-table td:first-child { min-width: 185px; }
+@media (max-width: 900px) { .dashboard-strip { grid-template-columns: 1fr; } .data-table { min-width: 1120px; } }
 .link-button { padding: 0; border: 0; background: transparent; color: var(--accent); cursor: pointer; font: inherit; text-align: left; }
 .library-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 18px; }
 .tab-button { border: 1px solid var(--line); background: var(--panel); color: var(--text-soft); border-radius: 7px; padding: 8px 11px; cursor: pointer; font: 600 12px 'Space Grotesk'; }
