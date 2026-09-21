@@ -1015,6 +1015,9 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .type-robot { background: rgba(99,240,214,.12); color: #7de7d1; }
 .dashboard-strip { display: grid; grid-template-columns: repeat(3, minmax(140px, 1fr)); gap: 10px; margin: 16px 0; }
 .dashboard-strip > div { display: flex; flex-direction: column; gap: 3px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: 0 4px 14px rgba(44,65,75,.06); }
+.inventory-summary { display: inline-flex; flex-direction: column; gap: 3px; margin: 16px 0 4px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.inventory-summary strong { color: var(--text); font-size: 1.25rem; }
+.inventory-summary span { color: var(--muted); font: 10px 'DM Mono', monospace; letter-spacing: .06em; text-transform: uppercase; }
 .dashboard-strip strong { color: var(--text); font-size: 1.25rem; }
 .dashboard-strip span { color: var(--muted); font: 10px 'DM Mono', monospace; letter-spacing: .06em; text-transform: uppercase; }
 .student-link { display: inline-flex; align-items: center; gap: 9px; padding: 0; border: 0; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
