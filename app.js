@@ -448,7 +448,7 @@ function renderStudentProfile() {
               <div class="journey-track">
                 ${journeySteps.length ? journeySteps.map(({ row, label }) => `
                   <div class="journey-step ${label === 'completed' ? 'completed' : label === 'current' ? 'current' : 'upcoming'}">
-                    <span class="journey-icon">${label === 'completed' ? '✅' : label === 'current' ? '🟡' : '⬜'}</span>
+                    <span class="journey-icon">${label === 'completed' ? icon('check') : label === 'current' ? icon('bot') : icon('clock')}</span>
                     <div>
                       <strong>${text(row.Robot || 'Robot')}</strong>
                       <small>${label === 'completed' ? 'Completed' : label === 'current' ? 'Current robot' : 'Upcoming'}</small>
@@ -535,7 +535,7 @@ function renderStudentProfile() {
       </div>
       <div class="journey-layout">
         <div class="journey-panel"><div class="section-header compact"><div><span class="eyebrow">ROBOT LEARNING JOURNEY</span><h2>Current path</h2></div></div><div class="journey-track">
-          ${journeySteps.length ? journeySteps.map(({ row, label }) => `<div class="journey-step ${label}"><span class="journey-icon">${label === 'completed' ? '✅' : label === 'current' ? '🟡' : '⬜'}</span><div><strong>${text(row.Robot || 'Robot')}</strong><small>${label === 'completed' ? 'Completed' : label === 'current' ? 'Current robot' : 'Upcoming'}</small></div></div>`).join('') : '<div class="empty-state">No robot learning path is available yet.</div>'}
+          ${journeySteps.length ? journeySteps.map(({ row, label }) => `<div class="journey-step ${label}"><span class="journey-icon">${label === 'completed' ? icon('check') : label === 'current' ? icon('bot') : icon('clock')}</span><div><strong>${text(row.Robot || 'Robot')}</strong><small>${label === 'completed' ? 'Completed' : label === 'current' ? 'Current robot' : 'Upcoming'}</small></div></div>`).join('') : '<div class="empty-state">No robot learning path is available yet.</div>'}
         </div></div>
         <div class="check-panel"><div class="section-header compact"><div><span class="eyebrow">CHECKLIST STATUS</span><h2>Today’s status</h2></div></div>
           <div class="check-status-box"><div class="mini-row"><span>Status</span><strong>${text(checklistStatus)}</strong></div><div class="mini-row"><span>Missing Components</span><strong>${missing}</strong></div></div>
@@ -646,9 +646,9 @@ function renderCodingProfile(student) {
         </div>
       </div>
       <div class="roadmap-track">
-        ${dashboard.completedConcepts.length ? dashboard.completedConcepts.map((topic) => `<div class="roadmap-step completed"><span class="roadmap-icon">✅</span><div><strong>${text(topic)}</strong><small>Completed</small></div></div>`).join('') : '<div class="roadmap-step neutral"><span class="roadmap-icon">○</span><div><strong>Starting point</strong><small>Warm-up</small></div></div>'}
-        <div class="roadmap-step current"><span class="roadmap-icon">🟡</span><div><strong>${text(dashboard.currentConcept)}</strong><small>Current concept</small></div></div>
-        ${dashboard.upcomingConcepts.slice(0, 4).map((topic) => `<div class="roadmap-step upcoming"><span class="roadmap-icon">⬜</span><div><strong>${text(topic)}</strong><small>Upcoming</small></div></div>`).join('')}
+        ${dashboard.completedConcepts.length ? dashboard.completedConcepts.map((topic) => `<div class="roadmap-step completed"><span class="roadmap-icon">${icon('check')}</span><div><strong>${text(topic)}</strong><small>Completed</small></div></div>`).join('') : `<div class="roadmap-step neutral"><span class="roadmap-icon">${icon('code')}</span><div><strong>Starting point</strong><small>Warm-up</small></div></div>`}
+        <div class="roadmap-step current"><span class="roadmap-icon">${icon('code')}</span><div><strong>${text(dashboard.currentConcept)}</strong><small>Current concept</small></div></div>
+        ${dashboard.upcomingConcepts.slice(0, 4).map((topic) => `<div class="roadmap-step upcoming"><span class="roadmap-icon">${icon('clock')}</span><div><strong>${text(topic)}</strong><small>Upcoming</small></div></div>`).join('')}
       </div>
     </div>
   `;

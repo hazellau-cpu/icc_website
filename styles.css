@@ -996,6 +996,7 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .journey-step.current { border-color: rgba(247,191,120,.3); background: rgba(247,191,120,.08); }
 .journey-step.upcoming { opacity: .82; }
 .journey-icon { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,.05); font-size: 15px; }
+.journey-icon .ui-icon, .roadmap-icon .ui-icon { width: 15px; height: 15px; }
 .journey-step strong { display: block; color: var(--text); }
 .journey-step small { color: var(--text-soft); }
 .check-status-box { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
