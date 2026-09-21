@@ -10,7 +10,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="stylesheet" href="styles.css?v=2026-09-21-3">
+  <link rel="stylesheet" href="styles.css?v=2026-09-21-4">
 </head>
 <body>
   <div class="app-shell">
@@ -27,7 +27,7 @@
       <header class="topbar">
         <button class="menu-button" id="menuButton" aria-label="Toggle navigation">☰</button>
         <div class="breadcrumbs"><span>ICC (CWB)</span><b>/</b><strong id="breadcrumb">Overview</strong></div>
-        <div class="top-actions"><label class="search"><span>⌕</span><input id="globalSearch" placeholder="Search workspace" aria-label="Search workspace"><kbd>⌘ K</kbd></label><button class="icon-button" aria-label="Notifications">◌</button><div class="avatar">HL</div></div>
+        <div class="top-actions"><label class="search"><span>⌕</span><input id="globalSearch" placeholder="Search workspace" aria-label="Search workspace"><kbd>⌘ K</kbd></label><button class="icon-button" aria-label="Notifications">◌</button><button class="outline-button auth-button" id="authButton" type="button">Sign in</button><div class="avatar">HL</div></div>
       </header>
       <section class="content" id="content"></section>
     </main>
@@ -39,6 +39,14 @@
       <form id="recordForm"><label>Record name<input name="name" required placeholder="e.g. Introduction to Python"></label><label>Collection<select name="collection" id="collectionSelect"></select></label><label>Status<select name="status"><option>Active</option><option>In progress</option><option>Draft</option></select></label><label>Notes<textarea name="notes" rows="4" placeholder="Add a short description"></textarea></label><button class="primary-button" type="submit">Create record <span>→</span></button></form>
     </div>
   </div>
-  <script src="app.js?v=2026-09-21-3"></script>
+  <div class="modal-backdrop" id="authBackdrop" hidden>
+    <div class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <button class="close-button" id="closeAuth" aria-label="Close">×</button>
+      <div class="eyebrow">BACKEND AUTHENTICATION</div><h2 id="authTitle">Sign in to Cloud Run</h2>
+      <p class="auth-help">Your credentials are sent to the configured backend. The returned JWT is stored only in this browser.</p>
+      <form id="authForm"><label>API base URL<input name="baseUrl" type="url" placeholder="https://your-service.run.app" required></label><label>Username<input name="username" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="primary-button" type="submit">Sign in</button><div id="authError" class="auth-error" role="alert" hidden></div></form>
+    </div>
+  </div>
+  <script src="app.js?v=2026-09-21-4"></script>
 </body>
 </html>

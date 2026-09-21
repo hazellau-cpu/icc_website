@@ -22,6 +22,40 @@ let activeInventoryKit = 'ALL';
 const content = document.querySelector('#content');
 const nav = document.querySelector('#nav');
 const toolNav = document.querySelector('#toolNav');
+const authBackdrop = document.querySelector('#authBackdrop');
+const authButton = document.querySelector('#authButton');
+const authForm = document.querySelector('#authForm');
+const authError = document.querySelector('#authError');
+const apiTokenKey = 'icc-api-access-token';
+const apiBaseKey = 'icc-api-base-url';
+
+const getApiBaseUrl = () => (localStorage.getItem(apiBaseKey) || window.ICC_API_BASE_URL || '').replace(/\/$/, '');
+const getAccessToken = () => localStorage.getItem(apiTokenKey) || '';
+const setAccessToken = (token) => { if (token) localStorage.setItem(apiTokenKey, token); else localStorage.removeItem(apiTokenKey); updateAuthButton(); };
+function updateAuthButton() { if (authButton) authButton.textContent = getAccessToken() ? 'Sign out' : 'Sign in'; }
+function showAuth(message = '') {
+  if (!authBackdrop) return;
+  authBackdrop.hidden = false;
+  authForm.elements.baseUrl.value = getApiBaseUrl();
+  authError.hidden = !message;
+  authError.textContent = message;
+}
+function hideAuth() { if (authBackdrop) authBackdrop.hidden = true; }
+async function apiRequest(endpoint, method = 'GET', body) {
+  const baseUrl = getApiBaseUrl();
+  if (!baseUrl) throw new Error('API base URL is not configured. Sign in to configure the Cloud Run backend.');
+  const headers = { Accept: 'application/json' };
+  const token = getAccessToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (body !== undefined) { headers['Content-Type'] = 'application/json'; }
+  const response = await fetch(`${baseUrl}/${String(endpoint).replace(/^\//, '')}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  if (response.status === 401) { setAccessToken(''); showAuth('Your session has expired. Please sign in again.'); throw new Error('Authentication required'); }
+  const contentType = response.headers.get('content-type') || '';
+  const data = contentType.includes('application/json') ? await response.json() : await response.text();
+  if (!response.ok) throw new Error(typeof data === 'string' ? data || `API request failed (${response.status})` : data.detail || data.message || `API request failed (${response.status})`);
+  return data;
+}
+window.apiRequest = apiRequest;
 
 const escapeHtml = (value) => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 const save = (key, value) => localStorage.setItem(`icc-${key}`, JSON.stringify(value));
@@ -1013,6 +1047,31 @@ content.addEventListener('input', (event) => { if (event.target.matches('.univer
 content.addEventListener('click', (event) => { if (event.target.matches('.universal-clear')) { const container = event.target.closest('.universal-table'); container.querySelector('.universal-search').value = ''; container.querySelector('.universal-sort').value = 'asc'; refreshUniversalTable(container); } });
 document.querySelector('#closeModal').onclick = () => { document.querySelector('#modalBackdrop').hidden = true; };
 document.querySelector('#modalBackdrop').onclick = (event) => { if (event.target.id === 'modalBackdrop') document.querySelector('#modalBackdrop').hidden = true; };
+document.querySelector('#closeAuth').onclick = hideAuth;
+document.querySelector('#authBackdrop').onclick = (event) => { if (event.target.id === 'authBackdrop') hideAuth(); };
+authButton.onclick = () => {
+  if (getAccessToken()) { setAccessToken(''); return; }
+  showAuth();
+};
+authForm.onsubmit = async (event) => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(authForm));
+  authError.hidden = true;
+  authButton.disabled = true;
+  try {
+    localStorage.setItem(apiBaseKey, data.baseUrl.replace(/\/$/, ''));
+    const response = await apiRequest('/auth/login', 'POST', { username: data.username, password: data.password });
+    if (!response?.access_token) throw new Error('Backend login response did not include access_token.');
+    setAccessToken(response.access_token);
+    hideAuth();
+  } catch (error) {
+    authError.hidden = false;
+    authError.textContent = error.message || 'Sign-in failed.';
+  } finally {
+    authButton.disabled = false;
+  }
+};
+updateAuthButton();
 document.querySelector('#menuButton').onclick = () => document.querySelector('.sidebar')?.classList.toggle('open');
 document.querySelector('#exportButton').onclick = () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });

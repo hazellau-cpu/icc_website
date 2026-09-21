@@ -1166,6 +1166,10 @@ nav button.active { box-shadow: inset 3px 0 var(--accent); }
 .modal { background: #fff; border-color: var(--line); box-shadow: 0 18px 48px rgba(35, 50, 57, .2); }
 .modal input, .modal select, .modal textarea { background: #f5f8f9; color: var(--text); border-color: var(--line); }
 .modal-backdrop { background: rgba(34, 49, 57, .38); }
+.auth-button { white-space: nowrap; }
+.auth-modal { width: min(440px, calc(100vw - 32px)); }
+.auth-help { margin: 0 0 16px; color: var(--text-soft); font-size: 13px; line-height: 1.5; }
+.auth-error { margin-top: 12px; padding: 9px 10px; border: 1px solid #e4aaa7; border-radius: 6px; background: #fbe4e3; color: #a33e3b; font-size: 12px; }
 .empty { color: var(--text-soft); }
 .inline-input, .table-search {
   min-width: 92px;
