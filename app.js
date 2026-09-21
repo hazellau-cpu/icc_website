@@ -340,7 +340,7 @@ function renderStudents() {
     checklistMarkup(student),
     carryMarkup(student)
   ]);
-  content.innerHTML = header('Robot Students', 'Tutor control center for every robot student and current kit status.', button('New profile +', 'new-robot', 'primary-button')) + `<div class="dashboard-strip"><div><strong>${state.robotStudents.length}</strong><span>Robot students</span></div><div><strong>${state.robotStudents.filter((student) => /absent|no lessons/i.test(getStudentAttendance(student))).length}</strong><span>Need attention</span></div><div><strong>${state.robotStudents.filter((student) => checklistMarkup(student).includes('checklist-missing')).length}</strong><span>Missing components</span></div></div>` + tableFilters([{ label: 'Programme', index: 1 }, { label: 'Attendance', index: 4 }], rows, ['Student', 'Programme', 'Current robot', 'Progress', 'Attendance status', 'Checklist status', 'Robot carry status']);
+  content.innerHTML = header('Robot Students', 'Tutor control center for every robot student and current kit status.', button('New profile +', 'new-robot', 'primary-button')) + `<div class="dashboard-strip"><div><strong>${state.robotStudents.length}</strong><span>Robot students</span></div><div><strong>${state.robotStudents.filter((student) => checklistMarkup(student).includes('checklist-missing')).length}</strong><span>Missing components</span></div></div>` + tableFilters([{ label: 'Programme', index: 1 }, { label: 'Attendance', index: 4 }], rows, ['Student', 'Programme', 'Current robot', 'Progress', 'Attendance status', 'Checklist status', 'Robot carry status']);
   bindTableFilters();
 }
 
@@ -560,7 +560,7 @@ function renderCodingStudents() {
       attendanceMarkup(student.attendance)
     ];
   });
-  content.innerHTML = header('Coding Students', 'Tutor control center for current coding concepts, progress, and attendance.') + `<div class="dashboard-strip"><div><strong>${state.codingStudents.length}</strong><span>Coding students</span></div><div><strong>${state.codingStudents.filter((student) => /absent|no lessons/i.test(student.attendance)).length}</strong><span>Need attention</span></div><div><strong>${state.codingStudents.filter((student) => Number.parseInt(student.completion, 10) >= 80).length}</strong><span>Near next level</span></div></div>` + table(['Student', 'Programme', 'Current topic', 'Progress', 'Attendance status'], rows);
+  content.innerHTML = header('Coding Students', 'Tutor control center for current coding concepts, progress, and attendance.') + `<div class="dashboard-strip"><div><strong>${state.codingStudents.length}</strong><span>Coding students</span></div><div><strong>${state.codingStudents.filter((student) => Number.parseInt(student.completion, 10) >= 80).length}</strong><span>Near next level</span></div></div>` + table(['Student', 'Programme', 'Current topic', 'Progress', 'Attendance status'], rows);
   document.querySelectorAll('[data-coding-profile]').forEach((item) => item.onclick = () => renderCodingProfile(state.codingStudents[Number(item.dataset.codingProfile)]));
 }
 
