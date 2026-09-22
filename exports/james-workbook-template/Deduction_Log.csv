@@ -1,2 +1,3 @@
 Report Date,Student ID,Student,Programme ID,Programme Name,Tutor ID,Tutor Name,Lesson Time,Attendance Status,Lesson Hours,Comment,Expected Deduct Hours,Remaining After,Status,Created At,Confirmed By,Executed At,Current Robot,Robot Status,Today's Starting Level,Today's Finished Level
-2026-09-22,ST001,Lincoln,AIKIRO,AIKIRO Lv1,TU001,Norman,10:00-12:00,Present,2.0,Completed the motor-control exercise and corrected wiring independently.,2.0,10.0,Pending,2026-09-22,,,Motor Control Robot,Finished,1,3
+2026-09-19,ST-R-003,Philipp Krayl,AIKIRO_LV1,AIKIRO Lv1_original,,Hazel,14:00-16:00,Present,,,,,,,,Caterpillar,Finished,,
+2026-09-30,ST-C-001,Coding Student Profile — Progress,CS1,CS1,,,,Planned,,,,,,,,,,In progress,1,10

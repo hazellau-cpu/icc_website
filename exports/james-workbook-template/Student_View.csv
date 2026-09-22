@@ -1,4 +1,7 @@
 Student Progress — Simple View,Available Students
-Select Student,Jason,Amy,DemoStudent01
-Student ID,Programme ID,Programme Name,Tutor ID,Tutor Name,Attendance Status,Current Robot,Robot Status,Today's Starting Level,Today's Finished Level
-ST002,CODEMONKEY_P1,Code Monkey P1,TU002,Ada,Planned,,,,
+Select Student,Archie Ng,Jaden Lau,Philipp Krayl,Amelia Wong,Kingsley Lo,Adrian Chiu,Monkey 1
+Student ID,Student Name,Student Type,Programme ID,Programme Name,Tutor ID,Tutor Name,Attendance Status,Current Robot,Robot Status,Today's Starting Level,Today's Finished Level
+ST-R-001,Archie Ng,Robot,AIKIRO_LV1,AIKIRO Lv1_original,,,No Lesson Scheduled,Music Box,In progress,,
+ST-R-018,Kingsley Lo,Robot,AIKIRO_LV4,AIKIRO Lv4_original,,,No Lesson Scheduled,Owl,In progress,,
+ST-R-020,Adrian Chiu,Robot,AIKIRO_LV2,AIKIRO Lv2_original,,,No Lesson Scheduled,Delivery Robot,In progress,,
+ST-C-003,Monkey 1,Coding,CODEMONKEY_P1,Codemonkey P1,,,No Lesson Scheduled,,,,

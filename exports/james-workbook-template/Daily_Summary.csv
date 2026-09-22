@@ -1,2 +1,3 @@
 Lesson Date,Lesson Time,Student ID,Student,Programme ID,Programme Name,Tutor ID,Tutor Name,Course Type,Attendance Status,Comment,Progress,Remarks,Current Robot,Robot Status,Today's Starting Level,Today's Finished Level
-2026-09-22,11:00-12:00,ST003,Amy,ROBOKIT,Robokit,TU002,Ada,Robot,Planned,Identified the main parts and followed the build sequence carefully.,Robot parts and build sequence,Needs a reminder to follow the build sequence.,,In progress,,
+2026-09-19,14:00-16:00,ST-R-003,Philipp Krayl,AIKIRO_LV1,AIKIRO Lv1_original,,Hazel,Robot,Present,,Shooter,Still borrowed: 11×15 Frame ×1,Caterpillar,Finished,,
+2026-09-30,,ST-C-001,Coding Student Profile — Progress,CS1,CS1,,,Coding,Planned,,Basic Syntax → Sequencing → Arguments → Strings,,While-True Loops,In progress,1,10
