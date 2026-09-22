@@ -60,9 +60,13 @@ def main():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     sheets = read_workbook()
     programme_keys = [
-        ('AIK-L1', 'AIKIRO Lv1_original', 'AIKIRO', 'Robot'),
-        ('AIK-L2', 'AIKIRO Lv2_original', 'AIKIRO', 'Robot'),
-        ('AIK-L4', 'AIKIRO Lv4_original', 'AIKIRO', 'Robot'),
+        ('AIK-L1-O', 'AIKIRO Lv1_original', 'AIKIRO', 'Robot'),
+        ('AIK-L1-A', 'AIKIRO Lv1_additional', 'AIKIRO', 'Robot'),
+        ('AIK-L2-O', 'AIKIRO Lv2_original', 'AIKIRO', 'Robot'),
+        ('AIK-L2-A', 'AIKIRO Lv2_additional', 'AIKIRO', 'Robot'),
+        ('AIK-L3-O', 'AIKIRO Lv3_original', 'AIKIRO', 'Robot'),
+        ('AIK-L3-A', 'AIKIRO Lv3_additional', 'AIKIRO', 'Robot'),
+        ('AIK-L4-O', 'AIKIRO Lv4_original', 'AIKIRO', 'Robot'),
         ('ROB-L1', 'ROBOKIT Lv1', 'ROBOKIT', 'Robot'),
         ('ROB-L3', 'ROBOKIT Lv3', 'ROBOKIT', 'Robot'),
         ('ROB-L4', 'ROBOKIT Lv4', 'ROBOKIT', 'Robot'),
