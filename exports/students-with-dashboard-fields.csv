@@ -1,0 +1,5 @@
+Student ID,Name,Course type,Paid Status,Total Hours,Remaining Hours,Hours Completed,New Bill Start,Remarks,Programme ID,Programme Name,Tutor ID,Tutor Name,Attendance Status,Current Robot,Robot Status,Today's Starting Level,Today's Finished Level
+ST001,Lincoln,Aikiro,Completed,12.0,0.0,12.0,,Course completed.,AIKIRO,,,,,,,,
+ST002,Jason,Code Monkey,Paid,8.0,5.5,2.5,2026-09-01,Continue loop practice.,CODEMONKEY,,,,,,,,
+ST003,Amy,Robokit,Unpaid,5.5,3.5,2.0,2026-09-01,Payment follow-up required.,ROBOKIT,,,,,,,,
+ST004,DemoStudent01,Aikiro,Paid,10.0,10.0,0.0,2026-09-12,,AIKIRO,,,,,,,,
