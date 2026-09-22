@@ -1,39 +1,26 @@
-programme_id,programme_name,kit_or_platform,programme_type
-AIK-L1-O,AIKIRO Lv1_original,AIKIRO,Robot
-AIK-L1-A,AIKIRO Lv1_additional,AIKIRO,Robot
-AIK-L2-O,AIKIRO Lv2_original,AIKIRO,Robot
-AIK-L2-A,AIKIRO Lv2_additional,AIKIRO,Robot
-AIK-L3-O,AIKIRO Lv3_original,AIKIRO,Robot
-AIK-L3-A,AIKIRO Lv3_additional,AIKIRO,Robot
-AIK-L4-O,AIKIRO Lv4_original,AIKIRO,Robot
-ROB-L1,ROBOKIT Lv1,ROBOKIT,Robot
-ROB-L3,ROBOKIT Lv3,ROBOKIT,Robot
-ROB-L4,ROBOKIT Lv4,ROBOKIT,Robot
-ROB-L5,ROBOKIT Lv5,ROBOKIT,Robot
-UAR-L2,UARO Lv2,UARO,Robot
-CM-P1,CodeMonkey P1,CodeMonkey,Coding
-CS1,CS1,CodeCombat,Coding
-CS2,CS2,CodeCombat,Coding
-CS3,CS3,CodeCombat,Coding
-CS4,CS4,CodeCombat,Coding
-CS5,CS5,CodeCombat,Coding
-AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Robot
-AIK-Lv1_additional,AIKIRO Lv1_additional,AIKIRO,Robot
-AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Robot
-AIK-Lv2_additional,AIKIRO Lv2_additional,AIKIRO,Robot
-AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Robot
-AIK-Lv3_additional,AIKIRO Lv3_additional,AIKIRO,Robot
-AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Robot
-AIK-Lv4_additional,AIKIRO Lv4_additional,AIKIRO,Robot
-ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Robot
-ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Robot
-ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Robot
-ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Robot
-ROB-Level 5,ROBOKIT Level 5,ROBOKIT,Robot
-ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Robot
-ROB-Level 7,ROBOKIT Level 7,ROBOKIT,Robot
-ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Robot
-UAR-Lv1,UARO Lv1,UARO,Robot
-UAR-Lv2,UARO Lv2,UARO,Robot
-UAR-Lv3,UARO Lv3,UARO,Robot
-UAR-Lv4,UARO Lv4,UARO,Robot
+programme_id,programme_name,programme_type,kit_id,level,variant,active
+AIK-L1-O,AIKIRO Lv1 original,Robot,AIKIRO,1,original,true
+AIK-L2-O,AIKIRO Lv2 original,Robot,AIKIRO,2,original,true
+AIK-L3-O,AIKIRO Lv3 original,Robot,AIKIRO,3,original,true
+AIK-L4-O,AIKIRO Lv4 original,Robot,AIKIRO,4,original,true
+AIK-L1-A,AIKIRO Lv1 additional,Robot,AIKIRO,1,additional,true
+AIK-L2-A,AIKIRO Lv2 additional,Robot,AIKIRO,2,additional,true
+AIK-L3-A,AIKIRO Lv3 additional,Robot,AIKIRO,3,additional,true
+AIK-L4-A,AIKIRO Lv4 additional,Robot,AIKIRO,4,additional,true
+ROB-L1,ROBOKIT Lv1,Robot,ROBOKIT,1,,true
+ROB-L2,ROBOKIT Lv2,Robot,ROBOKIT,2,,true
+ROB-L3,ROBOKIT Lv3,Robot,ROBOKIT,3,,true
+ROB-L4,ROBOKIT Lv4,Robot,ROBOKIT,4,,true
+ROB-L5,ROBOKIT Lv5,Robot,ROBOKIT,5,,true
+ROB-L6,ROBOKIT Lv6,Robot,ROBOKIT,6,,true
+UAR-L1,UARO Lv1,Robot,UARO,1,,true
+UAR-L2,UARO Lv2,Robot,UARO,2,,true
+UAR-L3,UARO Lv3,Robot,UARO,3,,true
+UAR-L4,UARO Lv4,Robot,UARO,4,,true
+CS1,CS1,Coding,CodeCombat,1,,true
+CS2,CS2,Coding,CodeCombat,2,,true
+CS3,CS3,Coding,CodeCombat,3,,true
+CS4,CS4,Coding,CodeCombat,4,,true
+CS5,CS5,Coding,CodeCombat,5,,true
+CM-P1,CodeMonkey P1,Coding,CodeMonkey,1,,true
+CM-P2,CodeMonkey P2,Coding,CodeMonkey,2,,true
