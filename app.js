@@ -5,6 +5,7 @@ const groups = [
   { name: 'Libraries & Curriculum', icon: '▦' },
   { name: 'Component Inventory', icon: '▤' },
   { name: 'Borrowing Log', icon: '↗' },
+  { name: 'System Status', icon: '◌' },
 ];
 const tools = [];
 const state = {
@@ -49,7 +50,10 @@ async function apiRequest(endpoint, method = 'GET', body) {
   const token = getAccessToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) { headers['Content-Type'] = 'application/json'; }
-  const response = await fetch(`${baseUrl}/${String(endpoint).replace(/^\//, '')}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  let response;
+  try { response = await fetch(`${baseUrl}/${String(endpoint).replace(/^\//, '')}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: controller.signal }); } catch (error) { throw new Error(error.name === 'AbortError' ? 'Backend request timed out' : error.message); } finally { clearTimeout(timeout); }
   if (response.status === 401) { setAccessToken(''); showAuth('Your session has expired. Please sign in again.'); throw new Error('Authentication required'); }
   const contentType = response.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await response.json() : await response.text();
@@ -213,6 +217,7 @@ function render() {
   else if (activeView === 'Libraries & Curriculum' || activeView === 'AIKIRO' || activeView === 'UARO' || activeView === 'ROBOKIT' || /^CS[1-5] curriculum$/.test(activeView) || activeView === 'CodeMonkey curriculum') renderLibraries(activeView);
   else if (activeView === 'Borrowing Log') renderOperations();
   else if (activeView === 'Component Inventory') renderComponents();
+  else if (activeView === 'System Status') renderSystemStatus();
   else renderStudents();
 }
 
@@ -224,6 +229,19 @@ function getCarryStatusClass(status) {
   if (status === 'Take Robot Home') return 'status-blue';
   if (status === 'Take Whole Kit Home') return 'status-orange';
   return 'status-green';
+}
+
+function renderSystemStatus() {
+  const apiUrl = getApiBaseUrl() || 'Not configured';
+  content.innerHTML = header('System Status', 'Verify the frontend, service layer, Cloud Run API, and future Cloud SQL connection.') + `<div class="status-dashboard"><div class="status-panel"><div class="section-header compact"><div><span class="eyebrow">CLOUD ARCHITECTURE</span><h2>Connection checks</h2></div><button class="primary-button" data-action="check-system-status">Run checks</button></div><div id="systemStatusRows"><div class="service-status loading"><span></span><strong>Loading</strong><span>Run checks to verify backend services.</span></div></div></div><div class="status-panel developer-panel"><div class="section-header compact"><div><span class="eyebrow">DEVELOPER SETTINGS</span><h2>API configuration</h2></div></div><label class="field-label" for="developerApiUrl">API Base URL</label><input id="developerApiUrl" class="settings-input" value="${escapeHtml(getApiBaseUrl())}" placeholder="https://your-service.run.app"><p class="settings-value">JWT token: <strong>${getAccessToken() ? 'Stored in this browser' : 'Not configured'}</strong></p><button class="mini-button" data-action="save-api-settings">Save API URL</button></div></div>`;
+}
+async function checkSystemStatus() {
+  const target = document.querySelector('#systemStatusRows');
+  if (!target) return;
+  target.innerHTML = '<div class="service-status loading"><span></span><strong>Loading</strong><span>Checking Cloud Run and service endpoints...</span></div>';
+  const checks = [{ label: 'Backend Status', endpoint: '/health' }, { label: 'Library Service Status', endpoint: '/programmes' }, { label: 'Inventory Service Status', endpoint: '/centre-inventory' }, { label: 'Borrowing Service Status', endpoint: '/borrowings' }];
+  const results = await Promise.all(checks.map(async (check) => { try { await apiRequest(check.endpoint); return { ...check, connected: true }; } catch (error) { return { ...check, connected: false, message: error.message }; } }));
+  target.innerHTML = results.map((result) => `<div class="service-status ${result.connected ? 'connected' : 'disconnected'}"><span></span><strong>${result.connected ? 'Connected' : 'Disconnected'}</strong><span>${result.label}</span>${result.message ? `<small>${text(result.message)}</small>` : ''}</div>`).join('');
 }
 
 function getStudentAttendance(student) {
@@ -981,6 +999,8 @@ function repairStudentLinks() {
 
 function handleAction(action) {
   if (action === 'robot-students') { activeView = 'Robot Students'; render(); }
+  if (action === 'check-system-status') checkSystemStatus();
+  if (action === 'save-api-settings') { const value = document.querySelector('#developerApiUrl')?.value.trim().replace(/\/$/, ''); if (value) localStorage.setItem(apiBaseKey, value); renderSystemStatus(); }
   if (action === "today-students") { activeView = "Today's Students"; renderTodaysStudents(); }
   if (action.startsWith('inventory-kit:')) { activeInventoryKit = action.slice(14); renderComponents(); }
   if (action === 'checklist') { activeView = 'Student Checklist'; renderStudentChecklist(); }
@@ -1086,7 +1106,10 @@ document.querySelector('#globalSearch').oninput = (event) => {
 document.addEventListener('keydown', (event) => { if (event.key === 'Escape') document.querySelector('.sidebar')?.classList.remove('open'); });
 
 function renderDataLoadError(error) {
-  content.innerHTML = header('Backend data unavailable', 'The operational pages now read from protected Cloud Run services. Sign in and configure the API base URL to load library, inventory, and borrowing data.') + `<div class="empty"><p>Use the Sign in button to configure the Cloud Run API and obtain a JWT.</p><p>${text(error?.message || 'Backend request failed')}</p></div>`;
+  activeView = 'System Status';
+  renderNav();
+  document.querySelector('#breadcrumb').textContent = activeView;
+  renderSystemStatus();
 }
 
 fetch(`./workspace-db.json?v=${Date.now()}`, { cache: 'no-store' }).then((response) => { if (!response.ok) throw new Error(`Database request returned ${response.status}`); return response.json(); }).then((value) => { Object.assign(state, value); services = window.createServices(); const savedStudents = load('robot-students', []); if (savedStudents.length) state.robotStudents = savedStudents; const savedCodingStudents = load('coding-students', []); if (savedCodingStudents.length) state.codingStudents = savedCodingStudents; const savedLessons = load('robot-lessons', []); if (savedLessons.length) state.robotLessons = savedLessons; const savedCodingLessons = load('coding-lessons', []); if (savedCodingLessons.length) state.codingLessons = savedCodingLessons; const savedItems = load('component-items', []); const savedByKey = new Map(savedItems.map((row) => [`${row.student}:${row.item}`, row])); state.componentItems = state.componentItems.map((row) => { const saved = savedByKey.get(`${row.student}:${row.item}`); return saved ? { ...row, studentQty: saved.studentQty, quantityStatus: quantityResult(row.requiredQty, saved.studentQty), sourceRow: { ...row.sourceRow, Notes: saved.sourceRow?.Notes || row.sourceRow?.Notes || '' } } : row; }); const savedInventory = load('inventory', []); const savedInventoryByKey = new Map(savedInventory.map((row) => [`${row.Kit}:${row.Component}`, row])); state.inventory = state.inventory.map((row) => { const saved = savedInventoryByKey.get(`${row.Kit}:${row.Component}`); return saved ? { ...row, 'Total center qty': saved['Total center qty'], 'Last counted': saved['Last counted'] || row['Last counted'], Notes: saved.Notes || row.Notes } : row; }); const savedProgress = load('robot-progress', []); if (savedProgress.length) state.robotProgress = savedProgress; progressFinishDates = load('progress-finish-dates', {}); repairStudentLinks(); return services.load(); }).then(() => render()).catch(renderDataLoadError);

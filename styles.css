@@ -1170,6 +1170,19 @@ nav button.active { box-shadow: inset 3px 0 var(--accent); }
 .auth-modal { width: min(440px, calc(100vw - 32px)); }
 .auth-help { margin: 0 0 16px; color: var(--text-soft); font-size: 13px; line-height: 1.5; }
 .auth-error { margin-top: 12px; padding: 9px 10px; border: 1px solid #e4aaa7; border-radius: 6px; background: #fbe4e3; color: #a33e3b; font-size: 12px; }
+.status-dashboard { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, .8fr); gap: 16px; margin-top: 18px; }
+.status-panel { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: var(--shadow); }
+.service-status { display: grid; grid-template-columns: 10px 110px 1fr; align-items: center; gap: 10px; padding: 13px 0; border-top: 1px solid var(--line); color: var(--text-soft); font-size: 13px; }
+.service-status > span:first-child { width: 8px; height: 8px; border-radius: 50%; background: #f2b84b; }
+.service-status strong { color: var(--text); font-size: 12px; }
+.service-status.connected > span:first-child { background: #2d9b6f; }
+.service-status.connected strong { color: #237653; }
+.service-status.disconnected > span:first-child { background: #c95752; }
+.service-status.disconnected strong { color: #a33e3b; }
+.service-status small { grid-column: 3; color: #a33e3b; font-size: 11px; }
+.settings-input { width: 100%; box-sizing: border-box; padding: 10px 11px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--text); font: 13px 'Space Grotesk'; }
+.settings-value { color: var(--text-soft); font-size: 12px; }
+@media (max-width: 800px) { .status-dashboard { grid-template-columns: 1fr; } }
 .empty { color: var(--text-soft); }
 .inline-input, .table-search {
   min-width: 92px;

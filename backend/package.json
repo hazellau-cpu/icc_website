@@ -1,0 +1,13 @@
+{
+  "name": "icc-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal Cloud Run API for ICC service-layer verification",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
