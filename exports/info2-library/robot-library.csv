@@ -1,0 +1,205 @@
+item_id,programme_id,programme_name,kit,level,sequence,item_name
+AIK-Lv1_original-1.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,1.0,Elephant
+AIK-Lv1_original-2.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,2.0,Shooter
+AIK-Lv1_original-3.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,3.0,Kiki
+AIK-Lv1_original-4.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,4.0,Scooter
+AIK-Lv1_original-5.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,5.0,Airplane
+AIK-Lv1_original-6.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,6.0,Caterpillar
+AIK-Lv1_original-7.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,7.0,WingMill
+AIK-Lv1_original-8.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,8.0,Hippo
+AIK-Lv1_original-9.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,9.0,Music Box
+AIK-Lv1_original-10.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,10.0,Car
+AIK-Lv1_original-11.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,11.0,Robot Fighter
+AIK-Lv1_original-12.0,AIK-Lv1_original,AIKIRO Lv1_original,AIKIRO,Lv1_original,12.0,Curler Bot
+AIK-Lv1_additional-1.0,AIK-Lv1_additional,AIKIRO Lv1_additional,AIKIRO,Lv1_additional,1.0,Robot Fish
+AIK-Lv1_additional-2.0,AIK-Lv1_additional,AIKIRO Lv1_additional,AIKIRO,Lv1_additional,2.0,Robot Dog
+AIK-Lv1_additional-3.0,AIK-Lv1_additional,AIKIRO Lv1_additional,AIKIRO,Lv1_additional,3.0,Robot Fighter
+AIK-Lv1_additional-4.0,AIK-Lv1_additional,AIKIRO Lv1_additional,AIKIRO,Lv1_additional,4.0,Robot dancer
+AIK-Lv1_additional-5.0,AIK-Lv1_additional,AIKIRO Lv1_additional,AIKIRO,Lv1_additional,5.0,Gear Bot
+AIK-Lv1_additional-6.0,AIK-Lv1_additional,AIKIRO Lv1_additional,AIKIRO,Lv1_additional,6.0,Frog Bot
+AIK-Lv1_additional-7.0,AIK-Lv1_additional,AIKIRO Lv1_additional,AIKIRO,Lv1_additional,7.0,Bumper Bot
+AIK-Lv1_additional-8.0,AIK-Lv1_additional,AIKIRO Lv1_additional,AIKIRO,Lv1_additional,8.0,FrogBot
+AIK-Lv2_original-1.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,1.0,Deliveryy Robot
+AIK-Lv2_original-2.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,2.0,Grand Stage
+AIK-Lv2_original-3.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,3.0,Line Tracer
+AIK-Lv2_original-4.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,4.0,Tree Climber
+AIK-Lv2_original-5.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,5.0,Robot Gorilla
+AIK-Lv2_original-6.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,6.0,Robot Beetle
+AIK-Lv2_original-7.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,7.0,Robot Seal
+AIK-Lv2_original-8.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,8.0,IOT Camper
+AIK-Lv2_original-9.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,9.0,Soccer Bot
+AIK-Lv2_original-10.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,10.0,Racer Bot
+AIK-Lv2_original-11.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,11.0,Guitar Bot
+AIK-Lv2_original-12.0,AIK-Lv2_original,AIKIRO Lv2_original,AIKIRO,Lv2_original,12.0,Service Bot
+AIK-Lv2_additional-1.0,AIK-Lv2_additional,AIKIRO Lv2_additional,AIKIRO,Lv2_additional,1.0,Piggy Bank
+AIK-Lv2_additional-2.0,AIK-Lv2_additional,AIKIRO Lv2_additional,AIKIRO,Lv2_additional,2.0,Melody Box
+AIK-Lv2_additional-3.0,AIK-Lv2_additional,AIKIRO Lv2_additional,AIKIRO,Lv2_additional,3.0,Hockey Bot
+AIK-Lv2_additional-4.0,AIK-Lv2_additional,AIKIRO Lv2_additional,AIKIRO,Lv2_additional,4.0,Warrior Bot
+AIK-Lv2_additional-5.0,AIK-Lv2_additional,AIKIRO Lv2_additional,AIKIRO,Lv2_additional,5.0,Viking Ship
+AIK-Lv2_additional-6.0,AIK-Lv2_additional,AIKIRO Lv2_additional,AIKIRO,Lv2_additional,6.0,Robot Cat
+AIK-Lv2_additional-7.0,AIK-Lv2_additional,AIKIRO Lv2_additional,AIKIRO,Lv2_additional,7.0,Robot Forklift
+AIK-Lv2_additional-8.0,AIK-Lv2_additional,AIKIRO Lv2_additional,AIKIRO,Lv2_additional,8.0,Battle Bot
+AIK-Lv3_original-1.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,1.0,Robot Hand
+AIK-Lv3_original-2.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,2.0,Scale Protector
+AIK-Lv3_original-3.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,3.0,Shooting Bot
+AIK-Lv3_original-4.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,4.0,Jeep
+AIK-Lv3_original-5.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,5.0,Lizard
+AIK-Lv3_original-6.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,6.0,Trash Bot
+AIK-Lv3_original-7.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,7.0,Dump Truck
+AIK-Lv3_original-8.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,8.0,Gymnast
+AIK-Lv3_original-9.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,9.0,Pilot
+AIK-Lv3_original-10.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,10.0,Ball Collecting Robot
+AIK-Lv3_original-11.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,11.0,Tractor
+AIK-Lv3_original-12.0,AIK-Lv3_original,AIKIRO Lv3_original,AIKIRO,Lv3_original,12.0,Penguin
+AIK-Lv3_additional-1.0,AIK-Lv3_additional,AIKIRO Lv3_additional,AIKIRO,Lv3_additional,1.0,Electric Car
+AIK-Lv3_additional-2.0,AIK-Lv3_additional,AIKIRO Lv3_additional,AIKIRO,Lv3_additional,2.0,Tidying-up Robot
+AIK-Lv3_additional-3.0,AIK-Lv3_additional,AIKIRO Lv3_additional,AIKIRO,Lv3_additional,3.0,Hammer Arcade Machine
+AIK-Lv3_additional-4.0,AIK-Lv3_additional,AIKIRO Lv3_additional,AIKIRO,Lv3_additional,4.0,Maze Bot
+AIK-Lv3_additional-5.0,AIK-Lv3_additional,AIKIRO Lv3_additional,AIKIRO,Lv3_additional,5.0,Pelican
+AIK-Lv3_additional-6.0,AIK-Lv3_additional,AIKIRO Lv3_additional,AIKIRO,Lv3_additional,6.0,Kangaroo
+AIK-Lv3_additional-7.0,AIK-Lv3_additional,AIKIRO Lv3_additional,AIKIRO,Lv3_additional,7.0,Horseback-riding Bot
+AIK-Lv3_additional-8.0,AIK-Lv3_additional,AIKIRO Lv3_additional,AIKIRO,Lv3_additional,8.0,Ferris Wheel
+AIK-Lv4_original-1.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,1.0,Claw Bot
+AIK-Lv4_original-2.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,2.0,Owl
+AIK-Lv4_original-3.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,3.0,DJ
+AIK-Lv4_original-4.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,4.0,Snail
+AIK-Lv4_original-5.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,5.0,Dinosaur
+AIK-Lv4_original-6.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,6.0,Chicken
+AIK-Lv4_original-7.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,7.0,Space Exploration
+AIK-Lv4_original-8.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,8.0,Bicycle
+AIK-Lv4_original-9.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,9.0,Excavator
+AIK-Lv4_original-10.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,10.0,Kendo Bot
+AIK-Lv4_original-11.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,11.0,Drifting Car
+AIK-Lv4_original-12.0,AIK-Lv4_original,AIKIRO Lv4_original,AIKIRO,Lv4_original,12.0,Industrial Robot
+AIK-Lv4_additional-1.0,AIK-Lv4_additional,AIKIRO Lv4_additional,AIKIRO,Lv4_additional,1.0,Parrot
+AIK-Lv4_additional-2.0,AIK-Lv4_additional,AIKIRO Lv4_additional,AIKIRO,Lv4_additional,2.0,Safe
+AIK-Lv4_additional-3.0,AIK-Lv4_additional,AIKIRO Lv4_additional,AIKIRO,Lv4_additional,3.0,Face Bot
+AIK-Lv4_additional-4.0,AIK-Lv4_additional,AIKIRO Lv4_additional,AIKIRO,Lv4_additional,4.0,Mine Detection Bot
+AIK-Lv4_additional-5.0,AIK-Lv4_additional,AIKIRO Lv4_additional,AIKIRO,Lv4_additional,5.0,Knight Bot
+AIK-Lv4_additional-6.0,AIK-Lv4_additional,AIKIRO Lv4_additional,AIKIRO,Lv4_additional,6.0,Submarine
+AIK-Lv4_additional-7.0,AIK-Lv4_additional,AIKIRO Lv4_additional,AIKIRO,Lv4_additional,7.0,Robot Arm
+AIK-Lv4_additional-8.0,AIK-Lv4_additional,AIKIRO Lv4_additional,AIKIRO,Lv4_additional,8.0,Dog Sled
+ROB-Level 1-2.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,2.0,EasyBot
+ROB-Level 1-3.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,3.0,HouseBot
+ROB-Level 1-4.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,4.0,HelicopterBot
+ROB-Level 1-5.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,5.0,RaceBot
+ROB-Level 1-6.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,6.0,RabbitBot
+ROB-Level 1-7.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,7.0,DeliveryBot
+ROB-Level 1-8.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,8.0,PetBot
+ROB-Level 1-9.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,9.0,SensingBot
+ROB-Level 1-10.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,10.0,ControlBot
+ROB-Level 1-11.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,11.0,SnailBot
+ROB-Level 1-12.0,ROB-Level 1,ROBOKIT Level 1,ROBOKIT,Level 1,12.0,BattleBot
+ROB-Level 2-1.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,1.0,KartBot
+ROB-Level 2-2.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,2.0,TurtleBot
+ROB-Level 2-3.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,3.0,ServoBot
+ROB-Level 2-4.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,4.0,AttackBot
+ROB-Level 2-5.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,5.0,AvoidBot
+ROB-Level 2-6.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,6.0,CanBot
+ROB-Level 2-7.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,7.0,FortressBot
+ROB-Level 2-8.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,8.0,TractorBot
+ROB-Level 2-9.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,9.0,AxeBot
+ROB-Level 2-10.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,10.0,LoaderBot
+ROB-Level 2-11.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,11.0,GrabBot
+ROB-Level 2-12.0,ROB-Level 2,ROBOKIT Level 2,ROBOKIT,Level 2,12.0,FutureBot
+ROB-Level 3-1.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,1.0,InvertBot
+ROB-Level 3-2.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,2.0,CombatBot
+ROB-Level 3-3.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,3.0,FrogBot
+ROB-Level 3-4.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,4.0,LancerBot
+ROB-Level 3-5.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,5.0,JeepBot
+ROB-Level 3-6.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,6.0,CannoBot
+ROB-Level 3-7.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,7.0,DinoBot
+ROB-Level 3-8.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,8.0,TornadoBot
+ROB-Level 3-9.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,9.0,SuperbikeBot
+ROB-Level 3-10.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,10.0,ClimbBot
+ROB-Level 3-11.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,11.0,LarvaBot
+ROB-Level 3-12.0,ROB-Level 3,ROBOKIT Level 3,ROBOKIT,Level 3,12.0,FutureBot
+ROB-Level 4-1.0,ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Level 4,1.0,SoccerBot
+ROB-Level 4-2.0,ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Level 4,2.0,DiceBot
+ROB-Level 4-3.0,ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Level 4,3.0,SpikeBot
+ROB-Level 4-4.0,ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Level 4,4.0,BugBot
+ROB-Level 4-5.0,ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Level 4,5.0,FormulaBot
+ROB-Level 4-6.0,ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Level 4,6.0,TopBot
+ROB-Level 4-7.0,ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Level 4,7.0,BoxingBot
+ROB-Level 4-8.0,ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Level 4,8.0,SpaceBot
+ROB-Level 4-9.0,ROB-Level 4,ROBOKIT Level 4,ROBOKIT,Level 4,9.0,DragonBot
+ROB-Level 5-1.0,ROB-Level 5,ROBOKIT Level 5,ROBOKIT,Level 5,1.0,RifleBot
+ROB-Level 5-2.0,ROB-Level 5,ROBOKIT Level 5,ROBOKIT,Level 5,2.0,SupergrabBot
+ROB-Level 5-3.0,ROB-Level 5,ROBOKIT Level 5,ROBOKIT,Level 5,3.0,SupertankBot
+ROB-Level 5-4.0,ROB-Level 5,ROBOKIT Level 5,ROBOKIT,Level 5,4.0,VikingBot
+ROB-Level 5-5.0,ROB-Level 5,ROBOKIT Level 5,ROBOKIT,Level 5,5.0,DancingBot
+ROB-Level 5-6.0,ROB-Level 5,ROBOKIT Level 5,ROBOKIT,Level 5,6.0,DriftBot
+ROB-Level 5-7.0,ROB-Level 5,ROBOKIT Level 5,ROBOKIT,Level 5,7.0,BowlingBot
+ROB-Level 5-8.0,ROB-Level 5,ROBOKIT Level 5,ROBOKIT,Level 5,8.0,PelicanBot
+ROB-Level 6-1.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,1.0,SpinBot
+ROB-Level 6-2.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,2.0,LizardBot
+ROB-Level 6-3.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,3.0,GolfBot
+ROB-Level 6-4.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,4.0,CrazyBot
+ROB-Level 6-5.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,5.0,ShootingBot
+ROB-Level 6-6.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,6.0,WindbikeBot
+ROB-Level 6-7.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,7.0,NeroBot
+ROB-Level 6-8.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,8.0,ScorpionBot
+ROB-Level 6-9.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,9.0,FutureBot
+ROB-Level 6-10.0,ROB-Level 6,ROBOKIT Level 6,ROBOKIT,Level 6,10.0,GiantCarBot
+ROB-Level 7-1.0,ROB-Level 7,ROBOKIT Level 7,ROBOKIT,Level 7,1.0,GumdoBot
+ROB-Level 7-2.0,ROB-Level 7,ROBOKIT Level 7,ROBOKIT,Level 7,2.0,AutomationBot
+ROB-Level 7-3.0,ROB-Level 7,ROBOKIT Level 7,ROBOKIT,Level 7,3.0,PowerBattleBot
+ROB-Level 7-4.0,ROB-Level 7,ROBOKIT Level 7,ROBOKIT,Level 7,4.0,FutureBot
+ROB-Level 7-5.0,ROB-Level 7,ROBOKIT Level 7,ROBOKIT,Level 7,5.0,VendingMachineBot
+ROB-Level 8-1.0,ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Level 8,1.0,BowBot
+ROB-Level 8-2.0,ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Level 8,2.0,BuldozerBot
+ROB-Level 8-3.0,ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Level 8,3.0,OffroadBot
+ROB-Level 8-4.0,ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Level 8,4.0,RubbergunBot
+ROB-Level 8-5.0,ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Level 8,5.0,LoaderBot
+ROB-Level 8-6.0,ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Level 8,6.0,PenguinBot
+ROB-Level 8-7.0,ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Level 8,7.0,ErrandBot
+ROB-Level 8-8.0,ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Level 8,8.0,TractorBot
+ROB-Level 8-9.0,ROB-Level 8,ROBOKIT Level 8,ROBOKIT,Level 8,9.0,CraneBot
+UAR-Lv1-1.0,UAR-Lv1,UARO Lv1,UARO,Lv1,1.0,Robot Friend
+UAR-Lv1-2.0,UAR-Lv1,UARO Lv1,UARO,Lv1,2.0,Swing
+UAR-Lv1-3.0,UAR-Lv1,UARO Lv1,UARO,Lv1,3.0,Desk & Chair
+UAR-Lv1-4.0,UAR-Lv1,UARO Lv1,UARO,Lv1,4.0,School Bus
+UAR-Lv1-5.0,UAR-Lv1,UARO Lv1,UARO,Lv1,5.0,Picture Frame
+UAR-Lv1-6.0,UAR-Lv1,UARO Lv1,UARO,Lv1,6.0,Puppy
+UAR-Lv1-7.0,UAR-Lv1,UARO Lv1,UARO,Lv1,7.0,Frog
+UAR-Lv1-8.0,UAR-Lv1,UARO Lv1,UARO,Lv1,8.0,Butterfly
+UAR-Lv1-9.0,UAR-Lv1,UARO Lv1,UARO,Lv1,9.0,Fire Truck
+UAR-Lv1-10.0,UAR-Lv1,UARO Lv1,UARO,Lv1,10.0,Giraffe
+UAR-Lv1-11.0,UAR-Lv1,UARO Lv1,UARO,Lv1,11.0,Ambulance
+UAR-Lv1-12.0,UAR-Lv1,UARO Lv1,UARO,Lv1,12.0,Crane
+UAR-Lv2-1.0,UAR-Lv2,UARO Lv2,UARO,Lv2,1.0,Pterosaur
+UAR-Lv2-2.0,UAR-Lv2,UARO Lv2,UARO,Lv2,2.0,Bird
+UAR-Lv2-3.0,UAR-Lv2,UARO Lv2,UARO,Lv2,3.0,Snail
+UAR-Lv2-4.0,UAR-Lv2,UARO Lv2,UARO,Lv2,4.0,Scorpion
+UAR-Lv2-5.0,UAR-Lv2,UARO Lv2,UARO,Lv2,5.0,Fan
+UAR-Lv2-6.0,UAR-Lv2,UARO Lv2,UARO,Lv2,6.0,Germ
+UAR-Lv2-7.0,UAR-Lv2,UARO Lv2,UARO,Lv2,7.0,Crab
+UAR-Lv2-8.0,UAR-Lv2,UARO Lv2,UARO,Lv2,8.0,Beetle
+UAR-Lv2-9.0,UAR-Lv2,UARO Lv2,UARO,Lv2,9.0,Goblin
+UAR-Lv2-10.0,UAR-Lv2,UARO Lv2,UARO,Lv2,10.0,Drummer
+UAR-Lv2-11.0,UAR-Lv2,UARO Lv2,UARO,Lv2,11.0,Hibiscus
+UAR-Lv2-12.0,UAR-Lv2,UARO Lv2,UARO,Lv2,12.0,Catapult
+UAR-Lv3-1.0,UAR-Lv3,UARO Lv3,UARO,Lv3,1.0,Wrestling Bot
+UAR-Lv3-2.0,UAR-Lv3,UARO Lv3,UARO,Lv3,2.0,Board Game Bot
+UAR-Lv3-3.0,UAR-Lv3,UARO Lv3,UARO,Lv3,3.0,Soccer Bot
+UAR-Lv3-4.0,UAR-Lv3,UARO Lv3,UARO,Lv3,4.0,Bull
+UAR-Lv3-5.0,UAR-Lv3,UARO Lv3,UARO,Lv3,5.0,Dragonfly
+UAR-Lv3-6.0,UAR-Lv3,UARO Lv3,UARO,Lv3,6.0,Scarecrow
+UAR-Lv3-7.0,UAR-Lv3,UARO Lv3,UARO,Lv3,7.0,Tractor
+UAR-Lv3-8.0,UAR-Lv3,UARO Lv3,UARO,Lv3,8.0,Helper Bot
+UAR-Lv3-9.0,UAR-Lv3,UARO Lv3,UARO,Lv3,9.0,Yacht
+UAR-Lv3-10.0,UAR-Lv3,UARO Lv3,UARO,Lv3,10.0,Bicycle
+UAR-Lv3-11.0,UAR-Lv3,UARO Lv3,UARO,Lv3,11.0,Helicopter
+UAR-Lv3-12.0,UAR-Lv3,UARO Lv3,UARO,Lv3,12.0,Train
+UAR-Lv4-1.0,UAR-Lv4,UARO Lv4,UARO,Lv4,1.0,Ski Bot
+UAR-Lv4-2.0,UAR-Lv4,UARO Lv4,UARO,Lv4,2.0,Hockey Bot
+UAR-Lv4-3.0,UAR-Lv4,UARO Lv4,UARO,Lv4,3.0,Rudolph
+UAR-Lv4-4.0,UAR-Lv4,UARO Lv4,UARO,Lv4,4.0,Snowplow
+UAR-Lv4-5.0,UAR-Lv4,UARO Lv4,UARO,Lv4,5.0,Firefly
+UAR-Lv4-6.0,UAR-Lv4,UARO Lv4,UARO,Lv4,6.0,Dinosaur
+UAR-Lv4-7.0,UAR-Lv4,UARO Lv4,UARO,Lv4,7.0,Rhino
+UAR-Lv4-8.0,UAR-Lv4,UARO Lv4,UARO,Lv4,8.0,Melody Doll
+UAR-Lv4-9.0,UAR-Lv4,UARO Lv4,UARO,Lv4,9.0,Cleaning Bot
+UAR-Lv4-10.0,UAR-Lv4,UARO Lv4,UARO,Lv4,10.0,Exploring Bot
+UAR-Lv4-11.0,UAR-Lv4,UARO Lv4,UARO,Lv4,11.0,Military Bot
+UAR-Lv4-12.0,UAR-Lv4,UARO Lv4,UARO,Lv4,12.0,Humanoid

@@ -1,0 +1,324 @@
+item_id,programme_id,programme_name,level,sequence,item_name,part
+CM-P1-1.0-1.0,CM-P1,CodeMonkey P1,1.0,1.0,The print() Function,1.0
+CM-P1-2.0-1.0,CM-P1,CodeMonkey P1,2.0,2.0,The print() Function,1.0
+CM-P1-3.0-1.0,CM-P1,CodeMonkey P1,3.0,3.0,The print() Function,1.0
+CM-P1-4.0-1.0,CM-P1,CodeMonkey P1,4.0,4.0,The print() Function,1.0
+CM-P1-5.0-1.0,CM-P1,CodeMonkey P1,5.0,5.0,The print() Function,1.0
+CM-P1-6.0-1.0,CM-P1,CodeMonkey P1,6.0,6.0,The print() Function,1.0
+CM-P1-7.0-1.0,CM-P1,CodeMonkey P1,7.0,7.0,The print() Function,1.0
+CM-P1-8.0-1.0,CM-P1,CodeMonkey P1,8.0,8.0,The print() Function,1.0
+CM-P1-9.0-1.0,CM-P1,CodeMonkey P1,9.0,9.0,The print() Function,1.0
+CM-P1-10.0-1.0,CM-P1,CodeMonkey P1,10.0,10.0,The print() Function,1.0
+CM-P1-11.0-1.0,CM-P1,CodeMonkey P1,11.0,11.0,The print() Function,1.0
+CM-P1-12.0-1.0,CM-P1,CodeMonkey P1,12.0,12.0,The print() Function,1.0
+CM-P1-13.0-1.0,CM-P1,CodeMonkey P1,13.0,13.0,The print() Function,1.0
+CM-P1-14.0-1.0,CM-P1,CodeMonkey P1,14.0,14.0,The print() Function,1.0
+CM-P1-15.0-1.0,CM-P1,CodeMonkey P1,15.0,15.0,The print() Function,1.0
+CM-P1-16.0-1.0,CM-P1,CodeMonkey P1,16.0,16.0,The print() Function,1.0
+CM-P1-17.0-1.0,CM-P1,CodeMonkey P1,17.0,17.0,The print() Function,1.0
+CM-P1-18.0-1.0,CM-P1,CodeMonkey P1,18.0,18.0,The print() Function,1.0
+CM-P1-19.0-1.0,CM-P1,CodeMonkey P1,19.0,19.0,Lists and Indexes,1.0
+CM-P1-20.0-1.0,CM-P1,CodeMonkey P1,20.0,20.0,Lists and Indexes,1.0
+CM-P1-21.0-1.0,CM-P1,CodeMonkey P1,21.0,21.0,Lists and Indexes,1.0
+CM-P1-22.0-1.0,CM-P1,CodeMonkey P1,22.0,22.0,Lists and Indexes,1.0
+CM-P1-23.0-1.0,CM-P1,CodeMonkey P1,23.0,23.0,Lists and Indexes,1.0
+CM-P1-24.0-1.0,CM-P1,CodeMonkey P1,24.0,24.0,Lists and Indexes,1.0
+CM-P1-25.0-1.0,CM-P1,CodeMonkey P1,25.0,25.0,Lists and Indexes,1.0
+CM-P1-26.0-1.0,CM-P1,CodeMonkey P1,26.0,26.0,For Loops,1.0
+CM-P1-27.0-1.0,CM-P1,CodeMonkey P1,27.0,27.0,For Loops,1.0
+CM-P1-28.0-1.0,CM-P1,CodeMonkey P1,28.0,28.0,For Loops,1.0
+CM-P1-29.0-1.0,CM-P1,CodeMonkey P1,29.0,29.0,For Loops,1.0
+CM-P1-30.0-1.0,CM-P1,CodeMonkey P1,30.0,30.0,For Loops,1.0
+CM-P1-31.0-1.0,CM-P1,CodeMonkey P1,31.0,31.0,Range,1.0
+CM-P1-32.0-1.0,CM-P1,CodeMonkey P1,32.0,32.0,Range,1.0
+CM-P1-33.0-1.0,CM-P1,CodeMonkey P1,33.0,33.0,Range,1.0
+CM-P1-34.0-1.0,CM-P1,CodeMonkey P1,34.0,34.0,Range,1.0
+CM-P1-35.0-1.0,CM-P1,CodeMonkey P1,35.0,35.0,Range,1.0
+CM-P1-36.0-1.0,CM-P1,CodeMonkey P1,36.0,36.0,Range,1.0
+CM-P1-37.0-1.0,CM-P1,CodeMonkey P1,37.0,37.0,Range,1.0
+CM-P1-38.0-1.0,CM-P1,CodeMonkey P1,38.0,38.0,Range,1.0
+CM-P1-39.0-1.0,CM-P1,CodeMonkey P1,39.0,39.0,Range,1.0
+CM-P1-40.0-1.0,CM-P1,CodeMonkey P1,40.0,40.0,Range,1.0
+CM-P1-41.0-1.0,CM-P1,CodeMonkey P1,41.0,41.0,Variables,1.0
+CM-P1-42.0-1.0,CM-P1,CodeMonkey P1,42.0,42.0,Variables,1.0
+CM-P1-43.0-1.0,CM-P1,CodeMonkey P1,43.0,43.0,Variables,1.0
+CM-P1-44.0-1.0,CM-P1,CodeMonkey P1,44.0,44.0,Variables,1.0
+CM-P1-45.0-1.0,CM-P1,CodeMonkey P1,45.0,45.0,Variables,1.0
+CM-P1-46.0-1.0,CM-P1,CodeMonkey P1,46.0,46.0,Variables,1.0
+CM-P1-47.0-1.0,CM-P1,CodeMonkey P1,47.0,47.0,Variables,1.0
+CM-P1-48.0-1.0,CM-P1,CodeMonkey P1,48.0,48.0,Conditional Statements (if-else),1.0
+CM-P1-49.0-1.0,CM-P1,CodeMonkey P1,49.0,49.0,Conditional Statements (if-else),1.0
+CM-P1-50.0-1.0,CM-P1,CodeMonkey P1,50.0,50.0,Conditional Statements (if-else),1.0
+CM-P1-51.0-1.0,CM-P1,CodeMonkey P1,51.0,51.0,Conditional Statements (if-else),1.0
+CM-P1-52.0-1.0,CM-P1,CodeMonkey P1,52.0,52.0,Conditional Statements (if-else),1.0
+CM-P1-53.0-1.0,CM-P1,CodeMonkey P1,53.0,53.0,Conditional Statements (if-else),1.0
+CM-P1-54.0-1.0,CM-P1,CodeMonkey P1,54.0,54.0,Conditional Statements (if-else),1.0
+CM-P1-55.0-1.0,CM-P1,CodeMonkey P1,55.0,55.0,Conditional Statements (if-else),1.0
+CM-P1-56.0-1.0,CM-P1,CodeMonkey P1,56.0,56.0,Conditional Statements (if-else),1.0
+CM-P1-57.0-1.0,CM-P1,CodeMonkey P1,57.0,57.0,Conditional Statements (if-else),1.0
+CM-P1-58.0-1.0,CM-P1,CodeMonkey P1,58.0,58.0,Conditional Statements (if-else),1.0
+CM-P1-59.0-1.0,CM-P1,CodeMonkey P1,59.0,59.0,Conditional Statements (if-else),1.0
+CM-P1-60.0-1.0,CM-P1,CodeMonkey P1,60.0,60.0,Conditional Loops (while),1.0
+CM-P1-61.0-1.0,CM-P1,CodeMonkey P1,61.0,61.0,Conditional Loops (while),1.0
+CM-P1-62.0-1.0,CM-P1,CodeMonkey P1,62.0,62.0,Conditional Loops (while),1.0
+CM-P1-63.0-1.0,CM-P1,CodeMonkey P1,63.0,63.0,Conditional Loops (while),1.0
+CM-P1-64.0-1.0,CM-P1,CodeMonkey P1,64.0,64.0,Conditional Loops (while),1.0
+CM-P1-65.0-1.0,CM-P1,CodeMonkey P1,65.0,65.0,Conditional Loops (while),1.0
+CM-P1-66.0-1.0,CM-P1,CodeMonkey P1,66.0,66.0,Conditional Loops (while),1.0
+CM-P1-67.0-1.0,CM-P1,CodeMonkey P1,67.0,67.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-68.0-1.0,CM-P1,CodeMonkey P1,68.0,68.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-69.0-1.0,CM-P1,CodeMonkey P1,69.0,69.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-70.0-1.0,CM-P1,CodeMonkey P1,70.0,70.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-71.0-1.0,CM-P1,CodeMonkey P1,71.0,71.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-72.0-1.0,CM-P1,CodeMonkey P1,72.0,72.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-73.0-1.0,CM-P1,CodeMonkey P1,73.0,73.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-74.0-1.0,CM-P1,CodeMonkey P1,74.0,74.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-75.0-1.0,CM-P1,CodeMonkey P1,75.0,75.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-76.0-1.0,CM-P1,CodeMonkey P1,76.0,76.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-77.0-1.0,CM-P1,CodeMonkey P1,77.0,77.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-78.0-1.0,CM-P1,CodeMonkey P1,78.0,78.0,"Boolean Operators (and, or, not)",1.0
+CM-P1-79.0-1.0,CM-P1,CodeMonkey P1,79.0,79.0,Functions,1.0
+CM-P1-80.0-1.0,CM-P1,CodeMonkey P1,80.0,80.0,Functions,1.0
+CM-P1-81.0-1.0,CM-P1,CodeMonkey P1,81.0,81.0,Functions,1.0
+CM-P1-82.0-1.0,CM-P1,CodeMonkey P1,82.0,82.0,Functions,1.0
+CM-P1-83.0-1.0,CM-P1,CodeMonkey P1,83.0,83.0,Functions,1.0
+CM-P1-84.0-1.0,CM-P1,CodeMonkey P1,84.0,84.0,Functions,1.0
+CM-P1-85.0-1.0,CM-P1,CodeMonkey P1,85.0,85.0,Functions,1.0
+CM-P1-86.0-1.0,CM-P1,CodeMonkey P1,86.0,86.0,Functions,1.0
+CM-P1-87.0-1.0,CM-P1,CodeMonkey P1,87.0,87.0,Functions,1.0
+CM-P1-88.0-2.0,CM-P1,CodeMonkey P1,88.0,88.0,Classes,2.0
+CM-P1-89.0-2.0,CM-P1,CodeMonkey P1,89.0,89.0,Classes,2.0
+CM-P1-90.0-2.0,CM-P1,CodeMonkey P1,90.0,90.0,Classes,2.0
+CM-P1-91.0-2.0,CM-P1,CodeMonkey P1,91.0,91.0,Classes,2.0
+CM-P1-92.0-2.0,CM-P1,CodeMonkey P1,92.0,92.0,Classes,2.0
+CM-P1-93.0-2.0,CM-P1,CodeMonkey P1,93.0,93.0,Classes,2.0
+CM-P1-94.0-2.0,CM-P1,CodeMonkey P1,94.0,94.0,Input,2.0
+CM-P1-95.0-2.0,CM-P1,CodeMonkey P1,95.0,95.0,Input,2.0
+CM-P1-96.0-2.0,CM-P1,CodeMonkey P1,96.0,96.0,Input,2.0
+CM-P1-97.0-2.0,CM-P1,CodeMonkey P1,97.0,97.0,Input,2.0
+CM-P1-98.0-2.0,CM-P1,CodeMonkey P1,98.0,98.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-99.0-2.0,CM-P1,CodeMonkey P1,99.0,99.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-100.0-2.0,CM-P1,CodeMonkey P1,100.0,100.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-101.0-2.0,CM-P1,CodeMonkey P1,101.0,101.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-102.0-2.0,CM-P1,CodeMonkey P1,102.0,102.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-103.0-2.0,CM-P1,CodeMonkey P1,103.0,103.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-104.0-2.0,CM-P1,CodeMonkey P1,104.0,104.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-105.0-2.0,CM-P1,CodeMonkey P1,105.0,105.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-106.0-2.0,CM-P1,CodeMonkey P1,106.0,106.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-107.0-2.0,CM-P1,CodeMonkey P1,107.0,107.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-108.0-2.0,CM-P1,CodeMonkey P1,108.0,108.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-109.0-2.0,CM-P1,CodeMonkey P1,109.0,109.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-110.0-2.0,CM-P1,CodeMonkey P1,110.0,110.0,"Simple Data Types (integers, strings)",2.0
+CM-P1-111.0-2.0,CM-P1,CodeMonkey P1,111.0,111.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-112.0-2.0,CM-P1,CodeMonkey P1,112.0,112.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-113.0-2.0,CM-P1,CodeMonkey P1,113.0,113.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-114.0-2.0,CM-P1,CodeMonkey P1,114.0,114.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-115.0-2.0,CM-P1,CodeMonkey P1,115.0,115.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-116.0-2.0,CM-P1,CodeMonkey P1,116.0,116.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-117.0-2.0,CM-P1,CodeMonkey P1,117.0,117.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-118.0-2.0,CM-P1,CodeMonkey P1,118.0,118.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-119.0-2.0,CM-P1,CodeMonkey P1,119.0,119.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-120.0-2.0,CM-P1,CodeMonkey P1,120.0,120.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-121.0-2.0,CM-P1,CodeMonkey P1,121.0,121.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-122.0-2.0,CM-P1,CodeMonkey P1,122.0,122.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-123.0-2.0,CM-P1,CodeMonkey P1,123.0,123.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-124.0-2.0,CM-P1,CodeMonkey P1,124.0,124.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-125.0-2.0,CM-P1,CodeMonkey P1,125.0,125.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-126.0-2.0,CM-P1,CodeMonkey P1,126.0,126.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-127.0-2.0,CM-P1,CodeMonkey P1,127.0,127.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-128.0-2.0,CM-P1,CodeMonkey P1,128.0,128.0,"Advanced Data Types (dictionary, set, tuple)",2.0
+CM-P1-129.0-2.0,CM-P1,CodeMonkey P1,129.0,129.0,2D Lists,2.0
+CM-P1-130.0-2.0,CM-P1,CodeMonkey P1,130.0,130.0,2D Lists,2.0
+CM-P1-131.0-2.0,CM-P1,CodeMonkey P1,131.0,131.0,2D Lists,2.0
+CM-P1-132.0-2.0,CM-P1,CodeMonkey P1,132.0,132.0,2D Lists,2.0
+CM-P1-133.0-2.0,CM-P1,CodeMonkey P1,133.0,133.0,2D Lists,2.0
+CM-P1-134.0-2.0,CM-P1,CodeMonkey P1,134.0,134.0,2D Lists,2.0
+CM-P1-135.0-2.0,CM-P1,CodeMonkey P1,135.0,135.0,2D Lists,2.0
+CM-P1-136.0-2.0,CM-P1,CodeMonkey P1,136.0,136.0,2D Lists,2.0
+CM-P1-137.0-2.0,CM-P1,CodeMonkey P1,137.0,137.0,2D Lists,2.0
+CM-P1-138.0-2.0,CM-P1,CodeMonkey P1,138.0,138.0,2D Lists,2.0
+CM-P1-139.0-2.0,CM-P1,CodeMonkey P1,139.0,139.0,2D Lists,2.0
+CM-P1-140.0-2.0,CM-P1,CodeMonkey P1,140.0,140.0,2D Lists,2.0
+CM-P1-141.0-2.0,CM-P1,CodeMonkey P1,141.0,141.0,2D Lists,2.0
+CM-P1-142.0-2.0,CM-P1,CodeMonkey P1,142.0,142.0,Bubble Sort,2.0
+CM-P1-143.0-2.0,CM-P1,CodeMonkey P1,143.0,143.0,Bubble Sort,2.0
+CM-P1-144.0-2.0,CM-P1,CodeMonkey P1,144.0,144.0,Bubble Sort,2.0
+CM-P1-145.0-2.0,CM-P1,CodeMonkey P1,145.0,145.0,Bubble Sort,2.0
+CM-P1-146.0-2.0,CM-P1,CodeMonkey P1,146.0,146.0,Bubble Sort,2.0
+CM-P1-147.0-2.0,CM-P1,CodeMonkey P1,147.0,147.0,Bubble Sort,2.0
+CM-P1-148.0-2.0,CM-P1,CodeMonkey P1,148.0,148.0,Bubble Sort,2.0
+CM-P1-149.0-2.0,CM-P1,CodeMonkey P1,149.0,149.0,Bubble Sort,2.0
+CM-P1-150.0-2.0,CM-P1,CodeMonkey P1,150.0,150.0,Bubble Sort,2.0
+CS1-Lv 1-Lv 1,CS1,CS1,Lv 1,Lv 1,Basic Syntax,
+CS1-Lv 2-Lv 2,CS1,CS1,Lv 2,Lv 2,Basic Syntax,
+CS1-Lv 3-Lv 3,CS1,CS1,Lv 3,Lv 3,Sequencing,
+CS1-Lv 4-Lv 4,CS1,CS1,Lv 4,Lv 4,Arguments,
+CS1-Lv 5-Lv 5,CS1,CS1,Lv 5,Lv 5,Strings,
+CS1-Lv 6-Lv 6,CS1,CS1,Lv 6,Lv 6,While-True Loops,
+CS1-Lv 7-Lv 7,CS1,CS1,Lv 7,Lv 7,While-True Loops,
+CS1-Lv 8-Lv 8,CS1,CS1,Lv 8,Lv 8,While-True Loops,
+CS1-Lv 9-Lv 9,CS1,CS1,Lv 9,Lv 9,While-True Loops,
+CS1-Lv 10-Lv 10,CS1,CS1,Lv 10,Lv 10,While-True Loops,
+CS1-Lv 11-Lv 11,CS1,CS1,Lv 11,Lv 11,While-True Loops,
+CS1-Lv 12-Lv 12,CS1,CS1,Lv 12,Lv 12,While-True Loops,
+CS1-Lv 13-Lv 13,CS1,CS1,Lv 13,Lv 13,While-True Loops,
+CS1-Lv 14-Lv 14,CS1,CS1,Lv 14,Lv 14,While-True Loops,
+CS1-Lv 15-Lv 15,CS1,CS1,Lv 15,Lv 15,Variables,
+CS1-Lv 16-Lv 16,CS1,CS1,Lv 16,Lv 16,Variables,
+CS1-Lv 17-Lv 17,CS1,CS1,Lv 17,Lv 17,Variables,
+CS1-Lv 18-Lv 18,CS1,CS1,Lv 18,Lv 18,Variables,
+CS1-Lv 19-Lv 19,CS1,CS1,Lv 19,Lv 19,Variables,
+CS1-Lv 20-Lv 20,CS1,CS1,Lv 20,Lv 20,Variables,
+CS1-Lv 21-Lv 21,CS1,CS1,Lv 21,Lv 21,Variables,
+CS1-Lv 22-Lv 22,CS1,CS1,Lv 22,Lv 22,Variables,
+CS1-Lv 23-Lv 23,CS1,CS1,Lv 23,Lv 23,Variables,
+CS1-Lv 24-Lv 24,CS1,CS1,Lv 24,Lv 24,Variables,
+CS1-Lv 25-Lv 25,CS1,CS1,Lv 25,Lv 25,Variables,
+CS1-Lv 26-Lv 26,CS1,CS1,Lv 26,Lv 26,Variables,
+CS1-Lv 27-Lv 27,CS1,CS1,Lv 27,Lv 27,Variables,
+CS1-Lv 28-Lv 28,CS1,CS1,Lv 28,Lv 28,Variables,
+CS1-Lv 29-Lv 29,CS1,CS1,Lv 29,Lv 29,Variables,
+CS1-Lv 30-Lv 30,CS1,CS1,Lv 30,Lv 30,Variables,
+CS1-Lv 31-Lv 31,CS1,CS1,Lv 31,Lv 31,Multiplayer Capstone Arena,
+CS2-Lv 1-Lv 1,CS2,CS2,Lv 1,Lv 1,Variables,
+CS2-Lv 2-Lv 2,CS2,CS2,Lv 2,Lv 2,Variables,
+CS2-Lv 3-Lv 3,CS2,CS2,Lv 3,Lv 3,Basic Arithmetic,
+CS2-Lv 4-Lv 4,CS2,CS2,Lv 4,Lv 4,Basic Arithmetic,
+CS2-Lv 5-Lv 5,CS2,CS2,Lv 5,Lv 5,Basic Arithmetic,
+CS2-Lv 6-Lv 6,CS2,CS2,Lv 6,Lv 6,Basic Arithmetic,
+CS2-Lv 7-Lv 7,CS2,CS2,Lv 7,Lv 7,Basic Arithmetic,
+CS2-Lv 8-Lv 8,CS2,CS2,Lv 8,Lv 8,Basic Arithmetic,
+CS2-Lv 9-Lv 9,CS2,CS2,Lv 9,Lv 9,Basic Arithmetic,
+CS2-Lv 10-Lv 10,CS2,CS2,Lv 10,Lv 10,Basic Arithmetic,
+CS2-Lv 11-Lv 11,CS2,CS2,Lv 11,Lv 11,If Statements,
+CS2-Lv 12-Lv 12,CS2,CS2,Lv 12,Lv 12,If Statements,
+CS2-Lv 13-Lv 13,CS2,CS2,Lv 13,Lv 13,If Statements,
+CS2-Lv 14-Lv 14,CS2,CS2,Lv 14,Lv 14,If Statements,
+CS2-Lv 15-Lv 15,CS2,CS2,Lv 15,Lv 15,If Statements,
+CS2-Lv 16-Lv 16,CS2,CS2,Lv 16,Lv 16,If Statements,
+CS2-Lv 17-Lv 17,CS2,CS2,Lv 17,Lv 17,If Statements,
+CS2-Lv 18-Lv 18,CS2,CS2,Lv 18,Lv 18,Else Statements,
+CS2-Lv 19-Lv 19,CS2,CS2,Lv 19,Lv 19,Else Statements,
+CS2-Lv 20-Lv 20,CS2,CS2,Lv 20,Lv 20,Else Statements,
+CS2-Lv 21-Lv 21,CS2,CS2,Lv 21,Lv 21,Else Statements,
+CS2-Lv 22-Lv 22,CS2,CS2,Lv 22,Lv 22,Compound Logic,
+CS2-Lv 23-Lv 23,CS2,CS2,Lv 23,Lv 23,Compound Logic,
+CS2-Lv 24-Lv 24,CS2,CS2,Lv 24,Lv 24,Compound Logic,
+CS2-Lv 25-Lv 25,CS2,CS2,Lv 25,Lv 25,Compound Logic,
+CS2-Lv 26-Lv 26,CS2,CS2,Lv 26,Lv 26,Nested Conditionals,
+CS2-Lv 27-Lv 27,CS2,CS2,Lv 27,Lv 27,Nested Conditionals,
+CS2-Lv 28-Lv 28,CS2,CS2,Lv 28,Lv 28,Nested Conditionals,
+CS2-Lv 29-Lv 29,CS2,CS2,Lv 29,Lv 29,Nested Conditionals,
+CS2-Lv 30-Lv 30,CS2,CS2,Lv 30,Lv 30,Nested Conditionals,
+CS2-Lv 31-Lv 31,CS2,CS2,Lv 31,Lv 31,Nested Conditionals,
+CS2-Lv 32-Lv 32,CS2,CS2,Lv 32,Lv 32,Nested Conditionals,
+CS2-Lv 33-Lv 33,CS2,CS2,Lv 33,Lv 33,Nested Conditionals,
+CS2-Lv 34-Lv 34,CS2,CS2,Lv 34,Lv 34,Nested Conditionals,
+CS2-Lv 35-Lv 35,CS2,CS2,Lv 35,Lv 35,Nested Conditionals,
+CS2-Lv 36-Lv 36,CS2,CS2,Lv 36,Lv 36,Functions,
+CS2-Lv 37-Lv 37,CS2,CS2,Lv 37,Lv 37,Functions,
+CS2-Lv 38-Lv 38,CS2,CS2,Lv 38,Lv 38,Functions,
+CS2-Lv 39-Lv 39,CS2,CS2,Lv 39,Lv 39,Functions,
+CS2-Lv 40-Lv 40,CS2,CS2,Lv 40,Lv 40,Functions,
+CS2-Lv 41-Lv 41,CS2,CS2,Lv 41,Lv 41,Event Listeners,
+CS2-Lv 42-Lv 42,CS2,CS2,Lv 42,Lv 42,Event Listeners,
+CS2-Lv 43-Lv 43,CS2,CS2,Lv 43,Lv 43,Event Listeners,
+CS2-Lv 44-Lv 44,CS2,CS2,Lv 44,Lv 44,Event Listeners,
+CS2-Lv 45-Lv 45,CS2,CS2,Lv 45,Lv 45,Event Listeners,
+CS2-Lv 46-Lv 46,CS2,CS2,Lv 46,Lv 46,Event Listeners,
+CS3-Lv 1-Lv 1,CS3,CS3,Lv 1,Lv 1,Boolean Logic,
+CS3-Lv 2-Lv 2,CS3,CS3,Lv 2,Lv 2,Boolean Logic,
+CS3-Lv 3-Lv 3,CS3,CS3,Lv 3,Lv 3,Boolean Logic,
+CS3-Lv 4-Lv 4,CS3,CS3,Lv 4,Lv 4,Boolean Logic,
+CS3-Lv 5-Lv 5,CS3,CS3,Lv 5,Lv 5,Boolean Logic,
+CS3-Lv 6-Lv 6,CS3,CS3,Lv 6,Lv 6,Boolean Logic,
+CS3-Lv 7-Lv 7,CS3,CS3,Lv 7,Lv 7,Boolean Logic,
+CS3-Lv 8-Lv 8,CS3,CS3,Lv 8,Lv 8,Boolean Logic,
+CS3-Lv 9-Lv 9,CS3,CS3,Lv 9,Lv 9,Boolean Logic,
+CS3-Lv 10-Lv 10,CS3,CS3,Lv 10,Lv 10,Boolean Logic,
+CS3-Lv 11-Lv 11,CS3,CS3,Lv 11,Lv 11,Object Properties,
+CS3-Lv 12-Lv 12,CS3,CS3,Lv 12,Lv 12,Object Properties,
+CS3-Lv 13-Lv 13,CS3,CS3,Lv 13,Lv 13,Object Properties,
+CS3-Lv 14-Lv 14,CS3,CS3,Lv 14,Lv 14,Object Properties,
+CS3-Lv 15-Lv 15,CS3,CS3,Lv 15,Lv 15,Object Properties,
+CS3-Lv 16-Lv 16,CS3,CS3,Lv 16,Lv 16,Object Properties,
+CS3-Lv 17-Lv 17,CS3,CS3,Lv 17,Lv 17,Object Properties,
+CS3-Lv 18-Lv 18,CS3,CS3,Lv 18,Lv 18,Object Properties,
+CS3-Lv 19-Lv 19,CS3,CS3,Lv 19,Lv 19,Object Properties,
+CS3-Lv 20-Lv 20,CS3,CS3,Lv 20,Lv 20,Object Properties,
+CS3-Lv 21-Lv 21,CS3,CS3,Lv 21,Lv 21,Loop Control,
+CS3-Lv 22-Lv 22,CS3,CS3,Lv 22,Lv 22,Loop Control,
+CS3-Lv 23-Lv 23,CS3,CS3,Lv 23,Lv 23,Loop Control,
+CS3-Lv 24-Lv 24,CS3,CS3,Lv 24,Lv 24,Loop Control,
+CS3-Lv 25-Lv 25,CS3,CS3,Lv 25,Lv 25,Loop Control,
+CS3-Lv 26-Lv 26,CS3,CS3,Lv 26,Lv 26,Loop Control,
+CS3-Lv 27-Lv 27,CS3,CS3,Lv 27,Lv 27,Loop Control,
+CS3-Lv 28-Lv 28,CS3,CS3,Lv 28,Lv 28,Interactive Flags,
+CS3-Lv 29-Lv 29,CS3,CS3,Lv 29,Lv 29,Interactive Flags,
+CS3-Lv 30-Lv 30,CS3,CS3,Lv 30,Lv 30,Interactive Flags,
+CS3-Lv 31-Lv 31,CS3,CS3,Lv 31,Lv 31,Interactive Flags,
+CS3-Lv 32-Lv 32,CS3,CS3,Lv 32,Lv 32,Interactive Flags,
+CS4-Lv 1-Lv 1,CS4,CS4,Lv 1,Lv 1,Arrays and Lists,
+CS4-Lv 2-Lv 2,CS4,CS4,Lv 2,Lv 2,Arrays and Lists,
+CS4-Lv 3-Lv 3,CS4,CS4,Lv 3,Lv 3,Arrays and Lists,
+CS4-Lv 4-Lv 4,CS4,CS4,Lv 4,Lv 4,Arrays and Lists,
+CS4-Lv 5-Lv 5,CS4,CS4,Lv 5,Lv 5,Arrays and Lists,
+CS4-Lv 6-Lv 6,CS4,CS4,Lv 6,Lv 6,Arrays and Lists,
+CS4-Lv 7-Lv 7,CS4,CS4,Lv 7,Lv 7,Arrays and Lists,
+CS4-Lv 8-Lv 8,CS4,CS4,Lv 8,Lv 8,Arrays and Lists,
+CS4-Lv 9-Lv 9,CS4,CS4,Lv 9,Lv 9,Arrays and Lists,
+CS4-Lv 10-Lv 10,CS4,CS4,Lv 10,Lv 10,Arrays and Lists,
+CS4-Lv 11-Lv 11,CS4,CS4,Lv 11,Lv 11,Arrays and Lists,
+CS4-Lv 12-Lv 12,CS4,CS4,Lv 12,Lv 12,Arrays and Lists,
+CS4-Lv 13-Lv 13,CS4,CS4,Lv 13,Lv 13,For Loops,
+CS4-Lv 14-Lv 14,CS4,CS4,Lv 14,Lv 14,For Loops,
+CS4-Lv 15-Lv 15,CS4,CS4,Lv 15,Lv 15,For Loops,
+CS4-Lv 16-Lv 16,CS4,CS4,Lv 16,Lv 16,For Loops,
+CS4-Lv 17-Lv 17,CS4,CS4,Lv 17,Lv 17,For Loops,
+CS4-Lv 18-Lv 18,CS4,CS4,Lv 18,Lv 18,For Loops,
+CS4-Lv 19-Lv 19,CS4,CS4,Lv 19,Lv 19,For Loops,
+CS4-Lv 20-Lv 20,CS4,CS4,Lv 20,Lv 20,2D Coordinate Matrices,
+CS4-Lv 21-Lv 21,CS4,CS4,Lv 21,Lv 21,2D Coordinate Matrices,
+CS4-Lv 22-Lv 22,CS4,CS4,Lv 22,Lv 22,2D Coordinate Matrices,
+CS4-Lv 23-Lv 23,CS4,CS4,Lv 23,Lv 23,2D Coordinate Matrices,
+CS4-Lv 24-Lv 24,CS4,CS4,Lv 24,Lv 24,2D Coordinate Matrices,
+CS4-Lv 25-Lv 25,CS4,CS4,Lv 25,Lv 25,2D Coordinate Matrices,
+CS4-Lv 26-Lv 26,CS4,CS4,Lv 26,Lv 26,Object Literals,
+CS4-Lv 27-Lv 27,CS4,CS4,Lv 27,Lv 27,Object Literals,
+CS4-Lv 28-Lv 28,CS4,CS4,Lv 28,Lv 28,Return Values,
+CS4-Lv 29-Lv 29,CS4,CS4,Lv 29,Lv 29,Return Values,
+CS4-Lv 30-Lv 30,CS4,CS4,Lv 30,Lv 30,Return Values,
+CS4-Lv 31-Lv 31,CS4,CS4,Lv 31,Lv 31,Algorithm Optimization,
+CS4-Lv 32-Lv 32,CS4,CS4,Lv 32,Lv 32,Algorithm Optimization,
+CS4-Lv 33-Lv 33,CS4,CS4,Lv 33,Lv 33,Algorithm Optimization,
+CS4-Lv 34-Lv 34,CS4,CS4,Lv 34,Lv 34,Algorithm Optimization,
+CS4-Lv 35-Lv 35,CS4,CS4,Lv 35,Lv 35,Algorithm Optimization,
+CS4-Lv 36-Lv 36,CS4,CS4,Lv 36,Lv 36,Algorithm Optimization,
+CS5-Lv 1-Lv 1,CS5,CS5,Lv 1,Lv 1,Advanced Algorithms,
+CS5-Lv 2-Lv 2,CS5,CS5,Lv 2,Lv 2,Advanced Algorithms,
+CS5-Lv 3-Lv 3,CS5,CS5,Lv 3,Lv 3,Advanced Algorithms,
+CS5-Lv 4-Lv 4,CS5,CS5,Lv 4,Lv 4,Advanced Algorithms,
+CS5-Lv 5-Lv 5,CS5,CS5,Lv 5,Lv 5,String Manipulation,
+CS5-Lv 6-Lv 6,CS5,CS5,Lv 6,Lv 6,String Manipulation,
+CS5-Lv 7-Lv 7,CS5,CS5,Lv 7,Lv 7,String Manipulation,
+CS5-Lv 8-Lv 8,CS5,CS5,Lv 8,Lv 8,String Manipulation,
+CS5-Lv 9-Lv 9,CS5,CS5,Lv 9,Lv 9,String Manipulation,
+CS5-Lv 10-Lv 10,CS5,CS5,Lv 10,Lv 10,String Manipulation,
+CS5-Lv 11-Lv 11,CS5,CS5,Lv 11,Lv 11,Advanced Algorithms,
+CS5-Lv 12-Lv 12,CS5,CS5,Lv 12,Lv 12,Advanced Algorithms,
+CS5-Lv 13-Lv 13,CS5,CS5,Lv 13,Lv 13,Trigonometry,
+CS5-Lv 14-Lv 14,CS5,CS5,Lv 14,Lv 14,Trigonometry,
+CS5-Lv 15-Lv 15,CS5,CS5,Lv 15,Lv 15,Trigonometry,
+CS5-Lv 16-Lv 16,CS5,CS5,Lv 16,Lv 16,Trigonometry,
+CS5-Lv 17-Lv 17,CS5,CS5,Lv 17,Lv 17,Trigonometry,
+CS5-Lv 18-Lv 18,CS5,CS5,Lv 18,Lv 18,Trigonometry,
+CS5-Lv 19-Lv 19,CS5,CS5,Lv 19,Lv 19,Trigonometry,
+CS5-Lv 20-Lv 20,CS5,CS5,Lv 20,Lv 20,Dynamic Target Tracking,
+CS5-Lv 21-Lv 21,CS5,CS5,Lv 21,Lv 21,Dynamic Target Tracking,
+CS5-Lv 22-Lv 22,CS5,CS5,Lv 22,Lv 22,Dynamic Target Tracking,
+CS5-Lv 23-Lv 23,CS5,CS5,Lv 23,Lv 23,Dynamic Target Tracking,
+CS5-Lv 24-Lv 24,CS5,CS5,Lv 24,Lv 24,Dynamic Target Tracking,
+CS5-Lv 25-Lv 25,CS5,CS5,Lv 25,Lv 25,Advanced Mathematics,
+CS5-Lv 26-Lv 26,CS5,CS5,Lv 26,Lv 26,Advanced Mathematics,
+CS5-Lv 27-Lv 27,CS5,CS5,Lv 27,Lv 27,Advanced Mathematics,
+CS5-Lv 28-Lv 28,CS5,CS5,Lv 28,Lv 28,Advanced Mathematics,
