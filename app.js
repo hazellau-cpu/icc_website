@@ -22,6 +22,7 @@ let activeInventoryKit = 'ALL';
 const content = document.querySelector('#content');
 const nav = document.querySelector('#nav');
 const toolNav = document.querySelector('#toolNav');
+let services;
 const authBackdrop = document.querySelector('#authBackdrop');
 const authButton = document.querySelector('#authButton');
 const authForm = document.querySelector('#authForm');
@@ -165,7 +166,7 @@ function programmeLabel(value) {
   return kit && !clean.endsWith(` - ${kit}`) ? `${clean} - ${kit}` : clean;
 }
 function programmeVariants() {
-  return [...new Set(state.robotPrograms.map((row) => display(row.Program)).filter((name) => /^(AIKIRO|ROBOKIT|UARO)\s+Lv/i.test(name)))].sort((left, right) => {
+  return [...new Set(services.LibraryService.getProgrammes().map((value) => display(value)).filter((name) => /^(AIKIRO|ROBOKIT|UARO)\s+Lv/i.test(name)))].sort((left, right) => {
     const leftMatch = left.match(/^(AIKIRO|ROBOKIT|UARO)\s+Lv(\d+)(?:_(original|additional))?/i) || [];
     const rightMatch = right.match(/^(AIKIRO|ROBOKIT|UARO)\s+Lv(\d+)(?:_(original|additional))?/i) || [];
     const kitOrder = { AIKIRO: 1, UARO: 2, ROBOKIT: 3 };
@@ -199,7 +200,7 @@ function renderNav() {
   if (toolNav) toolNav.innerHTML = tools.map((tool) => `<button data-view="${tool.name}"><span class="nav-icon">${tool.icon}</span>${tool.name}</button>`).join('');
   document.querySelectorAll('#nav button').forEach((item) => {
     item.classList.toggle('active', item.dataset.view === activeView);
-    item.onclick = () => { activeView = item.dataset.view; selectedStudent = ''; render(); if (window.innerWidth <= 760) closeSidebar(); };
+    item.onclick = () => { activeView = item.dataset.view; selectedStudent = ''; render(); if (window.innerWidth <= 760) document.querySelector('.sidebar')?.classList.remove('open'); };
   });
 }
 
@@ -793,26 +794,19 @@ function renderCodingProfile(student) {
 }
 
 function renderComponents() {
-  const inventoryKeys = new Set(state.inventory.map((item) => `${item.Kit}:${item.Component}`));
-  state.componentLibrary.forEach((item) => {
-    const key = `${item.Kit}:${item.Component}`;
-    if (!inventoryKeys.has(key)) {
-      state.inventory.push({ Component: item.Component, Kit: item.Kit, Category: item.Category || '', Colour: item.Colour || '', Tier: item.Tier || '', 'Total center qty': '0', 'Last counted': '', Notes: '', 'Unit Price': item['Unit Price'] || '' });
-      inventoryKeys.add(key);
-    }
-  });
   const tier = document.querySelector('#componentTier')?.value || '';
   const kit = activeInventoryKit;
-  const priceFor = (item) => item['Unit Price'] || state.componentLibrary.find((libraryItem) => libraryItem.Component === item.Component && libraryItem.Kit === item.Kit)?.['Unit Price'] || '';
-  const filtered = state.inventory.filter((item) => (!tier || item.Tier === tier) && (kit === 'ALL' || item.Kit === kit));
-  const kits = [...new Set(state.inventory.map((item) => item.Kit).filter(Boolean))].sort();
+  const inventory = services.InventoryService.getItems();
+  const priceFor = (item) => item['Unit Price'] || services.LibraryService.getComponentLibrary().find((libraryItem) => libraryItem.Component === item.Component && libraryItem.Kit === item.Kit)?.['Unit Price'] || '';
+  const filtered = inventory.filter((item) => (!tier || item.Tier === tier) && (kit === 'ALL' || item.Kit === kit));
+  const kits = [...new Set(inventory.map((item) => item.Kit).filter(Boolean))].sort();
   const inventoryRows = filtered.map((item) => { const index = state.inventory.indexOf(item); const itemPrice = priceFor(item); return [item.Component, itemPrice ? `HK$${itemPrice}` : 'Not priced', item.Colour || '—', item.Category || '—', item.Tier || '—', `<input class="inline-input inventory-qty-input" type="number" min="0" data-center-inventory-qty="${index}" value="${escapeHtml(item['Total center qty'] || '0')}">`, `<input class="inline-input inventory-date-input" type="date" data-center-inventory-date="${index}" value="${escapeHtml(item['Last counted'] || '')}">`, `<textarea class="inventory-note-input" data-center-inventory-note="${index}" rows="2" placeholder="Add note">${escapeHtml(item.Notes || '')}</textarea>`]; });
   const kitTabs = ['ALL', ...kits].map((value) => `<button class="tab-button ${activeInventoryKit === value ? 'active' : ''}" data-action="inventory-kit:${value}">${value === 'ALL' ? 'All Kits' : text(value)}</button>`).join('');
   content.innerHTML = header('Component Inventory', 'Centre-owned stock ledger. Choose a kit to inspect its components.') + `<div class="library-tabs inventory-kit-tabs">${kitTabs}</div><div class="inventory-summary"><strong>${filtered.length}</strong><span>${activeInventoryKit === 'ALL' ? 'All kit components' : `${activeInventoryKit} components`}</span></div><div class="table-tools"><select id="componentTier" class="table-filter"><option value="">All tiers</option><option ${tier === 'Tier A' ? 'selected' : ''}>Tier A</option><option ${tier === 'Tier B' ? 'selected' : ''}>Tier B</option><option ${tier === 'Tier C' ? 'selected' : ''}>Tier C</option></select></div>${table(['Component', 'Price', 'Colour', 'Category', 'Tier', 'Centre qty', 'Last counted', 'Notes'], inventoryRows)}`;
   document.querySelectorAll('#componentTier').forEach((control) => control.onchange = () => { renderComponents(); });
-  document.querySelectorAll('[data-center-inventory-qty]').forEach((input) => input.onchange = () => { state.inventory[Number(input.dataset.centerInventoryQty)]['Total center qty'] = input.value; save('inventory', state.inventory); });
-  document.querySelectorAll('[data-center-inventory-date]').forEach((input) => input.onchange = () => { state.inventory[Number(input.dataset.centerInventoryDate)]['Last counted'] = input.value; save('inventory', state.inventory); });
-  document.querySelectorAll('[data-center-inventory-note]').forEach((input) => input.onchange = () => { state.inventory[Number(input.dataset.centerInventoryNote)].Notes = input.value; save('inventory', state.inventory); });
+  document.querySelectorAll('[data-center-inventory-qty]').forEach((input) => input.onchange = () => { services.InventoryService.updateItem(`${inventory[Number(input.dataset.centerInventoryQty)].Kit}:${inventory[Number(input.dataset.centerInventoryQty)].Component}`, { 'Total center qty': input.value }); });
+  document.querySelectorAll('[data-center-inventory-date]').forEach((input) => input.onchange = () => { services.InventoryService.updateItem(`${inventory[Number(input.dataset.centerInventoryDate)].Kit}:${inventory[Number(input.dataset.centerInventoryDate)].Component}`, { 'Last counted': input.value }); });
+  document.querySelectorAll('[data-center-inventory-note]').forEach((input) => input.onchange = () => { services.InventoryService.updateItem(`${inventory[Number(input.dataset.centerInventoryNote)].Kit}:${inventory[Number(input.dataset.centerInventoryNote)].Component}`, { Notes: input.value }); });
 }
 
 function renderLibraries(active = 'AIKIRO') {
@@ -839,21 +833,21 @@ function showLibrary(name) {
       const match = name.match(/^(AIKIRO|ROBOKIT|UARO)\s+(Lv\d+(?:_[a-z]+)?)/i);
       const kitKey = match?.[1]?.toUpperCase() || '';
       const levelKey = match?.[2]?.toLowerCase() || '';
-      rows = state.robots.filter((row) => String(row['Kit name']).toUpperCase() === kitKey && (kitKey !== 'AIKIRO' || String(row.Level).toLowerCase() === levelKey) && (kitKey === 'AIKIRO' || levelNumber(row.Level) === levelNumber(levelKey))).map((row) => [row.Sequence, row['Robot name'], row.Level, row['Kit name']]);
+      rows = services.LibraryService.getRobotLibrary().filter((row) => String(row['Kit name']).toUpperCase() === kitKey && (kitKey !== 'AIKIRO' || String(row.Level).toLowerCase() === levelKey) && (kitKey === 'AIKIRO' || levelNumber(row.Level) === levelNumber(levelKey))).map((row) => [row.Sequence, row['Robot name'], row.Level, row['Kit name']]);
     } else {
       headers = ['Component', 'Tier', 'Unit price', 'Levels'];
       const match = name.match(/^(AIKIRO|ROBOKIT|UARO)\s+(Lv\d+(?:_[a-z]+)?)/i);
       const kitKey = match?.[1]?.toUpperCase() || '';
       const levelKey = match?.[2]?.toLowerCase().replace(/_original|_additional/, '') || '';
       const componentKit = kitKey === 'UARO' ? 'URAO' : kitKey;
-      const unique = state.componentLibrary.filter((row) => String(row.Kit).toUpperCase() === componentKit && Number(row[levelKey.replace('lv', 'Lv')] || 0) > 0);
+      const unique = services.LibraryService.getComponentLibrary().filter((row) => String(row.Kit).toUpperCase() === componentKit && Number(row[levelKey.replace('lv', 'Lv')] || 0) > 0);
       rows = unique.map((row) => [row.Component, row.Tier, price(row['Unit Price']), `${name} · ${row['Appears in levels']}`]);
     }
   }
-  if (name === 'Component inventory') { headers = ['Component', 'Tier', 'Category', 'Colour', 'Kit', 'Expected qty', 'Centre qty', 'Result']; rows = state.inventory.map((row, index) => { const expected = row['Required Qty'] || row['Demo qty'] || '0'; const actual = row['Total center qty'] || '0'; const options = Array.from({ length: 51 }, (_, value) => `<option value="${value}" ${String(actual) === String(value) ? 'selected' : ''}>${value}</option>`).join(''); return [row.Component, row.Tier, row.Category, row.Colour, row.Kit, expected, `<select class="inline-input" data-inventory-qty="${index}">${options}</select>`, quantityResult(expected, actual)]; }); }
+  if (name === 'Component inventory') { headers = ['Component', 'Tier', 'Category', 'Colour', 'Kit', 'Expected qty', 'Centre qty', 'Result']; rows = services.InventoryService.getItems().map((row, index) => { const expected = row['Required Qty'] || row['Demo qty'] || '0'; const actual = row['Total center qty'] || '0'; const options = Array.from({ length: 51 }, (_, value) => `<option value="${value}" ${String(actual) === String(value) ? 'selected' : ''}>${value}</option>`).join(''); return [row.Component, row.Tier, row.Category, row.Colour, row.Kit, expected, `<select class="inline-input" data-inventory-qty="${index}">${options}</select>`, quantityResult(expected, actual)]; }); }
   if (/^CS[1-5] curriculum$/.test(name) || name === 'CodeMonkey curriculum') { const program = name.replace(' curriculum', '').toLowerCase(); headers = ['Item', 'Level', 'Topic', 'Program']; rows = state.curriculum.filter((row) => program === 'codemonkey' ? String(row['Program name']).toLowerCase().startsWith('codemonkey') : row['Program name'] === program.toUpperCase()).map((row) => [row.Item, row.Level, row.Topic, row['Program name']]); }
   target.innerHTML = table(headers, rows);
-  document.querySelectorAll('[data-inventory-qty]').forEach((input) => input.onchange = () => { const row = state.inventory[Number(input.dataset.inventoryQty)]; row['Total center qty'] = input.value; save('inventory', state.inventory); showLibrary('Component inventory'); });
+  document.querySelectorAll('[data-inventory-qty]').forEach((input) => input.onchange = () => { const row = services.InventoryService.getItems()[Number(input.dataset.inventoryQty)]; services.InventoryService.updateItem(`${row.Kit}:${row.Component}`, { 'Total center qty': input.value }); showLibrary('Component inventory'); });
   document.querySelectorAll('.tab-button').forEach((item) => item.onclick = () => showLibrary(item.textContent));
 }
 
@@ -864,8 +858,8 @@ function renderOperations() {
 function showOperation(name) {
   const target = document.querySelector('#operationTable');
   if (name === 'Borrowing') {
-    target.innerHTML = header('Student borrowing', 'Each record links one student to a component from that student’s checklist.', button('Log borrowing +', 'new-borrowing', 'primary-button')) + table(['Date', 'Student', 'Borrowed component', 'Qty', 'Status', 'Returned'], state.borrowings.map((row, index) => [text(row.sourceRow?.['Borrowed on'] || today()), text(row.borrower || row.sourceRow?.Student), text(row.item), text(row.sourceRow?.Quantity), `<button class="status-button borrowing-status" data-borrowing="${index}">${text(row.status)}</button>`, text(row.sourceRow?.['Returned on'])]));
-    document.querySelectorAll('[data-borrowing]').forEach((item) => item.onclick = () => { const row = state.borrowings[Number(item.dataset.borrowing)]; row.status = row.status === 'Returned' ? 'Still borrowing' : 'Returned'; if (row.sourceRow) row.sourceRow['Returned on'] = row.status === 'Returned' ? today() : ''; save('borrowings', state.borrowings); showOperation('Borrowing'); });
+    target.innerHTML = header('Student borrowing', 'Each record links one student to a component from that student’s checklist.', button('Log borrowing +', 'new-borrowing', 'primary-button')) + table(['Date', 'Student', 'Borrowed component', 'Qty', 'Status', 'Returned'], services.BorrowingService.getBorrowingLogs().map((row, index) => [text(row.sourceRow?.['Borrowed on'] || today()), text(row.borrower || row.sourceRow?.Student), text(row.item), text(row.sourceRow?.Quantity), `<button class="status-button borrowing-status" data-borrowing="${index}">${text(row.status)}</button>`, text(row.sourceRow?.['Returned on'])]));
+    document.querySelectorAll('[data-borrowing]').forEach((item) => item.onclick = () => { services.BorrowingService.returnBorrowedItem(item.dataset.borrowing); showOperation('Borrowing'); });
   }
 }
 
@@ -898,8 +892,7 @@ function openBorrowingForm(studentOptions) {
     const checklist = state.componentItems.filter((row) => row.student === data.student);
     const component = checklist.find((row) => row.item === data.component);
     if (!component) return;
-    state.borrowings.push({ item: component.item, borrower: data.student, status: 'Still borrowing', sourceRow: { Student: data.student, Component: component.item, Quantity: data.quantity, Kit: component.kit, Status: 'Still borrowing', 'Borrowed on': today(), 'Returned on': '' } });
-    save('borrowings', state.borrowings);
+    services.BorrowingService.createBorrowingLog({ item: component.item, borrower: data.student, status: 'Still borrowing', sourceRow: { Student: data.student, Component: component.item, Quantity: data.quantity, Kit: component.kit, Status: 'Still borrowing', 'Borrowed on': today(), 'Returned on': '' } });
     document.querySelector('#modalBackdrop').hidden = true;
     showOperation('Borrowing');
   };
@@ -1096,4 +1089,4 @@ function renderDataLoadError(error) {
   content.innerHTML = header('Database unavailable', 'Safari could not load workspace-db.json. Open the website through its web URL, not by double-clicking index.html.') + `<div class="empty"><p>Use the published URL or start a local server in the website folder:</p><code>python3 -m http.server 4173</code><p>${text(error?.message || 'Database request failed')}</p></div>`;
 }
 
-fetch(`./workspace-db.json?v=${Date.now()}`, { cache: 'no-store' }).then((response) => { if (!response.ok) throw new Error(`Database request returned ${response.status}`); return response.json(); }).then((value) => { Object.assign(state, value); const savedStudents = load('robot-students', []); if (savedStudents.length) state.robotStudents = savedStudents; const savedCodingStudents = load('coding-students', []); if (savedCodingStudents.length) state.codingStudents = savedCodingStudents; const savedLessons = load('robot-lessons', []); if (savedLessons.length) state.robotLessons = savedLessons; const savedCodingLessons = load('coding-lessons', []); if (savedCodingLessons.length) state.codingLessons = savedCodingLessons; const savedItems = load('component-items', []); const savedByKey = new Map(savedItems.map((row) => [`${row.student}:${row.item}`, row])); state.componentItems = state.componentItems.map((row) => { const saved = savedByKey.get(`${row.student}:${row.item}`); return saved ? { ...row, studentQty: saved.studentQty, quantityStatus: quantityResult(row.requiredQty, saved.studentQty), sourceRow: { ...row.sourceRow, Notes: saved.sourceRow?.Notes || row.sourceRow?.Notes || '' } } : row; }); const savedInventory = load('inventory', []); const savedInventoryByKey = new Map(savedInventory.map((row) => [`${row.Kit}:${row.Component}`, row])); state.inventory = state.inventory.map((row) => { const saved = savedInventoryByKey.get(`${row.Kit}:${row.Component}`); return saved ? { ...row, 'Total center qty': saved['Total center qty'], 'Last counted': saved['Last counted'] || row['Last counted'], Notes: saved.Notes || row.Notes } : row; }); const savedProgress = load('robot-progress', []); if (savedProgress.length) state.robotProgress = savedProgress; progressFinishDates = load('progress-finish-dates', {}); repairStudentLinks(); render(); }).catch(renderDataLoadError);
+fetch(`./workspace-db.json?v=${Date.now()}`, { cache: 'no-store' }).then((response) => { if (!response.ok) throw new Error(`Database request returned ${response.status}`); return response.json(); }).then((value) => { Object.assign(state, value); services = window.createServices(() => state); const savedStudents = load('robot-students', []); if (savedStudents.length) state.robotStudents = savedStudents; const savedCodingStudents = load('coding-students', []); if (savedCodingStudents.length) state.codingStudents = savedCodingStudents; const savedLessons = load('robot-lessons', []); if (savedLessons.length) state.robotLessons = savedLessons; const savedCodingLessons = load('coding-lessons', []); if (savedCodingLessons.length) state.codingLessons = savedCodingLessons; const savedItems = load('component-items', []); const savedByKey = new Map(savedItems.map((row) => [`${row.student}:${row.item}`, row])); state.componentItems = state.componentItems.map((row) => { const saved = savedByKey.get(`${row.student}:${row.item}`); return saved ? { ...row, studentQty: saved.studentQty, quantityStatus: quantityResult(row.requiredQty, saved.studentQty), sourceRow: { ...row.sourceRow, Notes: saved.sourceRow?.Notes || row.sourceRow?.Notes || '' } } : row; }); const savedInventory = load('inventory', []); const savedInventoryByKey = new Map(savedInventory.map((row) => [`${row.Kit}:${row.Component}`, row])); state.inventory = state.inventory.map((row) => { const saved = savedInventoryByKey.get(`${row.Kit}:${row.Component}`); return saved ? { ...row, 'Total center qty': saved['Total center qty'], 'Last counted': saved['Last counted'] || row['Last counted'], Notes: saved.Notes || row.Notes } : row; }); const savedProgress = load('robot-progress', []); if (savedProgress.length) state.robotProgress = savedProgress; progressFinishDates = load('progress-finish-dates', {}); repairStudentLinks(); render(); }).catch(renderDataLoadError);
