@@ -1,0 +1,15 @@
+programme_id,programme_name,kit_or_platform,programme_type
+AIK-L1,AIKIRO Lv1_original,AIKIRO,Robot
+AIK-L2,AIKIRO Lv2_original,AIKIRO,Robot
+AIK-L4,AIKIRO Lv4_original,AIKIRO,Robot
+ROB-L1,ROBOKIT Lv1,ROBOKIT,Robot
+ROB-L3,ROBOKIT Lv3,ROBOKIT,Robot
+ROB-L4,ROBOKIT Lv4,ROBOKIT,Robot
+ROB-L5,ROBOKIT Lv5,ROBOKIT,Robot
+UAR-L2,UARO Lv2,UARO,Robot
+CM-P1,CodeMonkey P1,CodeMonkey,Coding
+CS1,CS1,CodeCombat,Coding
+CS2,CS2,CodeCombat,Coding
+CS3,CS3,CodeCombat,Coding
+CS4,CS4,CodeCombat,Coding
+CS5,CS5,CodeCombat,Coding

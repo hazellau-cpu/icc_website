@@ -1,0 +1,81 @@
+kit,level,sequence,robot_name,robot_id
+AIKIRO,Lv1_original,1.0,Elephant,AIKIRO_Lv1_original_1
+AIKIRO,Lv1_original,2.0,Shooter,AIKIRO_Lv1_original_2
+AIKIRO,Lv1_original,3.0,Kiki,AIKIRO_Lv1_original_3
+AIKIRO,Lv1_original,4.0,Scooter,AIKIRO_Lv1_original_4
+AIKIRO,Lv1_original,5.0,Airplane,AIKIRO_Lv1_original_5
+AIKIRO,Lv1_original,6.0,Caterpillar,AIKIRO_Lv1_original_6
+AIKIRO,Lv1_original,7.0,WingMill,AIKIRO_Lv1_original_7
+AIKIRO,Lv1_original,8.0,Hippo,AIKIRO_Lv1_original_8
+AIKIRO,Lv1_original,9.0,Music Box,AIKIRO_Lv1_original_9
+AIKIRO,Lv1_original,10.0,Car,AIKIRO_Lv1_original_10
+AIKIRO,Lv1_original,11.0,Robot Fighter,AIKIRO_Lv1_original_11
+AIKIRO,Lv1_original,12.0,Curler Bot,AIKIRO_Lv1_original_12
+AIKIRO,Lv1_additional,1.0,Robot Fish,AIKIRO_Lv1_additional_1
+AIKIRO,Lv1_additional,2.0,Robot Dog,AIKIRO_Lv1_additional_2
+AIKIRO,Lv1_additional,3.0,Robot Fighter,AIKIRO_Lv1_additional_3
+AIKIRO,Lv1_additional,4.0,Robot dancer,AIKIRO_Lv1_additional_4
+AIKIRO,Lv1_additional,5.0,Gear Bot,AIKIRO_Lv1_additional_5
+AIKIRO,Lv1_additional,6.0,Frog Bot,AIKIRO_Lv1_additional_6
+AIKIRO,Lv1_additional,7.0,Bumper Bot,AIKIRO_Lv1_additional_7
+AIKIRO,Lv1_additional,8.0,FrogBot,AIKIRO_Lv1_additional_8
+AIKIRO,Lv2_original,1.0,Deliveryy Robot,AIKIRO_Lv2_original_1
+AIKIRO,Lv2_original,2.0,Grand Stage,AIKIRO_Lv2_original_2
+AIKIRO,Lv2_original,3.0,Line Tracer,AIKIRO_Lv2_original_3
+AIKIRO,Lv2_original,4.0,Tree Climber,AIKIRO_Lv2_original_4
+AIKIRO,Lv2_original,5.0,Robot Gorilla ,AIKIRO_Lv2_original_5
+AIKIRO,Lv2_original,6.0,Robot Beetle,AIKIRO_Lv2_original_6
+AIKIRO,Lv2_original,7.0,Robot Seal,AIKIRO_Lv2_original_7
+AIKIRO,Lv2_original,8.0,IOT Camper,AIKIRO_Lv2_original_8
+AIKIRO,Lv2_original,9.0,Soccer Bot,AIKIRO_Lv2_original_9
+AIKIRO,Lv2_original,10.0,Racer Bot,AIKIRO_Lv2_original_10
+AIKIRO,Lv2_original,11.0,Guitar Bot,AIKIRO_Lv2_original_11
+AIKIRO,Lv2_original,12.0,Service Bot,AIKIRO_Lv2_original_12
+AIKIRO,Lv2_additional,1.0,Piggy Bank,AIKIRO_Lv2_additional_1
+AIKIRO,Lv2_additional,2.0,Melody Box,AIKIRO_Lv2_additional_2
+AIKIRO,Lv2_additional,3.0,Hockey Bot,AIKIRO_Lv2_additional_3
+AIKIRO,Lv2_additional,4.0,Warrior Bot,AIKIRO_Lv2_additional_4
+AIKIRO,Lv2_additional,5.0,Viking Ship,AIKIRO_Lv2_additional_5
+AIKIRO,Lv2_additional,6.0,Robot Cat,AIKIRO_Lv2_additional_6
+AIKIRO,Lv2_additional,7.0,Robot Forklift,AIKIRO_Lv2_additional_7
+AIKIRO,Lv2_additional,8.0,Battle Bot,AIKIRO_Lv2_additional_8
+AIKIRO,Lv3_original,1.0,Robot Hand,AIKIRO_Lv3_original_1
+AIKIRO,Lv3_original,2.0,Scale Protector,AIKIRO_Lv3_original_2
+AIKIRO,Lv3_original,3.0,Shooting Bot,AIKIRO_Lv3_original_3
+AIKIRO,Lv3_original,4.0,Jeep,AIKIRO_Lv3_original_4
+AIKIRO,Lv3_original,5.0,Lizard,AIKIRO_Lv3_original_5
+AIKIRO,Lv3_original,6.0,Trash Bot,AIKIRO_Lv3_original_6
+AIKIRO,Lv3_original,7.0,Dump Truck,AIKIRO_Lv3_original_7
+AIKIRO,Lv3_original,8.0,Gymnast,AIKIRO_Lv3_original_8
+AIKIRO,Lv3_original,9.0,Pilot,AIKIRO_Lv3_original_9
+AIKIRO,Lv3_original,10.0,Ball Collecting Robot,AIKIRO_Lv3_original_10
+AIKIRO,Lv3_original,11.0,Tractor,AIKIRO_Lv3_original_11
+AIKIRO,Lv3_original,12.0,Penguin,AIKIRO_Lv3_original_12
+AIKIRO,Lv3_additional,1.0,Electric Car,AIKIRO_Lv3_additional_1
+AIKIRO,Lv3_additional,2.0,Tidying-up Robot,AIKIRO_Lv3_additional_2
+AIKIRO,Lv3_additional,3.0,Hammer Arcade Machine,AIKIRO_Lv3_additional_3
+AIKIRO,Lv3_additional,4.0,Maze Bot,AIKIRO_Lv3_additional_4
+AIKIRO,Lv3_additional,5.0,Pelican,AIKIRO_Lv3_additional_5
+AIKIRO,Lv3_additional,6.0,Kangaroo,AIKIRO_Lv3_additional_6
+AIKIRO,Lv3_additional,7.0,Horseback-riding Bot,AIKIRO_Lv3_additional_7
+AIKIRO,Lv3_additional,8.0,Ferris Wheel,AIKIRO_Lv3_additional_8
+AIKIRO,Lv4_original,1.0,Claw Bot,AIKIRO_Lv4_original_1
+AIKIRO,Lv4_original,2.0,Owl,AIKIRO_Lv4_original_2
+AIKIRO,Lv4_original,3.0,DJ,AIKIRO_Lv4_original_3
+AIKIRO,Lv4_original,4.0,Snail,AIKIRO_Lv4_original_4
+AIKIRO,Lv4_original,5.0,Dinosaur,AIKIRO_Lv4_original_5
+AIKIRO,Lv4_original,6.0,Chicken,AIKIRO_Lv4_original_6
+AIKIRO,Lv4_original,7.0,Space Exploration,AIKIRO_Lv4_original_7
+AIKIRO,Lv4_original,8.0,Bicycle,AIKIRO_Lv4_original_8
+AIKIRO,Lv4_original,9.0,Excavator,AIKIRO_Lv4_original_9
+AIKIRO,Lv4_original,10.0,Kendo Bot,AIKIRO_Lv4_original_10
+AIKIRO,Lv4_original,11.0,Drifting Car,AIKIRO_Lv4_original_11
+AIKIRO,Lv4_original,12.0,Industrial Robot,AIKIRO_Lv4_original_12
+AIKIRO,Lv4_additional,1.0,Parrot,AIKIRO_Lv4_additional_1
+AIKIRO,Lv4_additional,2.0,Safe,AIKIRO_Lv4_additional_2
+AIKIRO,Lv4_additional,3.0,Face Bot,AIKIRO_Lv4_additional_3
+AIKIRO,Lv4_additional,4.0,Mine Detection Bot,AIKIRO_Lv4_additional_4
+AIKIRO,Lv4_additional,5.0,Knight Bot,AIKIRO_Lv4_additional_5
+AIKIRO,Lv4_additional,6.0,Submarine,AIKIRO_Lv4_additional_6
+AIKIRO,Lv4_additional,7.0,Robot Arm,AIKIRO_Lv4_additional_7
+AIKIRO,Lv4_additional,8.0,Dog Sled,AIKIRO_Lv4_additional_8
