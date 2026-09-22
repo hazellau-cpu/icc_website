@@ -43,12 +43,14 @@ export interface BorrowingLog {
 }
 
 export interface LibraryService {
+  load(): Promise<void>;
   getProgrammes(): Programme[];
   getCurriculumByProgramme(programmeId: string): Curriculum[];
   getTopicByLevel(programmeId: string, level: string | number): Curriculum[];
 }
 
 export interface InventoryService {
+  load(): Promise<void>;
   getItems(): InventoryItem[];
   getItemById(id: string): InventoryItem | undefined;
   createItem(item: InventoryItem): InventoryItem;
@@ -57,6 +59,7 @@ export interface InventoryService {
 }
 
 export interface BorrowingService {
+  load(): Promise<void>;
   getBorrowingLogs(): BorrowingLog[];
   createBorrowingLog(log: BorrowingLog): BorrowingLog;
   returnBorrowedItem(id: string | number): BorrowingLog | null;
