@@ -1,324 +1,324 @@
-item_id,programme_id,level,item_name,part
-CM-P1-L1-P1,CM-P1,1,The print() Function,1
-CM-P1-L2-P1,CM-P1,2,The print() Function,1
-CM-P1-L3-P1,CM-P1,3,The print() Function,1
-CM-P1-L4-P1,CM-P1,4,The print() Function,1
-CM-P1-L5-P1,CM-P1,5,The print() Function,1
-CM-P1-L6-P1,CM-P1,6,The print() Function,1
-CM-P1-L7-P1,CM-P1,7,The print() Function,1
-CM-P1-L8-P1,CM-P1,8,The print() Function,1
-CM-P1-L9-P1,CM-P1,9,The print() Function,1
-CM-P1-L10-P1,CM-P1,10,The print() Function,1
-CM-P1-L11-P1,CM-P1,11,The print() Function,1
-CM-P1-L12-P1,CM-P1,12,The print() Function,1
-CM-P1-L13-P1,CM-P1,13,The print() Function,1
-CM-P1-L14-P1,CM-P1,14,The print() Function,1
-CM-P1-L15-P1,CM-P1,15,The print() Function,1
-CM-P1-L16-P1,CM-P1,16,The print() Function,1
-CM-P1-L17-P1,CM-P1,17,The print() Function,1
-CM-P1-L18-P1,CM-P1,18,The print() Function,1
-CM-P1-L19-P1,CM-P1,19,Lists and Indexes,1
-CM-P1-L20-P1,CM-P1,20,Lists and Indexes,1
-CM-P1-L21-P1,CM-P1,21,Lists and Indexes,1
-CM-P1-L22-P1,CM-P1,22,Lists and Indexes,1
-CM-P1-L23-P1,CM-P1,23,Lists and Indexes,1
-CM-P1-L24-P1,CM-P1,24,Lists and Indexes,1
-CM-P1-L25-P1,CM-P1,25,Lists and Indexes,1
-CM-P1-L26-P1,CM-P1,26,For Loops,1
-CM-P1-L27-P1,CM-P1,27,For Loops,1
-CM-P1-L28-P1,CM-P1,28,For Loops,1
-CM-P1-L29-P1,CM-P1,29,For Loops,1
-CM-P1-L30-P1,CM-P1,30,For Loops,1
-CM-P1-L31-P1,CM-P1,31,Range,1
-CM-P1-L32-P1,CM-P1,32,Range,1
-CM-P1-L33-P1,CM-P1,33,Range,1
-CM-P1-L34-P1,CM-P1,34,Range,1
-CM-P1-L35-P1,CM-P1,35,Range,1
-CM-P1-L36-P1,CM-P1,36,Range,1
-CM-P1-L37-P1,CM-P1,37,Range,1
-CM-P1-L38-P1,CM-P1,38,Range,1
-CM-P1-L39-P1,CM-P1,39,Range,1
-CM-P1-L40-P1,CM-P1,40,Range,1
-CM-P1-L41-P1,CM-P1,41,Variables,1
-CM-P1-L42-P1,CM-P1,42,Variables,1
-CM-P1-L43-P1,CM-P1,43,Variables,1
-CM-P1-L44-P1,CM-P1,44,Variables,1
-CM-P1-L45-P1,CM-P1,45,Variables,1
-CM-P1-L46-P1,CM-P1,46,Variables,1
-CM-P1-L47-P1,CM-P1,47,Variables,1
-CM-P1-L48-P1,CM-P1,48,Conditional Statements (if-else),1
-CM-P1-L49-P1,CM-P1,49,Conditional Statements (if-else),1
-CM-P1-L50-P1,CM-P1,50,Conditional Statements (if-else),1
-CM-P1-L51-P1,CM-P1,51,Conditional Statements (if-else),1
-CM-P1-L52-P1,CM-P1,52,Conditional Statements (if-else),1
-CM-P1-L53-P1,CM-P1,53,Conditional Statements (if-else),1
-CM-P1-L54-P1,CM-P1,54,Conditional Statements (if-else),1
-CM-P1-L55-P1,CM-P1,55,Conditional Statements (if-else),1
-CM-P1-L56-P1,CM-P1,56,Conditional Statements (if-else),1
-CM-P1-L57-P1,CM-P1,57,Conditional Statements (if-else),1
-CM-P1-L58-P1,CM-P1,58,Conditional Statements (if-else),1
-CM-P1-L59-P1,CM-P1,59,Conditional Statements (if-else),1
-CM-P1-L60-P1,CM-P1,60,Conditional Loops (while),1
-CM-P1-L61-P1,CM-P1,61,Conditional Loops (while),1
-CM-P1-L62-P1,CM-P1,62,Conditional Loops (while),1
-CM-P1-L63-P1,CM-P1,63,Conditional Loops (while),1
-CM-P1-L64-P1,CM-P1,64,Conditional Loops (while),1
-CM-P1-L65-P1,CM-P1,65,Conditional Loops (while),1
-CM-P1-L66-P1,CM-P1,66,Conditional Loops (while),1
-CM-P1-L67-P1,CM-P1,67,"Boolean Operators (and, or, not)",1
-CM-P1-L68-P1,CM-P1,68,"Boolean Operators (and, or, not)",1
-CM-P1-L69-P1,CM-P1,69,"Boolean Operators (and, or, not)",1
-CM-P1-L70-P1,CM-P1,70,"Boolean Operators (and, or, not)",1
-CM-P1-L71-P1,CM-P1,71,"Boolean Operators (and, or, not)",1
-CM-P1-L72-P1,CM-P1,72,"Boolean Operators (and, or, not)",1
-CM-P1-L73-P1,CM-P1,73,"Boolean Operators (and, or, not)",1
-CM-P1-L74-P1,CM-P1,74,"Boolean Operators (and, or, not)",1
-CM-P1-L75-P1,CM-P1,75,"Boolean Operators (and, or, not)",1
-CM-P1-L76-P1,CM-P1,76,"Boolean Operators (and, or, not)",1
-CM-P1-L77-P1,CM-P1,77,"Boolean Operators (and, or, not)",1
-CM-P1-L78-P1,CM-P1,78,"Boolean Operators (and, or, not)",1
-CM-P1-L79-P1,CM-P1,79,Functions,1
-CM-P1-L80-P1,CM-P1,80,Functions,1
-CM-P1-L81-P1,CM-P1,81,Functions,1
-CM-P1-L82-P1,CM-P1,82,Functions,1
-CM-P1-L83-P1,CM-P1,83,Functions,1
-CM-P1-L84-P1,CM-P1,84,Functions,1
-CM-P1-L85-P1,CM-P1,85,Functions,1
-CM-P1-L86-P1,CM-P1,86,Functions,1
-CM-P1-L87-P1,CM-P1,87,Functions,1
-CM-P1-L88-P2,CM-P1,88,Classes,2
-CM-P1-L89-P2,CM-P1,89,Classes,2
-CM-P1-L90-P2,CM-P1,90,Classes,2
-CM-P1-L91-P2,CM-P1,91,Classes,2
-CM-P1-L92-P2,CM-P1,92,Classes,2
-CM-P1-L93-P2,CM-P1,93,Classes,2
-CM-P1-L94-P2,CM-P1,94,Input,2
-CM-P1-L95-P2,CM-P1,95,Input,2
-CM-P1-L96-P2,CM-P1,96,Input,2
-CM-P1-L97-P2,CM-P1,97,Input,2
-CM-P1-L98-P2,CM-P1,98,"Simple Data Types (integers, strings)",2
-CM-P1-L99-P2,CM-P1,99,"Simple Data Types (integers, strings)",2
-CM-P1-L100-P2,CM-P1,100,"Simple Data Types (integers, strings)",2
-CM-P1-L101-P2,CM-P1,101,"Simple Data Types (integers, strings)",2
-CM-P1-L102-P2,CM-P1,102,"Simple Data Types (integers, strings)",2
-CM-P1-L103-P2,CM-P1,103,"Simple Data Types (integers, strings)",2
-CM-P1-L104-P2,CM-P1,104,"Simple Data Types (integers, strings)",2
-CM-P1-L105-P2,CM-P1,105,"Simple Data Types (integers, strings)",2
-CM-P1-L106-P2,CM-P1,106,"Simple Data Types (integers, strings)",2
-CM-P1-L107-P2,CM-P1,107,"Simple Data Types (integers, strings)",2
-CM-P1-L108-P2,CM-P1,108,"Simple Data Types (integers, strings)",2
-CM-P1-L109-P2,CM-P1,109,"Simple Data Types (integers, strings)",2
-CM-P1-L110-P2,CM-P1,110,"Simple Data Types (integers, strings)",2
-CM-P1-L111-P2,CM-P1,111,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L112-P2,CM-P1,112,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L113-P2,CM-P1,113,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L114-P2,CM-P1,114,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L115-P2,CM-P1,115,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L116-P2,CM-P1,116,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L117-P2,CM-P1,117,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L118-P2,CM-P1,118,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L119-P2,CM-P1,119,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L120-P2,CM-P1,120,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L121-P2,CM-P1,121,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L122-P2,CM-P1,122,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L123-P2,CM-P1,123,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L124-P2,CM-P1,124,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L125-P2,CM-P1,125,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L126-P2,CM-P1,126,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L127-P2,CM-P1,127,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L128-P2,CM-P1,128,"Advanced Data Types (dictionary, set, tuple)",2
-CM-P1-L129-P2,CM-P1,129,2D Lists,2
-CM-P1-L130-P2,CM-P1,130,2D Lists,2
-CM-P1-L131-P2,CM-P1,131,2D Lists,2
-CM-P1-L132-P2,CM-P1,132,2D Lists,2
-CM-P1-L133-P2,CM-P1,133,2D Lists,2
-CM-P1-L134-P2,CM-P1,134,2D Lists,2
-CM-P1-L135-P2,CM-P1,135,2D Lists,2
-CM-P1-L136-P2,CM-P1,136,2D Lists,2
-CM-P1-L137-P2,CM-P1,137,2D Lists,2
-CM-P1-L138-P2,CM-P1,138,2D Lists,2
-CM-P1-L139-P2,CM-P1,139,2D Lists,2
-CM-P1-L140-P2,CM-P1,140,2D Lists,2
-CM-P1-L141-P2,CM-P1,141,2D Lists,2
-CM-P1-L142-P2,CM-P1,142,Bubble Sort,2
-CM-P1-L143-P2,CM-P1,143,Bubble Sort,2
-CM-P1-L144-P2,CM-P1,144,Bubble Sort,2
-CM-P1-L145-P2,CM-P1,145,Bubble Sort,2
-CM-P1-L146-P2,CM-P1,146,Bubble Sort,2
-CM-P1-L147-P2,CM-P1,147,Bubble Sort,2
-CM-P1-L148-P2,CM-P1,148,Bubble Sort,2
-CM-P1-L149-P2,CM-P1,149,Bubble Sort,2
-CM-P1-L150-P2,CM-P1,150,Bubble Sort,2
-CS1-L1,CS1,1,Basic Syntax,
-CS1-L2,CS1,2,Basic Syntax,
-CS1-L3,CS1,3,Sequencing,
-CS1-L4,CS1,4,Arguments,
-CS1-L5,CS1,5,Strings,
-CS1-L6,CS1,6,While-True Loops,
-CS1-L7,CS1,7,While-True Loops,
-CS1-L8,CS1,8,While-True Loops,
-CS1-L9,CS1,9,While-True Loops,
-CS1-L10,CS1,10,While-True Loops,
-CS1-L11,CS1,11,While-True Loops,
-CS1-L12,CS1,12,While-True Loops,
-CS1-L13,CS1,13,While-True Loops,
-CS1-L14,CS1,14,While-True Loops,
-CS1-L15,CS1,15,Variables,
-CS1-L16,CS1,16,Variables,
-CS1-L17,CS1,17,Variables,
-CS1-L18,CS1,18,Variables,
-CS1-L19,CS1,19,Variables,
-CS1-L20,CS1,20,Variables,
-CS1-L21,CS1,21,Variables,
-CS1-L22,CS1,22,Variables,
-CS1-L23,CS1,23,Variables,
-CS1-L24,CS1,24,Variables,
-CS1-L25,CS1,25,Variables,
-CS1-L26,CS1,26,Variables,
-CS1-L27,CS1,27,Variables,
-CS1-L28,CS1,28,Variables,
-CS1-L29,CS1,29,Variables,
-CS1-L30,CS1,30,Variables,
-CS1-L31,CS1,31,Multiplayer Capstone Arena,
-CS2-L1,CS2,1,Variables,
-CS2-L2,CS2,2,Variables,
-CS2-L3,CS2,3,Basic Arithmetic,
-CS2-L4,CS2,4,Basic Arithmetic,
-CS2-L5,CS2,5,Basic Arithmetic,
-CS2-L6,CS2,6,Basic Arithmetic,
-CS2-L7,CS2,7,Basic Arithmetic,
-CS2-L8,CS2,8,Basic Arithmetic,
-CS2-L9,CS2,9,Basic Arithmetic,
-CS2-L10,CS2,10,Basic Arithmetic,
-CS2-L11,CS2,11,If Statements,
-CS2-L12,CS2,12,If Statements,
-CS2-L13,CS2,13,If Statements,
-CS2-L14,CS2,14,If Statements,
-CS2-L15,CS2,15,If Statements,
-CS2-L16,CS2,16,If Statements,
-CS2-L17,CS2,17,If Statements,
-CS2-L18,CS2,18,Else Statements,
-CS2-L19,CS2,19,Else Statements,
-CS2-L20,CS2,20,Else Statements,
-CS2-L21,CS2,21,Else Statements,
-CS2-L22,CS2,22,Compound Logic,
-CS2-L23,CS2,23,Compound Logic,
-CS2-L24,CS2,24,Compound Logic,
-CS2-L25,CS2,25,Compound Logic,
-CS2-L26,CS2,26,Nested Conditionals,
-CS2-L27,CS2,27,Nested Conditionals,
-CS2-L28,CS2,28,Nested Conditionals,
-CS2-L29,CS2,29,Nested Conditionals,
-CS2-L30,CS2,30,Nested Conditionals,
-CS2-L31,CS2,31,Nested Conditionals,
-CS2-L32,CS2,32,Nested Conditionals,
-CS2-L33,CS2,33,Nested Conditionals,
-CS2-L34,CS2,34,Nested Conditionals,
-CS2-L35,CS2,35,Nested Conditionals,
-CS2-L36,CS2,36,Functions,
-CS2-L37,CS2,37,Functions,
-CS2-L38,CS2,38,Functions,
-CS2-L39,CS2,39,Functions,
-CS2-L40,CS2,40,Functions,
-CS2-L41,CS2,41,Event Listeners,
-CS2-L42,CS2,42,Event Listeners,
-CS2-L43,CS2,43,Event Listeners,
-CS2-L44,CS2,44,Event Listeners,
-CS2-L45,CS2,45,Event Listeners,
-CS2-L46,CS2,46,Event Listeners,
-CS3-L1,CS3,1,Boolean Logic,
-CS3-L2,CS3,2,Boolean Logic,
-CS3-L3,CS3,3,Boolean Logic,
-CS3-L4,CS3,4,Boolean Logic,
-CS3-L5,CS3,5,Boolean Logic,
-CS3-L6,CS3,6,Boolean Logic,
-CS3-L7,CS3,7,Boolean Logic,
-CS3-L8,CS3,8,Boolean Logic,
-CS3-L9,CS3,9,Boolean Logic,
-CS3-L10,CS3,10,Boolean Logic,
-CS3-L11,CS3,11,Object Properties,
-CS3-L12,CS3,12,Object Properties,
-CS3-L13,CS3,13,Object Properties,
-CS3-L14,CS3,14,Object Properties,
-CS3-L15,CS3,15,Object Properties,
-CS3-L16,CS3,16,Object Properties,
-CS3-L17,CS3,17,Object Properties,
-CS3-L18,CS3,18,Object Properties,
-CS3-L19,CS3,19,Object Properties,
-CS3-L20,CS3,20,Object Properties,
-CS3-L21,CS3,21,Loop Control,
-CS3-L22,CS3,22,Loop Control,
-CS3-L23,CS3,23,Loop Control,
-CS3-L24,CS3,24,Loop Control,
-CS3-L25,CS3,25,Loop Control,
-CS3-L26,CS3,26,Loop Control,
-CS3-L27,CS3,27,Loop Control,
-CS3-L28,CS3,28,Interactive Flags,
-CS3-L29,CS3,29,Interactive Flags,
-CS3-L30,CS3,30,Interactive Flags,
-CS3-L31,CS3,31,Interactive Flags,
-CS3-L32,CS3,32,Interactive Flags,
-CS4-L1,CS4,1,Arrays and Lists,
-CS4-L2,CS4,2,Arrays and Lists,
-CS4-L3,CS4,3,Arrays and Lists,
-CS4-L4,CS4,4,Arrays and Lists,
-CS4-L5,CS4,5,Arrays and Lists,
-CS4-L6,CS4,6,Arrays and Lists,
-CS4-L7,CS4,7,Arrays and Lists,
-CS4-L8,CS4,8,Arrays and Lists,
-CS4-L9,CS4,9,Arrays and Lists,
-CS4-L10,CS4,10,Arrays and Lists,
-CS4-L11,CS4,11,Arrays and Lists,
-CS4-L12,CS4,12,Arrays and Lists,
-CS4-L13,CS4,13,For Loops,
-CS4-L14,CS4,14,For Loops,
-CS4-L15,CS4,15,For Loops,
-CS4-L16,CS4,16,For Loops,
-CS4-L17,CS4,17,For Loops,
-CS4-L18,CS4,18,For Loops,
-CS4-L19,CS4,19,For Loops,
-CS4-L20,CS4,20,2D Coordinate Matrices,
-CS4-L21,CS4,21,2D Coordinate Matrices,
-CS4-L22,CS4,22,2D Coordinate Matrices,
-CS4-L23,CS4,23,2D Coordinate Matrices,
-CS4-L24,CS4,24,2D Coordinate Matrices,
-CS4-L25,CS4,25,2D Coordinate Matrices,
-CS4-L26,CS4,26,Object Literals,
-CS4-L27,CS4,27,Object Literals,
-CS4-L28,CS4,28,Return Values,
-CS4-L29,CS4,29,Return Values,
-CS4-L30,CS4,30,Return Values,
-CS4-L31,CS4,31,Algorithm Optimization,
-CS4-L32,CS4,32,Algorithm Optimization,
-CS4-L33,CS4,33,Algorithm Optimization,
-CS4-L34,CS4,34,Algorithm Optimization,
-CS4-L35,CS4,35,Algorithm Optimization,
-CS4-L36,CS4,36,Algorithm Optimization,
-CS5-L1,CS5,1,Advanced Algorithms,
-CS5-L2,CS5,2,Advanced Algorithms,
-CS5-L3,CS5,3,Advanced Algorithms,
-CS5-L4,CS5,4,Advanced Algorithms,
-CS5-L5,CS5,5,String Manipulation,
-CS5-L6,CS5,6,String Manipulation,
-CS5-L7,CS5,7,String Manipulation,
-CS5-L8,CS5,8,String Manipulation,
-CS5-L9,CS5,9,String Manipulation,
-CS5-L10,CS5,10,String Manipulation,
-CS5-L11,CS5,11,Advanced Algorithms,
-CS5-L12,CS5,12,Advanced Algorithms,
-CS5-L13,CS5,13,Trigonometry,
-CS5-L14,CS5,14,Trigonometry,
-CS5-L15,CS5,15,Trigonometry,
-CS5-L16,CS5,16,Trigonometry,
-CS5-L17,CS5,17,Trigonometry,
-CS5-L18,CS5,18,Trigonometry,
-CS5-L19,CS5,19,Trigonometry,
-CS5-L20,CS5,20,Dynamic Target Tracking,
-CS5-L21,CS5,21,Dynamic Target Tracking,
-CS5-L22,CS5,22,Dynamic Target Tracking,
-CS5-L23,CS5,23,Dynamic Target Tracking,
-CS5-L24,CS5,24,Dynamic Target Tracking,
-CS5-L25,CS5,25,Advanced Mathematics,
-CS5-L26,CS5,26,Advanced Mathematics,
-CS5-L27,CS5,27,Advanced Mathematics,
-CS5-L28,CS5,28,Advanced Mathematics,
+item_id,programme_id,level,item_name
+CS1-L1,CS1,1,Basic Syntax
+CS1-L2,CS1,2,Basic Syntax
+CS1-L3,CS1,3,Sequencing
+CS1-L4,CS1,4,Arguments
+CS1-L5,CS1,5,Strings
+CS1-L6,CS1,6,While-True Loops
+CS1-L7,CS1,7,While-True Loops
+CS1-L8,CS1,8,While-True Loops
+CS1-L9,CS1,9,While-True Loops
+CS1-L10,CS1,10,While-True Loops
+CS1-L11,CS1,11,While-True Loops
+CS1-L12,CS1,12,While-True Loops
+CS1-L13,CS1,13,While-True Loops
+CS1-L14,CS1,14,While-True Loops
+CS1-L15,CS1,15,Variables
+CS1-L16,CS1,16,Variables
+CS1-L17,CS1,17,Variables
+CS1-L18,CS1,18,Variables
+CS1-L19,CS1,19,Variables
+CS1-L20,CS1,20,Variables
+CS1-L21,CS1,21,Variables
+CS1-L22,CS1,22,Variables
+CS1-L23,CS1,23,Variables
+CS1-L24,CS1,24,Variables
+CS1-L25,CS1,25,Variables
+CS1-L26,CS1,26,Variables
+CS1-L27,CS1,27,Variables
+CS1-L28,CS1,28,Variables
+CS1-L29,CS1,29,Variables
+CS1-L30,CS1,30,Variables
+CS1-L31,CS1,31,Multiplayer Capstone Arena
+CS2-L1,CS2,1,Variables
+CS2-L2,CS2,2,Variables
+CS2-L3,CS2,3,Basic Arithmetic
+CS2-L4,CS2,4,Basic Arithmetic
+CS2-L5,CS2,5,Basic Arithmetic
+CS2-L6,CS2,6,Basic Arithmetic
+CS2-L7,CS2,7,Basic Arithmetic
+CS2-L8,CS2,8,Basic Arithmetic
+CS2-L9,CS2,9,Basic Arithmetic
+CS2-L10,CS2,10,Basic Arithmetic
+CS2-L11,CS2,11,If Statements
+CS2-L12,CS2,12,If Statements
+CS2-L13,CS2,13,If Statements
+CS2-L14,CS2,14,If Statements
+CS2-L15,CS2,15,If Statements
+CS2-L16,CS2,16,If Statements
+CS2-L17,CS2,17,If Statements
+CS2-L18,CS2,18,Else Statements
+CS2-L19,CS2,19,Else Statements
+CS2-L20,CS2,20,Else Statements
+CS2-L21,CS2,21,Else Statements
+CS2-L22,CS2,22,Compound Logic
+CS2-L23,CS2,23,Compound Logic
+CS2-L24,CS2,24,Compound Logic
+CS2-L25,CS2,25,Compound Logic
+CS2-L26,CS2,26,Nested Conditionals
+CS2-L27,CS2,27,Nested Conditionals
+CS2-L28,CS2,28,Nested Conditionals
+CS2-L29,CS2,29,Nested Conditionals
+CS2-L30,CS2,30,Nested Conditionals
+CS2-L31,CS2,31,Nested Conditionals
+CS2-L32,CS2,32,Nested Conditionals
+CS2-L33,CS2,33,Nested Conditionals
+CS2-L34,CS2,34,Nested Conditionals
+CS2-L35,CS2,35,Nested Conditionals
+CS2-L36,CS2,36,Functions
+CS2-L37,CS2,37,Functions
+CS2-L38,CS2,38,Functions
+CS2-L39,CS2,39,Functions
+CS2-L40,CS2,40,Functions
+CS2-L41,CS2,41,Event Listeners
+CS2-L42,CS2,42,Event Listeners
+CS2-L43,CS2,43,Event Listeners
+CS2-L44,CS2,44,Event Listeners
+CS2-L45,CS2,45,Event Listeners
+CS2-L46,CS2,46,Event Listeners
+CS3-L1,CS3,1,Boolean Logic
+CS3-L2,CS3,2,Boolean Logic
+CS3-L3,CS3,3,Boolean Logic
+CS3-L4,CS3,4,Boolean Logic
+CS3-L5,CS3,5,Boolean Logic
+CS3-L6,CS3,6,Boolean Logic
+CS3-L7,CS3,7,Boolean Logic
+CS3-L8,CS3,8,Boolean Logic
+CS3-L9,CS3,9,Boolean Logic
+CS3-L10,CS3,10,Boolean Logic
+CS3-L11,CS3,11,Object Properties
+CS3-L12,CS3,12,Object Properties
+CS3-L13,CS3,13,Object Properties
+CS3-L14,CS3,14,Object Properties
+CS3-L15,CS3,15,Object Properties
+CS3-L16,CS3,16,Object Properties
+CS3-L17,CS3,17,Object Properties
+CS3-L18,CS3,18,Object Properties
+CS3-L19,CS3,19,Object Properties
+CS3-L20,CS3,20,Object Properties
+CS3-L21,CS3,21,Loop Control
+CS3-L22,CS3,22,Loop Control
+CS3-L23,CS3,23,Loop Control
+CS3-L24,CS3,24,Loop Control
+CS3-L25,CS3,25,Loop Control
+CS3-L26,CS3,26,Loop Control
+CS3-L27,CS3,27,Loop Control
+CS3-L28,CS3,28,Interactive Flags
+CS3-L29,CS3,29,Interactive Flags
+CS3-L30,CS3,30,Interactive Flags
+CS3-L31,CS3,31,Interactive Flags
+CS3-L32,CS3,32,Interactive Flags
+CS4-L1,CS4,1,Arrays and Lists
+CS4-L2,CS4,2,Arrays and Lists
+CS4-L3,CS4,3,Arrays and Lists
+CS4-L4,CS4,4,Arrays and Lists
+CS4-L5,CS4,5,Arrays and Lists
+CS4-L6,CS4,6,Arrays and Lists
+CS4-L7,CS4,7,Arrays and Lists
+CS4-L8,CS4,8,Arrays and Lists
+CS4-L9,CS4,9,Arrays and Lists
+CS4-L10,CS4,10,Arrays and Lists
+CS4-L11,CS4,11,Arrays and Lists
+CS4-L12,CS4,12,Arrays and Lists
+CS4-L13,CS4,13,For Loops
+CS4-L14,CS4,14,For Loops
+CS4-L15,CS4,15,For Loops
+CS4-L16,CS4,16,For Loops
+CS4-L17,CS4,17,For Loops
+CS4-L18,CS4,18,For Loops
+CS4-L19,CS4,19,For Loops
+CS4-L20,CS4,20,2D Coordinate Matrices
+CS4-L21,CS4,21,2D Coordinate Matrices
+CS4-L22,CS4,22,2D Coordinate Matrices
+CS4-L23,CS4,23,2D Coordinate Matrices
+CS4-L24,CS4,24,2D Coordinate Matrices
+CS4-L25,CS4,25,2D Coordinate Matrices
+CS4-L26,CS4,26,Object Literals
+CS4-L27,CS4,27,Object Literals
+CS4-L28,CS4,28,Return Values
+CS4-L29,CS4,29,Return Values
+CS4-L30,CS4,30,Return Values
+CS4-L31,CS4,31,Algorithm Optimization
+CS4-L32,CS4,32,Algorithm Optimization
+CS4-L33,CS4,33,Algorithm Optimization
+CS4-L34,CS4,34,Algorithm Optimization
+CS4-L35,CS4,35,Algorithm Optimization
+CS4-L36,CS4,36,Algorithm Optimization
+CS5-L1,CS5,1,Advanced Algorithms
+CS5-L2,CS5,2,Advanced Algorithms
+CS5-L3,CS5,3,Advanced Algorithms
+CS5-L4,CS5,4,Advanced Algorithms
+CS5-L5,CS5,5,String Manipulation
+CS5-L6,CS5,6,String Manipulation
+CS5-L7,CS5,7,String Manipulation
+CS5-L8,CS5,8,String Manipulation
+CS5-L9,CS5,9,String Manipulation
+CS5-L10,CS5,10,String Manipulation
+CS5-L11,CS5,11,Advanced Algorithms
+CS5-L12,CS5,12,Advanced Algorithms
+CS5-L13,CS5,13,Trigonometry
+CS5-L14,CS5,14,Trigonometry
+CS5-L15,CS5,15,Trigonometry
+CS5-L16,CS5,16,Trigonometry
+CS5-L17,CS5,17,Trigonometry
+CS5-L18,CS5,18,Trigonometry
+CS5-L19,CS5,19,Trigonometry
+CS5-L20,CS5,20,Dynamic Target Tracking
+CS5-L21,CS5,21,Dynamic Target Tracking
+CS5-L22,CS5,22,Dynamic Target Tracking
+CS5-L23,CS5,23,Dynamic Target Tracking
+CS5-L24,CS5,24,Dynamic Target Tracking
+CS5-L25,CS5,25,Advanced Mathematics
+CS5-L26,CS5,26,Advanced Mathematics
+CS5-L27,CS5,27,Advanced Mathematics
+CS5-L28,CS5,28,Advanced Mathematics
+CM-P1-L1,CM-P1,1,The print() Function
+CM-P1-L2,CM-P1,2,The print() Function
+CM-P1-L3,CM-P1,3,The print() Function
+CM-P1-L4,CM-P1,4,The print() Function
+CM-P1-L5,CM-P1,5,The print() Function
+CM-P1-L6,CM-P1,6,The print() Function
+CM-P1-L7,CM-P1,7,The print() Function
+CM-P1-L8,CM-P1,8,The print() Function
+CM-P1-L9,CM-P1,9,The print() Function
+CM-P1-L10,CM-P1,10,The print() Function
+CM-P1-L11,CM-P1,11,The print() Function
+CM-P1-L12,CM-P1,12,The print() Function
+CM-P1-L13,CM-P1,13,The print() Function
+CM-P1-L14,CM-P1,14,The print() Function
+CM-P1-L15,CM-P1,15,The print() Function
+CM-P1-L16,CM-P1,16,The print() Function
+CM-P1-L17,CM-P1,17,The print() Function
+CM-P1-L18,CM-P1,18,The print() Function
+CM-P1-L19,CM-P1,19,Lists and Indexes
+CM-P1-L20,CM-P1,20,Lists and Indexes
+CM-P1-L21,CM-P1,21,Lists and Indexes
+CM-P1-L22,CM-P1,22,Lists and Indexes
+CM-P1-L23,CM-P1,23,Lists and Indexes
+CM-P1-L24,CM-P1,24,Lists and Indexes
+CM-P1-L25,CM-P1,25,Lists and Indexes
+CM-P1-L26,CM-P1,26,For Loops
+CM-P1-L27,CM-P1,27,For Loops
+CM-P1-L28,CM-P1,28,For Loops
+CM-P1-L29,CM-P1,29,For Loops
+CM-P1-L30,CM-P1,30,For Loops
+CM-P1-L31,CM-P1,31,Range
+CM-P1-L32,CM-P1,32,Range
+CM-P1-L33,CM-P1,33,Range
+CM-P1-L34,CM-P1,34,Range
+CM-P1-L35,CM-P1,35,Range
+CM-P1-L36,CM-P1,36,Range
+CM-P1-L37,CM-P1,37,Range
+CM-P1-L38,CM-P1,38,Range
+CM-P1-L39,CM-P1,39,Range
+CM-P1-L40,CM-P1,40,Range
+CM-P1-L41,CM-P1,41,Variables
+CM-P1-L42,CM-P1,42,Variables
+CM-P1-L43,CM-P1,43,Variables
+CM-P1-L44,CM-P1,44,Variables
+CM-P1-L45,CM-P1,45,Variables
+CM-P1-L46,CM-P1,46,Variables
+CM-P1-L47,CM-P1,47,Variables
+CM-P1-L48,CM-P1,48,Conditional Statements (if-else)
+CM-P1-L49,CM-P1,49,Conditional Statements (if-else)
+CM-P1-L50,CM-P1,50,Conditional Statements (if-else)
+CM-P1-L51,CM-P1,51,Conditional Statements (if-else)
+CM-P1-L52,CM-P1,52,Conditional Statements (if-else)
+CM-P1-L53,CM-P1,53,Conditional Statements (if-else)
+CM-P1-L54,CM-P1,54,Conditional Statements (if-else)
+CM-P1-L55,CM-P1,55,Conditional Statements (if-else)
+CM-P1-L56,CM-P1,56,Conditional Statements (if-else)
+CM-P1-L57,CM-P1,57,Conditional Statements (if-else)
+CM-P1-L58,CM-P1,58,Conditional Statements (if-else)
+CM-P1-L59,CM-P1,59,Conditional Statements (if-else)
+CM-P1-L60,CM-P1,60,Conditional Loops (while)
+CM-P1-L61,CM-P1,61,Conditional Loops (while)
+CM-P1-L62,CM-P1,62,Conditional Loops (while)
+CM-P1-L63,CM-P1,63,Conditional Loops (while)
+CM-P1-L64,CM-P1,64,Conditional Loops (while)
+CM-P1-L65,CM-P1,65,Conditional Loops (while)
+CM-P1-L66,CM-P1,66,Conditional Loops (while)
+CM-P1-L67,CM-P1,67,"Boolean Operators (and, or, not)"
+CM-P1-L68,CM-P1,68,"Boolean Operators (and, or, not)"
+CM-P1-L69,CM-P1,69,"Boolean Operators (and, or, not)"
+CM-P1-L70,CM-P1,70,"Boolean Operators (and, or, not)"
+CM-P1-L71,CM-P1,71,"Boolean Operators (and, or, not)"
+CM-P1-L72,CM-P1,72,"Boolean Operators (and, or, not)"
+CM-P1-L73,CM-P1,73,"Boolean Operators (and, or, not)"
+CM-P1-L74,CM-P1,74,"Boolean Operators (and, or, not)"
+CM-P1-L75,CM-P1,75,"Boolean Operators (and, or, not)"
+CM-P1-L76,CM-P1,76,"Boolean Operators (and, or, not)"
+CM-P1-L77,CM-P1,77,"Boolean Operators (and, or, not)"
+CM-P1-L78,CM-P1,78,"Boolean Operators (and, or, not)"
+CM-P1-L79,CM-P1,79,Functions
+CM-P1-L80,CM-P1,80,Functions
+CM-P1-L81,CM-P1,81,Functions
+CM-P1-L82,CM-P1,82,Functions
+CM-P1-L83,CM-P1,83,Functions
+CM-P1-L84,CM-P1,84,Functions
+CM-P1-L85,CM-P1,85,Functions
+CM-P1-L86,CM-P1,86,Functions
+CM-P1-L87,CM-P1,87,Functions
+CM-P2-L88,CM-P2,88,Classes
+CM-P2-L89,CM-P2,89,Classes
+CM-P2-L90,CM-P2,90,Classes
+CM-P2-L91,CM-P2,91,Classes
+CM-P2-L92,CM-P2,92,Classes
+CM-P2-L93,CM-P2,93,Classes
+CM-P2-L94,CM-P2,94,Input
+CM-P2-L95,CM-P2,95,Input
+CM-P2-L96,CM-P2,96,Input
+CM-P2-L97,CM-P2,97,Input
+CM-P2-L98,CM-P2,98,"Simple Data Types (integers, strings)"
+CM-P2-L99,CM-P2,99,"Simple Data Types (integers, strings)"
+CM-P2-L100,CM-P2,100,"Simple Data Types (integers, strings)"
+CM-P2-L101,CM-P2,101,"Simple Data Types (integers, strings)"
+CM-P2-L102,CM-P2,102,"Simple Data Types (integers, strings)"
+CM-P2-L103,CM-P2,103,"Simple Data Types (integers, strings)"
+CM-P2-L104,CM-P2,104,"Simple Data Types (integers, strings)"
+CM-P2-L105,CM-P2,105,"Simple Data Types (integers, strings)"
+CM-P2-L106,CM-P2,106,"Simple Data Types (integers, strings)"
+CM-P2-L107,CM-P2,107,"Simple Data Types (integers, strings)"
+CM-P2-L108,CM-P2,108,"Simple Data Types (integers, strings)"
+CM-P2-L109,CM-P2,109,"Simple Data Types (integers, strings)"
+CM-P2-L110,CM-P2,110,"Simple Data Types (integers, strings)"
+CM-P2-L111,CM-P2,111,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L112,CM-P2,112,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L113,CM-P2,113,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L114,CM-P2,114,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L115,CM-P2,115,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L116,CM-P2,116,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L117,CM-P2,117,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L118,CM-P2,118,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L119,CM-P2,119,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L120,CM-P2,120,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L121,CM-P2,121,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L122,CM-P2,122,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L123,CM-P2,123,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L124,CM-P2,124,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L125,CM-P2,125,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L126,CM-P2,126,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L127,CM-P2,127,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L128,CM-P2,128,"Advanced Data Types (dictionary, set, tuple)"
+CM-P2-L129,CM-P2,129,2D Lists
+CM-P2-L130,CM-P2,130,2D Lists
+CM-P2-L131,CM-P2,131,2D Lists
+CM-P2-L132,CM-P2,132,2D Lists
+CM-P2-L133,CM-P2,133,2D Lists
+CM-P2-L134,CM-P2,134,2D Lists
+CM-P2-L135,CM-P2,135,2D Lists
+CM-P2-L136,CM-P2,136,2D Lists
+CM-P2-L137,CM-P2,137,2D Lists
+CM-P2-L138,CM-P2,138,2D Lists
+CM-P2-L139,CM-P2,139,2D Lists
+CM-P2-L140,CM-P2,140,2D Lists
+CM-P2-L141,CM-P2,141,2D Lists
+CM-P2-L142,CM-P2,142,Bubble Sort
+CM-P2-L143,CM-P2,143,Bubble Sort
+CM-P2-L144,CM-P2,144,Bubble Sort
+CM-P2-L145,CM-P2,145,Bubble Sort
+CM-P2-L146,CM-P2,146,Bubble Sort
+CM-P2-L147,CM-P2,147,Bubble Sort
+CM-P2-L148,CM-P2,148,Bubble Sort
+CM-P2-L149,CM-P2,149,Bubble Sort
+CM-P2-L150,CM-P2,150,Bubble Sort

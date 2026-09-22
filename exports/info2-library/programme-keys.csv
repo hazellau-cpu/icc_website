@@ -1,26 +1,26 @@
-programme_id,programme_name,programme_type,kit_id,level,variant,active
-AIK-L1-O,AIKIRO Lv1 original,Robot,AIKIRO,1,original,true
-AIK-L2-O,AIKIRO Lv2 original,Robot,AIKIRO,2,original,true
-AIK-L3-O,AIKIRO Lv3 original,Robot,AIKIRO,3,original,true
-AIK-L4-O,AIKIRO Lv4 original,Robot,AIKIRO,4,original,true
-AIK-L1-A,AIKIRO Lv1 additional,Robot,AIKIRO,1,additional,true
-AIK-L2-A,AIKIRO Lv2 additional,Robot,AIKIRO,2,additional,true
-AIK-L3-A,AIKIRO Lv3 additional,Robot,AIKIRO,3,additional,true
-AIK-L4-A,AIKIRO Lv4 additional,Robot,AIKIRO,4,additional,true
-ROB-L1,ROBOKIT Lv1,Robot,ROBOKIT,1,,true
-ROB-L2,ROBOKIT Lv2,Robot,ROBOKIT,2,,true
-ROB-L3,ROBOKIT Lv3,Robot,ROBOKIT,3,,true
-ROB-L4,ROBOKIT Lv4,Robot,ROBOKIT,4,,true
-ROB-L5,ROBOKIT Lv5,Robot,ROBOKIT,5,,true
-ROB-L6,ROBOKIT Lv6,Robot,ROBOKIT,6,,true
-UAR-L1,UARO Lv1,Robot,UARO,1,,true
-UAR-L2,UARO Lv2,Robot,UARO,2,,true
-UAR-L3,UARO Lv3,Robot,UARO,3,,true
-UAR-L4,UARO Lv4,Robot,UARO,4,,true
-CS1,CS1,Coding,CodeCombat,1,,true
-CS2,CS2,Coding,CodeCombat,2,,true
-CS3,CS3,Coding,CodeCombat,3,,true
-CS4,CS4,Coding,CodeCombat,4,,true
-CS5,CS5,Coding,CodeCombat,5,,true
-CM-P1,CodeMonkey P1,Coding,CodeMonkey,1,,true
-CM-P2,CodeMonkey P2,Coding,CodeMonkey,2,,true
+programme_id,programme_name,programme_type,kit_id,level
+AIK-L1-O,AIKIRO Lv1 original,Robot,AIKIRO,1
+AIK-L2-O,AIKIRO Lv2 original,Robot,AIKIRO,2
+AIK-L3-O,AIKIRO Lv3 original,Robot,AIKIRO,3
+AIK-L4-O,AIKIRO Lv4 original,Robot,AIKIRO,4
+AIK-L1-A,AIKIRO Lv1 additional,Robot,AIKIRO,1
+AIK-L2-A,AIKIRO Lv2 additional,Robot,AIKIRO,2
+AIK-L3-A,AIKIRO Lv3 additional,Robot,AIKIRO,3
+AIK-L4-A,AIKIRO Lv4 additional,Robot,AIKIRO,4
+ROB-L1,ROBOKIT Lv1,Robot,ROBOKIT,1
+ROB-L2,ROBOKIT Lv2,Robot,ROBOKIT,2
+ROB-L3,ROBOKIT Lv3,Robot,ROBOKIT,3
+ROB-L4,ROBOKIT Lv4,Robot,ROBOKIT,4
+ROB-L5,ROBOKIT Lv5,Robot,ROBOKIT,5
+ROB-L6,ROBOKIT Lv6,Robot,ROBOKIT,6
+UAR-L1,UARO Lv1,Robot,UARO,1
+UAR-L2,UARO Lv2,Robot,UARO,2
+UAR-L3,UARO Lv3,Robot,UARO,3
+UAR-L4,UARO Lv4,Robot,UARO,4
+CS1,CS1,Coding,CodeCombat,1
+CS2,CS2,Coding,CodeCombat,2
+CS3,CS3,Coding,CodeCombat,3
+CS4,CS4,Coding,CodeCombat,4
+CS5,CS5,Coding,CodeCombat,5
+CM-P1,CodeMonkey P1,Coding,CodeMonkey,1
+CM-P2,CodeMonkey P2,Coding,CodeMonkey,2

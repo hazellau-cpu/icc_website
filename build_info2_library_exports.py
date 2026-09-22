@@ -83,8 +83,8 @@ def programme_for(kit, level, variant=''):
 
 def main():
     sheets = read_workbook()
-    key_rows = [[pid, name, ptype, kit, level, variant, 'true'] for pid, name, kit, level, variant, ptype in PROGRAMMES]
-    write_csv('programme-keys.csv', ['programme_id', 'programme_name', 'programme_type', 'kit_id', 'level', 'variant', 'active'], key_rows)
+    key_rows = [[pid, name, ptype, kit, level] for pid, name, kit, level, variant, ptype in PROGRAMMES]
+    write_csv('programme-keys.csv', ['programme_id', 'programme_name', 'programme_type', 'kit_id', 'level'], key_rows)
 
     robot_rows = []
     for sheet_name, kit in [('AIKIRO robot list', 'AIKIRO'), ('Robokit robot list', 'ROBOKIT'), ('UARO robot list', 'UARO')]:
@@ -112,7 +112,7 @@ def main():
     write_csv('robot-library.csv', ['item_id', 'programme_id', 'kit_id', 'level', 'sequence', 'item_name'], robot_rows)
 
     coding_rows = []
-    for sheet_name, programme_id in [('Codemonkey', 'CM-P1')] + [(f'CS{i}', f'CS{i}') for i in range(1, 6)]:
+    for sheet_name, programme_id in [(f'CS{i}', f'CS{i}') for i in range(1, 6)]:
         for row in sheets.get(sheet_name, [])[1:]:
             values = row + [''] * 3
             if not any(values):
@@ -123,8 +123,17 @@ def main():
                 level, topic, part = level_number(values[0]), values[1], None
             if level is None:
                 continue
-            coding_rows.append([f'{programme_id}-L{level}' + (f'-P{part}' if part is not None else ''), programme_id, level, topic, part or ''])
-    write_csv('coding-curriculum.csv', ['item_id', 'programme_id', 'level', 'item_name', 'part'], coding_rows)
+            coding_rows.append([f'{programme_id}-L{level}', programme_id, level, topic])
+    for row in sheets.get('Codemonkey', [])[1:]:
+        values = row + [''] * 3
+        if not any(values):
+            continue
+        level, topic, part = level_number(values[0]), values[1], level_number(values[2])
+        if level is None or part not in (1, 2):
+            continue
+        programme_id = f'CM-P{part}'
+        coding_rows.append([f'{programme_id}-L{level}', programme_id, level, topic])
+    write_csv('coding-curriculum.csv', ['item_id', 'programme_id', 'level', 'item_name'], coding_rows)
     (OUTPUT / 'README.md').write_text('''# Info-2 Library Exports
 
 The library is normalized into two files:
