@@ -1,6 +1,5 @@
-const crypto = require('node:crypto');
+const { createGoogleAccessTokenProvider } = require('./google-access-token');
 
-const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const SHEETS_API_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
 const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 const SHEETS = [
@@ -10,66 +9,15 @@ const SHEETS = [
   { name: 'Math Progress Log', range: "'Math Progress Log'!A:J", required: ['Date', 'Student ID', 'Tutor', 'Course Type', 'Comment', 'Topic', 'Remarks', 'Start Time', 'End Time', 'Attendance Status'] },
 ];
 
-function base64UrlJson(value) {
-  return Buffer.from(JSON.stringify(value)).toString('base64url');
-}
-
-function parseServiceAccount(serviceAccountJson) {
-  if (!serviceAccountJson) throw new Error('Google Sheets source is not configured');
-  let account;
-  try {
-    account = JSON.parse(serviceAccountJson);
-  } catch {
-    throw new Error('Google Sheets service account configuration is not valid JSON');
-  }
-  if (!account.client_email || !account.private_key) {
-    throw new Error('Google Sheets service account configuration is incomplete');
-  }
-  return {
-    clientEmail: String(account.client_email),
-    privateKey: String(account.private_key).replace(/\\n/g, '\n'),
-  };
-}
-
-function createGoogleSheetsReader({ spreadsheetId, serviceAccountJson, fetchImpl = globalThis.fetch }) {
-  let cachedToken = '';
-  let tokenExpiresAt = 0;
-
-  async function accessToken() {
-    if (cachedToken && tokenExpiresAt > Date.now() + 30_000) return cachedToken;
-    if (!spreadsheetId) throw new Error('Google Sheets spreadsheet ID is not configured');
-    const account = parseServiceAccount(serviceAccountJson);
-    const now = Math.floor(Date.now() / 1000);
-    const header = base64UrlJson({ alg: 'RS256', typ: 'JWT' });
-    const payload = base64UrlJson({
-      iss: account.clientEmail,
-      scope: SHEETS_SCOPE,
-      aud: TOKEN_URL,
-      iat: now,
-      exp: now + 3600,
-    });
-    const unsignedAssertion = `${header}.${payload}`;
-    const signature = crypto.sign('RSA-SHA256', Buffer.from(unsignedAssertion), account.privateKey).toString('base64url');
-    const assertion = `${unsignedAssertion}.${signature}`;
-    const tokenResponse = await fetchImpl(TOKEN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-        assertion,
-      }),
-    });
-    if (!tokenResponse.ok) throw new Error(`Google OAuth token request failed with status ${tokenResponse.status}`);
-    const tokenBody = await tokenResponse.json();
-    if (!tokenBody.access_token) throw new Error('Google OAuth token response did not include an access token');
-    cachedToken = String(tokenBody.access_token);
-    tokenExpiresAt = Date.now() + Math.max(0, Number(tokenBody.expires_in || 3600)) * 1000;
-    return cachedToken;
-  }
+function createGoogleSheetsReader({ spreadsheetId, authClientProvider = null, fetchImpl = globalThis.fetch }) {
+  const getAccessToken = createGoogleAccessTokenProvider({
+    scopes: [SHEETS_SCOPE],
+    authClientProvider,
+  });
 
   return async function readSpreadsheet() {
     if (!spreadsheetId) throw new Error('Google Sheets spreadsheet ID is not configured');
-    const token = await accessToken();
+    const token = await getAccessToken();
     const url = new URL(`${SHEETS_API_URL}/${encodeURIComponent(spreadsheetId)}/values:batchGet`);
     for (const sheet of SHEETS) url.searchParams.append('ranges', sheet.range);
     url.searchParams.set('valueRenderOption', 'UNFORMATTED_VALUE');

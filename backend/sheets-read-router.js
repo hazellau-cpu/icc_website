@@ -372,4 +372,12 @@ function createSheetsReadRouter({ query, jwtSecret, clientId, clientSecret, allo
   };
 }
 
-module.exports = { createSheetsReadRouter, issueReadToken, verifyReadToken, STUDENT_COLUMNS, PROGRESS_COLUMNS };
+module.exports = {
+  createSheetsReadRouter,
+  issueReadToken,
+  verifyReadToken,
+  spreadsheetDate,
+  spreadsheetTime,
+  STUDENT_COLUMNS,
+  PROGRESS_COLUMNS,
+};

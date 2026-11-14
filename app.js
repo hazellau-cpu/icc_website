@@ -40,11 +40,18 @@ const localDemoEnabled = isLocalHost && window.ICC_LOCAL_DEMO_LOGIN === true;
 const localDemoSignedIn = localDemoEnabled && Boolean(sessionStorage.getItem(localDemoSessionKey));
 const localGoogleSignInEnabled = localDemoEnabled && window.ICC_LOCAL_GOOGLE_SIGN_IN === true;
 const localLiveSheetsEnabled = isLocalHost && window.ICC_LOCAL_LIVE_SHEETS === true;
+const iapAuthEnabled = !localWorkspaceAllowed && window.ICC_AUTH_MODE === 'iap';
+const liveSheetsMode = !localWorkspaceAllowed && window.ICC_LIVE_SHEETS === true;
 let localLiveSheetsReady = false;
 let liveSheetsStatus = { message: 'Not loaded.', details: null };
 const localCalendarEnabled = isLocalHost && window.ICC_LOCAL_CALENDAR === true;
+const remoteCalendarEnabled = !localWorkspaceAllowed && window.ICC_CALENDAR_ENABLED === true;
+const calendarEnabled = localCalendarEnabled || remoteCalendarEnabled;
 let calendarState = { status: 'loading', date: '', events: [], error: '' };
 let calendarRefresh = null;
+let sharedEdits = {};
+const sharedEditVersions = {};
+const sharedSaveQueues = new Map();
 const localWorkspaceDataVersionKey = 'icc-local-workspace-data-version';
 const useSavedLocalWorkspaceEdits = localWorkspaceAllowed
   && localStorage.getItem(localWorkspaceDataVersionKey) === 'james-paid-v1';
@@ -61,15 +68,16 @@ const getApiBaseUrl = () => {
   const configured = String(window.ICC_API_BASE_URL || '').trim();
   if (!configured) return '';
   try {
-    const url = new URL(configured);
+    const url = new URL(configured, window.location.origin);
     const localApi = ['localhost', '127.0.0.1', '::1'].includes(url.hostname);
     if ((!localApi && url.protocol !== 'https:') || url.username || url.password || url.search || url.hash) return '';
-    return url.toString().replace(/\/$/, '');
+    if (iapAuthEnabled && url.origin !== window.location.origin) return '';
+    return `${url.origin}${url.pathname.replace(/\/$/, '')}`;
   } catch {
     return '';
   }
 };
-const getAccessToken = () => (window.ICC_FORCE_LOCAL_PREVIEW || localDemoEnabled ? '' : sessionStorage.getItem(apiTokenKey) || '');
+const getAccessToken = () => (iapAuthEnabled || window.ICC_FORCE_LOCAL_PREVIEW || localDemoEnabled ? '' : sessionStorage.getItem(apiTokenKey) || '');
 const setAccessToken = (token, email = '') => {
   localStorage.removeItem(apiTokenKey);
   localStorage.removeItem(userEmailKey);
@@ -83,16 +91,19 @@ const setAccessToken = (token, email = '') => {
   updateAuthButton();
 };
 function updateAuthButton() {
+  if (iapAuthEnabled && authButton) authButton.hidden = true;
   const signedInEmail = localDemoEnabled ? sessionStorage.getItem(localDemoSessionKey) : getAccessToken() && sessionStorage.getItem(userEmailKey);
-  if (authButton) authButton.textContent = signedInEmail ? `Sign out (${signedInEmail})` : 'Sign in';
+  if (authButton && !iapAuthEnabled) authButton.textContent = signedInEmail ? `Sign out (${signedInEmail})` : 'Sign in';
   const workspaceMode = document.querySelector('#workspaceMode');
   const workspaceModeDetail = document.querySelector('#workspaceModeDetail');
   if (workspaceMode) workspaceMode.textContent = localWorkspaceAllowed ? 'Local workspace' : 'Protected workspace';
   if (workspaceModeDetail) workspaceModeDetail.textContent = localWorkspaceAllowed
     ? 'Changes saved in this browser'
-    : getAccessToken() ? 'Connected to the protected backend' : 'Sign in to continue';
+    : iapAuthEnabled ? 'Access controlled by Google IAP'
+      : getAccessToken() ? 'Connected to the protected backend' : 'Sign in to continue';
 }
 function showAuth(message = '') {
+  if (iapAuthEnabled) return;
   if (!authBackdrop) return;
   authBackdrop.hidden = false;
   const notice = message || (!localDemoEnabled && !getApiBaseUrl() ? 'Sign-in is not configured. Contact the workspace administrator.' : '');
@@ -193,7 +204,7 @@ async function handlePasswordSignIn(event) {
     submitButton.disabled = false;
   }
 }
-async function apiRequest(endpoint, method = 'GET', body) {
+async function apiRequest(endpoint, method = 'GET', body, timeoutMs = 8000) {
   if (window.ICC_FORCE_LOCAL_PREVIEW) {
     throw new Error('Local CSV preview mode is active. The app is using the local database instead of the API.');
   }
@@ -204,14 +215,16 @@ async function apiRequest(endpoint, method = 'GET', body) {
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) { headers['Content-Type'] = 'application/json'; }
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   let response;
   try { response = await fetch(`${baseUrl}/${String(endpoint).replace(/^\//, '')}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: controller.signal }); } catch (error) { throw new Error(error.name === 'AbortError' ? 'Backend request timed out' : error.message); } finally { clearTimeout(timeout); }
   if (response.status === 401) {
-    setAccessToken('');
-    if (!localWorkspaceAllowed) window.location.reload();
-    else showAuth('Your session has expired. Please sign in again.');
-    throw new Error('Authentication required');
+    if (!iapAuthEnabled) {
+      setAccessToken('');
+      if (!localWorkspaceAllowed) window.location.reload();
+      else showAuth('Your session has expired. Please sign in again.');
+    }
+    throw new Error(iapAuthEnabled ? 'IAP authentication required' : 'Authentication required');
   }
   const contentType = response.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await response.json() : await response.text();
@@ -221,12 +234,58 @@ async function apiRequest(endpoint, method = 'GET', body) {
 window.apiRequest = apiRequest;
 
 const escapeHtml = (value) => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+const saveStatus = document.querySelector('#workspaceSaveStatus');
+let saveStatusTimer;
+function setSaveStatus(message, failed = false) {
+  if (!saveStatus) return;
+  clearTimeout(saveStatusTimer);
+  saveStatus.hidden = !message;
+  saveStatus.textContent = message;
+  saveStatus.classList.toggle('save-error', failed);
+  if (message && !failed) saveStatusTimer = setTimeout(() => { saveStatus.hidden = true; }, 4000);
+}
 const save = (key, value) => {
-  if (localWorkspaceAllowed) localStorage.setItem(`icc-${key}`, JSON.stringify(value));
+  if (localWorkspaceAllowed) {
+    localStorage.setItem(`icc-${key}`, JSON.stringify(value));
+    return;
+  }
+  if (!iapAuthEnabled || ['borrowings', 'inventory'].includes(key)) return;
+  const snapshot = JSON.parse(JSON.stringify(value));
+  const previous = sharedSaveQueues.get(key) || Promise.resolve();
+  const write = previous.catch(() => {}).then(async () => {
+    setSaveStatus('Saving shared changes…');
+    const response = await apiRequest(`/workspace/edits/${encodeURIComponent(key)}`, 'PUT', {
+      expected_version: sharedEditVersions[key] || 0,
+      value: snapshot,
+    });
+    sharedEditVersions[key] = response.version;
+    sharedEdits[key] = { value: snapshot, version: response.version };
+    setSaveStatus('Shared changes saved.');
+  });
+  sharedSaveQueues.set(key, write);
+  write.catch((error) => {
+    console.error(`Unable to save shared workspace edit "${key}":`, error);
+    setSaveStatus(`Could not save changes: ${error.message}`, true);
+  });
 };
+function mergeSharedStudentEdits(current, saved) {
+  const identity = (student) => String(student.jamesStudentId || student.jamesData?.['Student ID'] || student.studentId || student.sourceRow?.['Student ID'] || '').trim().toUpperCase();
+  const savedById = new Map(saved.map((student) => [identity(student), student]).filter(([id]) => id));
+  return current.map((student) => {
+    const previous = savedById.get(identity(student));
+    if (!previous) return student;
+    return {
+      ...student,
+      ...(previous.carryStatus !== undefined ? { carryStatus: previous.carryStatus } : {}),
+      ...(previous.tutor !== undefined ? { tutor: previous.tutor } : {}),
+    };
+  });
+}
 const load = (key, fallback) => {
   if (localWorkspaceAllowed && !useSavedLocalWorkspaceEdits) return fallback;
   if (window.ICC_FORCE_LOCAL_PREVIEW && ['robot-students', 'coding-students', 'inventory', 'robot-lessons', 'coding-lessons'].includes(key)) return fallback;
+  if (!localWorkspaceAllowed && iapAuthEnabled) return sharedEdits[key]?.value ?? fallback;
+  if (!localWorkspaceAllowed) return fallback;
   try { return JSON.parse(localStorage.getItem(`icc-${key}`)) ?? fallback; } catch { return fallback; }
 };
 const today = () => { const date = new Date(); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
@@ -812,12 +871,13 @@ function renderSystemStatus() {
   const apiUrl = getApiBaseUrl() || 'Not configured';
   const detailsTable = (heading, headers, rows) => `<section class="status-panel"><div class="section-header compact"><h2>${text(heading)} (${rows.length})</h2></div>${rows.length ? `<div class="records"><table class="data-table"><thead><tr>${headers.map((header) => `<th>${text(header)}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${row.map((value) => `<td>${text(value)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : '<p class="settings-value">None.</p>'}</section>`;
   const details = liveSheetsStatus.details;
-  const sheetsPanel = localLiveSheetsEnabled ? `<section class="status-panel"><div class="section-header compact"><div><span class="eyebrow">LOCAL READ-ONLY SOURCE</span><h2>Google Sheet</h2></div></div><p class="settings-value" role="status">${text(liveSheetsStatus.message)}</p></section>${details ? [
+  const sheetsPanel = (localLiveSheetsEnabled || liveSheetsMode) ? `<section class="status-panel"><div class="section-header compact"><div><span class="eyebrow">${liveSheetsMode ? 'LIVE READ-ONLY SOURCE' : 'LOCAL READ-ONLY SOURCE'}</span><h2>Google Sheet</h2></div></div><p class="settings-value" role="status">${text(liveSheetsStatus.message)}</p></section>${details ? [
     detailsTable('Students not in local roster', ['Student', 'Student ID', 'Course'], details.students.map((row) => [row.name, row.studentId, row.course])),
     detailsTable('Unmatched lessons', ['Date', 'Student', 'Student ID', 'Course', 'Robot', 'Status', 'Reason'], details.lessons.map((row) => [row.date, row.name, row.studentId, row.course, row.robot, row.status, row.reason])),
     detailsTable('Unmatched robot updates', ['Date', 'Student', 'Student ID', 'Robot', 'Status', 'Reason'], details.robots.map((row) => [row.date, row.name, row.studentId, row.robot, row.status, row.reason])),
   ].join('') : ''}` : '';
-  content.innerHTML = header('System Status', 'Verify the frontend, service layer, Cloud Run API, and Cloud SQL connection.') + `<div class="status-dashboard"><div class="status-panel"><div class="section-header compact"><div><span class="eyebrow">CLOUD ARCHITECTURE</span><h2>Connection checks</h2></div><button class="primary-button" data-action="check-system-status">Run checks</button></div><div id="systemStatusRows"><div class="service-status loading"><span></span><strong>Loading</strong><span>Run checks to verify backend services.</span></div></div></div><div class="status-panel developer-panel"><div class="section-header compact"><div><span class="eyebrow">WORKSPACE CONFIGURATION</span><h2>API access</h2></div></div><p class="settings-value">Backend: <strong>${getApiBaseUrl() ? escapeHtml(getApiBaseUrl()) : 'Not configured'}</strong></p><p class="settings-value">Session: <strong>${getAccessToken() ? 'Signed in for this browser session' : 'Not signed in'}</strong></p></div></div>${sheetsPanel ? `<div class="sheet-status-details">${sheetsPanel}</div>` : ''}`;
+  const sessionStatus = iapAuthEnabled ? 'Access controlled by Google IAP' : getAccessToken() ? 'Signed in for this browser session' : 'Not signed in';
+  content.innerHTML = header('System Status', 'Verify the frontend, service layer, Cloud Run API, and Cloud SQL connection.') + `<div class="status-dashboard"><div class="status-panel"><div class="section-header compact"><div><span class="eyebrow">CLOUD ARCHITECTURE</span><h2>Connection checks</h2></div><button class="primary-button" data-action="check-system-status">Run checks</button></div><div id="systemStatusRows"><div class="service-status loading"><span></span><strong>Loading</strong><span>Run checks to verify backend services.</span></div></div></div><div class="status-panel developer-panel"><div class="section-header compact"><div><span class="eyebrow">WORKSPACE CONFIGURATION</span><h2>API access</h2></div></div><p class="settings-value">Backend: <strong>${getApiBaseUrl() ? escapeHtml(getApiBaseUrl()) : 'Not configured'}</strong></p><p class="settings-value">Session: <strong>${sessionStatus}</strong></p></div></div>${sheetsPanel ? `<div class="sheet-status-details">${sheetsPanel}</div>` : ''}`;
 }
 async function checkSystemStatus() {
   const target = document.querySelector('#systemStatusRows');
@@ -875,14 +935,19 @@ function refreshLocalCalendar() {
   if (activeView === "Today's Students") renderTodaysStudents();
   calendarRefresh = (async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8787/today', { cache: 'no-store', signal: AbortSignal.timeout(45000) });
-      if (!response.ok) throw new Error('The local calendar reader could not retrieve events.');
-      const data = await response.json();
+      let data;
+      if (localCalendarEnabled) {
+        const response = await fetch('http://127.0.0.1:8787/today', { cache: 'no-store', signal: AbortSignal.timeout(45000) });
+        if (!response.ok) throw new Error('The local calendar reader could not retrieve events.');
+        data = await response.json();
+      } else {
+        data = await apiRequest('/calendar/today', 'GET', undefined, 45000);
+      }
       if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date) || !Array.isArray(data.events)) throw new Error('The calendar reader returned invalid data.');
       calendarState = { status: 'ready', date: data.date, events: data.events, error: '' };
     } catch (error) {
       console.error('Unable to refresh the calendar:', error);
-      calendarState = { status: 'error', date: '', events: [], error: 'Check the local calendar reader and try again.' };
+      calendarState = { status: 'error', date: '', events: [], error: 'Calendar is unavailable. Try again.' };
     } finally {
       calendarRefresh = null;
       if (activeView === "Today's Students") renderTodaysStudents();
@@ -892,7 +957,7 @@ function refreshLocalCalendar() {
 }
 
 function dailyLessonKey(row) {
-  return `${localCalendarEnabled ? calendarToday() : today()}|${row.type}|${row.student.studentId || row.name}${row.calendarEventId ? `|${row.calendarEventId}` : ''}`;
+  return `${calendarEnabled ? calendarToday() : today()}|${row.type}|${row.student.studentId || row.name}${row.calendarEventId ? `|${row.calendarEventId}` : ''}`;
 }
 
 function findDailyLessonRecord(records, row) {
@@ -902,7 +967,7 @@ function findDailyLessonRecord(records, row) {
 function saveDailyLessonDraft(row, changes) {
   const key = dailyLessonKey(row);
   const previous = state.dailyLessonDrafts.find((record) => record.key === key) || {};
-  const record = { ...previous, ...changes, key, date: localCalendarEnabled ? calendarToday() : today(), studentId: row.student.studentId || '', studentName: row.name, courseType: row.type, updatedAt: new Date().toISOString() };
+  const record = { ...previous, ...changes, key, date: calendarEnabled ? calendarToday() : today(), studentId: row.student.studentId || '', studentName: row.name, courseType: row.type, updatedAt: new Date().toISOString() };
   state.dailyLessonDrafts = [...state.dailyLessonDrafts.filter((item) => item.key !== key), record];
   save('daily-lesson-drafts', state.dailyLessonDrafts);
 }
@@ -929,11 +994,11 @@ function studentLessonSchedule(student, courseType) {
 }
 
 function nextLessonMarkup(fallback) {
-  return localCalendarEnabled ? '<strong data-calendar-next aria-live="polite">Checking calendar…</strong>' : `<strong>${text(fallback)}</strong>`;
+  return calendarEnabled ? '<strong data-calendar-next aria-live="polite">Checking calendar…</strong>' : `<strong>${text(fallback)}</strong>`;
 }
 
 async function loadNextCalendarLesson(student, courseType) {
-  if (!localCalendarEnabled) return;
+  if (!calendarEnabled) return;
   const target = content.querySelector('[data-calendar-next]');
   const studentId = String(student.jamesStudentId || student.jamesData?.['Student ID'] || student.sourceRow?.['James Student ID'] || '').trim();
   if (!studentId) {
@@ -941,12 +1006,18 @@ async function loadNextCalendarLesson(student, courseType) {
     return;
   }
   try {
-    const url = new URL('http://127.0.0.1:8787/next');
-    url.searchParams.set('studentId', studentId);
-    url.searchParams.set('courseType', courseType);
-    const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(45000) });
-    if (!response.ok) throw new Error('The local calendar reader could not retrieve the next lesson.');
-    const result = await response.json();
+    let result;
+    if (localCalendarEnabled) {
+      const url = new URL('http://127.0.0.1:8787/next');
+      url.searchParams.set('studentId', studentId);
+      url.searchParams.set('courseType', courseType);
+      const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(45000) });
+      if (!response.ok) throw new Error('The local calendar reader could not retrieve the next lesson.');
+      result = await response.json();
+    } else {
+      const params = new URLSearchParams({ studentId, courseType });
+      result = await apiRequest(`/calendar/next?${params}`, 'GET', undefined, 45000);
+    }
     let label;
     if (result.status === 'none') label = 'No matching calendar lesson';
     else if (result.status === 'review') label = 'Calendar event needs review';
@@ -997,7 +1068,7 @@ function finalizeToday() {
   const finalizedAt = new Date().toISOString();
   const finalRecords = todayLessonRows().map((row) => {
     const draft = findDailyLessonRecord(state.dailyLessonDrafts, row) || {};
-    return { key: dailyLessonKey(row), date: localCalendarEnabled ? calendarToday() : today(), studentId: row.student.studentId || '', studentName: row.name, courseType: row.type, lessonTime: row.lessonTime, tutor: row.tutor || '', startingLevel: draft.startingLevel ?? row.startingLevel ?? '', endingLevel: draft.endingLevel ?? row.endingLevel ?? '', learntTopic: draft.learntTopic ?? row.learntTopic ?? '', quickNotes: draft.quickNotes ?? row.notes ?? '', carryStatus: row.type === 'Robot' ? (draft.carryStatus ?? row.carryStatus ?? '') : '', finalizedAt };
+    return { key: dailyLessonKey(row), date: calendarEnabled ? calendarToday() : today(), studentId: row.student.studentId || '', studentName: row.name, courseType: row.type, lessonTime: row.lessonTime, tutor: row.tutor || '', startingLevel: draft.startingLevel ?? row.startingLevel ?? '', endingLevel: draft.endingLevel ?? row.endingLevel ?? '', learntTopic: draft.learntTopic ?? row.learntTopic ?? '', quickNotes: draft.quickNotes ?? row.notes ?? '', carryStatus: row.type === 'Robot' ? (draft.carryStatus ?? row.carryStatus ?? '') : '', finalizedAt };
   });
   const finalizedKeys = new Set(finalRecords.map((record) => record.key));
   state.dailyLessonFinalizations = [...state.dailyLessonFinalizations.filter((record) => !finalizedKeys.has(record.key)), ...finalRecords];
@@ -1023,7 +1094,7 @@ function exportWorkspace(filename = 'icc-control-room-export.json') {
 
 function todayLessonRows() {
   refreshDailyLessonRecords();
-  if (localCalendarEnabled) {
+  if (calendarEnabled) {
     if (calendarState.status !== 'ready' || calendarState.date !== calendarToday()) return [];
     return window.ICCLocalCalendar.matchEvents(calendarState.events, state).matched.map(({ event, type, student, lessonTime }) => {
       const row = {
@@ -1158,13 +1229,13 @@ function renderTodaysStudents() {
     return `<tr><td>${profileButton(row)}</td><td><span class="type-pill type-coding">Coding</span></td><td><span class="lesson-time">${text(row.lessonTime)}</span></td><td>${text(row.programme)}</td><td>${text(finished || '—')}</td><td>${text(topic)}</td><td><input class="inline-input today-notes-input" data-lesson-notes="${escapeHtml(row.name)}"${eventAttribute(row)} value="${escapeHtml(row.notes)}" placeholder="Quick note"></td><td><button class="mini-button" data-action="coding-profile" data-student-name="${escapeHtml(row.name)}">Open</button></td></tr>`; }).join('');
   const mathRows = sortedRows.filter(row => row.type === 'Math').map(row => `<tr><td>${profileButton(row)}</td><td><span class="type-pill type-math">Math</span></td><td><span class="lesson-time">${text(row.lessonTime)}</span></td><td><input class="inline-input today-notes-input" data-lesson-notes="${escapeHtml(row.name)}"${eventAttribute(row)} value="${escapeHtml(row.notes)}" placeholder="Quick note"></td><td><button class="mini-button" data-action="math-profile" data-student-name="${escapeHtml(row.name)}">Open</button></td></tr>`).join('');
   const section = (title, headers, body, count) => { const type = title.split(' ')[0].toLowerCase(); return `<section class="today-student-section today-${type}"><div class="section-header compact"><div><span class="eyebrow">${title.toUpperCase()}</span><h2>${count} students</h2></div></div><div class="records today-table-wrap"><table class="data-table today-table-${type}"><thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${body || `<tr><td colspan="${headers.length}"><div class="empty-state">No ${title.toLowerCase()} scheduled today.</div></td></tr>`}</tbody></table></div></section>`; };
-  const currentCalendar = localCalendarEnabled && calendarState.status === 'ready' && calendarState.date === calendarToday();
+  const currentCalendar = calendarEnabled && calendarState.status === 'ready' && calendarState.date === calendarToday();
   const unmatched = currentCalendar ? window.ICCLocalCalendar.matchEvents(calendarState.events, state).unmatched : [];
-  const calendarNotice = !localCalendarEnabled ? '' : currentCalendar
+  const calendarNotice = !calendarEnabled ? '' : currentCalendar
     ? `Google Calendar · ${calendarState.date} · ${calendarState.events.length} events · ${unmatched.length} need review`
     : calendarState.status === 'loading' ? 'Google Calendar is loading.' : `Google Calendar is unavailable or out of date. ${calendarState.error || 'Refresh the calendar.'}`;
   const unmatchedMarkup = unmatched.length ? `<section class="today-student-section"><h2>Calendar events needing review</h2>${table(['Time', 'Event', 'Student ID', 'Course', 'Reason'], unmatched.map((event) => [text(window.ICCLocalCalendar.timeLabel(event)), text(event.title || 'Untitled event'), text(event.studentId || '—'), text(event.course || '—'), text(event.reason)]))}</section>` : '';
-  content.innerHTML = header("Today's Students", 'Daily workload for students with a lesson scheduled today.', localCalendarEnabled ? button('Refresh calendar', 'refresh-calendar', 'mini-button') : '') + `<div class="demo-banner">${localCalendarEnabled ? text(calendarNotice) : `Today's Date · ${today()}`}</div>
+  content.innerHTML = header("Today's Students", 'Daily workload for students with a lesson scheduled today.', calendarEnabled ? button('Refresh calendar', 'refresh-calendar', 'mini-button') : '') + `<div class="demo-banner">${calendarEnabled ? text(calendarNotice) : `Today's Date · ${today()}`}</div>
     <div class="today-panel">
       <div class="dashboard-strip"><div><strong>${studentCount()}</strong><span>Students Today</span></div><div><strong>${studentCount('Robot')}</strong><span>Robot</span></div><div><strong>${studentCount('Coding')}</strong><span>Coding</span></div><div><strong>${studentCount('Math')}</strong><span>Math</span></div></div>${unmatchedMarkup}<section class="conversion-panel"><div class="section-header compact"><div><span class="eyebrow">CODING CURRICULUM TOOL</span><h2>Level conversion</h2></div><span class="table-hint">Independent lookup · not linked to a student</span></div><div class="conversion-grid"><label>Programme<select id="conversionProgramme">${[...new Set(state.curriculum.map((item) => item['Program name']).filter(Boolean))].sort().map((programme) => `<option ${programme === todayConversion.programme ? 'selected' : ''}>${text(programme)}</option>`).join('')}</select></label><label>Starting level<input id="conversionStart" type="number" min="1" value="${escapeHtml(todayConversion.start)}"></label><label>Ending level<input id="conversionEnd" type="number" min="1" value="${escapeHtml(todayConversion.end)}"></label><output id="conversionTopics">${text(codingTopicsForRange({ course: todayConversion.programme }, todayConversion.start, todayConversion.end).join(', ') || 'Enter a starting and ending level')}</output></div></section>${section('Robot students',['Student Name','Student Type','Lesson Time','Programme','Next robot','Borrowed item','Robot Carry Status','Quick Notes','Checklist'],robotRows,studentCount('Robot'))}${section('Coding students',['Student Name','Student Type','Lesson Time','Programme','Last Finished Level','Current Topic','Quick Notes','Actions'],codingRows,studentCount('Coding'))}${section('Math students',['Student Name','Student Type','Lesson Time','Quick Notes','Actions'],mathRows,studentCount('Math'))}</div>`;
   document.querySelectorAll('#conversionProgramme, #conversionStart, #conversionEnd').forEach((control) => control.oninput = control.onchange = () => {
@@ -1352,7 +1423,7 @@ function renderStudentProfile() {
       </div>
       <div class="journey-layout">
         <div class="journey-panel"><div class="section-header compact"><div><span class="eyebrow">ROBOT LEARNING JOURNEY</span><h2>Current path</h2></div></div>${pathwayFor(student, 'Robot')?.startedOn ? '<p class="auth-help">Sheet lessons after the change date are assumed to belong to this pathway. The checklist still reflects the previous pathway.</p>' : ''}<div class="journey-track">
-          ${journeySteps.length ? journeySteps.map(({ row, label }, index) => `<div class="journey-step ${label}"><span class="journey-icon">${label === 'completed' ? icon('check') : label === 'current' ? icon('bot') : icon('clock')}</span><div><strong>${text(normalizeRobotName(row.Robot) || 'Robot')}</strong><small>${row.Status === 'Unknown' ? 'Status unknown' : label === 'completed' ? 'Completed' : label === 'current' ? 'Current robot' : 'Upcoming'}</small></div><button class="status-button" data-progress="${index}" ${row.conflict ? 'disabled title="Multiple saved records need review"' : localLiveSheetsEnabled || pathwayFor(student, 'Robot')?.startedOn || row.reviewedProgress ? 'disabled title="Progress is read-only"' : ''}>${text(row.Status || 'Not started')}</button></div>`).join('') : '<div class="empty-state">No robot learning path is available yet.</div>'}
+          ${journeySteps.length ? journeySteps.map(({ row, label }, index) => `<div class="journey-step ${label}"><span class="journey-icon">${label === 'completed' ? icon('check') : label === 'current' ? icon('bot') : icon('clock')}</span><div><strong>${text(normalizeRobotName(row.Robot) || 'Robot')}</strong><small>${row.Status === 'Unknown' ? 'Status unknown' : label === 'completed' ? 'Completed' : label === 'current' ? 'Current robot' : 'Upcoming'}</small></div><button class="status-button" data-progress="${index}" ${row.conflict ? 'disabled title="Multiple saved records need review"' : localLiveSheetsEnabled || liveSheetsMode || pathwayFor(student, 'Robot')?.startedOn || row.reviewedProgress ? 'disabled title="Progress is read-only"' : ''}>${text(row.Status || 'Not started')}</button></div>`).join('') : '<div class="empty-state">No robot learning path is available yet.</div>'}
         </div></div>
       </div>
       ${previousRobotsMarkup}${savedProgressMarkup}${preservedRobotsMarkup}
@@ -1361,7 +1432,7 @@ function renderStudentProfile() {
     </div>`;
   document.querySelector('#editPathway')?.addEventListener('click', () => openPathwayEditor(student, 'Robot', renderStudentProfile));
   document.querySelectorAll('[data-progress]').forEach((item) => item.onclick = () => {
-    if (localLiveSheetsEnabled) return;
+    if (localLiveSheetsEnabled || liveSheetsMode) return;
     const entry = programmeProgress[Number(item.dataset.progress)];
     if (!entry || entry.conflict) return;
     let row = entry.sourceProgress || (progress.includes(entry) ? entry : null);
@@ -1938,7 +2009,7 @@ function handleAction(action) {
   if (action === 'math-students') { activeView = 'Math Students'; render(); }
   if (action === 'finalize-today') { finalizeToday(); renderTodaysStudents(); }
   if (action === 'check-system-status') checkSystemStatus();
-  if (action === 'refresh-calendar' && localCalendarEnabled) refreshLocalCalendar();
+  if (action === 'refresh-calendar' && calendarEnabled) refreshLocalCalendar();
   if (action === "today-students") { activeView = "Today's Students"; renderTodaysStudents(); }
   if (action.startsWith('inventory-kit:')) { activeInventoryKit = action.slice(14); renderComponents(); }
   if (action === 'checklist') { activeView = 'Student Checklist'; renderStudentChecklist(); }
@@ -2096,10 +2167,11 @@ const workspaceData = localDemoEnabled && !localDemoSignedIn
     if (!response.ok) throw new Error(`Local workspace data request returned ${response.status}`);
     return response.json();
   })
-  : getAccessToken() && getApiBaseUrl()
+  : (getAccessToken() || iapAuthEnabled) && getApiBaseUrl()
     ? apiRequest('/workspace/bootstrap')
+    : iapAuthEnabled ? Promise.reject(new Error('The same-origin /api route is not configured for this IAP deployment.'))
     : Promise.resolve({});
-if (!localWorkspaceAllowed && !getAccessToken()) {
+if (!localWorkspaceAllowed && !getAccessToken() && !iapAuthEnabled) {
   services = window.createServices();
   if (!getApiBaseUrl()) {
     authError.hidden = false;
@@ -2107,14 +2179,41 @@ if (!localWorkspaceAllowed && !getAccessToken()) {
   }
   showAuth();
 }
+if (!localWorkspaceAllowed && iapAuthEnabled && !getApiBaseUrl()) {
+  content.innerHTML = header('Workspace unavailable', 'The same-origin /api route is not configured for this IAP deployment.');
+}
 workspaceData.then(async (value) => {
-  Object.assign(state, value);
+  const { sharedEdits: savedEdits = {}, ...workspace } = value;
+  sharedEdits = savedEdits;
+  for (const [key, edit] of Object.entries(sharedEdits)) sharedEditVersions[key] = edit.version;
+  Object.assign(state, workspace);
+  if (liveSheetsMode) {
+    localLiveSheetsReady = true;
+    const sidebarUpdate = document.querySelector('#liveSheetsUpdate');
+    sidebarUpdate.hidden = false;
+    sidebarUpdate.textContent = 'Google Sheet: live';
+    liveSheetsStatus = { message: 'Roster and lesson progress loaded from Google Sheets.', details: null };
+  }
   if (localWorkspaceAllowed) window.ICCLocalPathways.validateRobotReviews(state.robotPathwayReviews, state.robotProgressReviews);
   window.__ICC_LOCAL_STATE__ = { ...state };
   services = window.createServices();
-  const savedStudents = localWorkspaceAllowed ? load('robot-students', []) : [];
+  const savedStudents = load('robot-students', []);
   if (localWorkspaceAllowed) state.robotStudents = window.ICCLocalLiveSheets.preserveIncludedRobotStudents(state.robotStudents, savedStudents);
-  const savedCodingStudents = localWorkspaceAllowed ? load('coding-students', []) : []; if (savedCodingStudents.length) state.codingStudents = savedCodingStudents; const savedLessons = localWorkspaceAllowed ? load('robot-lessons', []) : []; if (savedLessons.length) state.robotLessons = savedLessons; const savedCodingLessons = localWorkspaceAllowed ? load('coding-lessons', []) : []; if (savedCodingLessons.length) state.codingLessons = savedCodingLessons; const savedItems = localWorkspaceAllowed ? load('component-items', []) : []; const savedByKey = new Map(savedItems.map((row) => [`${row.student}:${row.item}`, row]));
+  else if (liveSheetsMode && savedStudents.length) state.robotStudents = mergeSharedStudentEdits(state.robotStudents, savedStudents);
+  const savedCodingStudents = load('coding-students', []);
+  if (savedCodingStudents.length) state.codingStudents = liveSheetsMode
+    ? mergeSharedStudentEdits(state.codingStudents, savedCodingStudents) : savedCodingStudents;
+  const savedMathStudents = load('math-students', []);
+  if (savedMathStudents.length) state.mathStudents = liveSheetsMode
+    ? mergeSharedStudentEdits(state.mathStudents, savedMathStudents) : savedMathStudents;
+  const savedLessons = load('robot-lessons', []);
+  if (!liveSheetsMode && savedLessons.length) state.robotLessons = savedLessons;
+  const savedCodingLessons = load('coding-lessons', []);
+  if (!liveSheetsMode && savedCodingLessons.length) state.codingLessons = savedCodingLessons;
+  const savedMathLessons = load('math-lessons', []);
+  if (!liveSheetsMode && savedMathLessons.length) state.mathLessons = savedMathLessons;
+  const savedItems = load('component-items', []);
+  const savedByKey = new Map(savedItems.map((row) => [`${row.student}:${row.item}`, row]));
   if (localWorkspaceAllowed && state.localBorrowingResetVersion) {
     const resetKey = 'icc-local-borrowing-reset-version';
     if (localStorage.getItem(resetKey) !== state.localBorrowingResetVersion) {
@@ -2127,11 +2226,11 @@ workspaceData.then(async (value) => {
   state.componentItems = state.componentItems.map((row) => { const saved = savedByKey.get(`${row.student}:${row.item}`); return saved ? { ...row, studentQty: saved.studentQty, quantityStatus: quantityResult(row.requiredQty, saved.studentQty), sourceRow: { ...row.sourceRow, Notes: saved.sourceRow?.Notes || row.sourceRow?.Notes || '' } } : row; });
   const savedInventory = localWorkspaceAllowed ? load('inventory', []) : []; const savedInventoryByKey = new Map(savedInventory.map((row) => [`${row.Kit}:${row.Component}`, row]));
   state.inventory = state.inventory.map((row) => { const saved = savedInventoryByKey.get(`${row.Kit}:${row.Component}`); return saved ? { ...row, 'Total center qty': saved['Total center qty'], 'Last counted': saved['Last counted'] || row['Last counted'], Notes: saved.Notes || row.Notes } : row; });
-  const savedProgress = localWorkspaceAllowed ? load('robot-progress', []) : [];
-  if (savedProgress.length) state.robotProgress = savedProgress;
+  const savedProgress = load('robot-progress', []);
+  if (savedProgress.length && (!liveSheetsMode || localWorkspaceAllowed)) state.robotProgress = savedProgress;
   if (localWorkspaceAllowed) state.robotProgress = window.ICCLocalPathways.applyRobotProgressRemovals(state.robotProgress, state.localRobotProgressRemovals, localStorage);
-  state.starterProgress = localWorkspaceAllowed ? load('starter-progress', []) : [];
-  progressFinishDates = localWorkspaceAllowed ? load('progress-finish-dates', {}) : {};
+  state.starterProgress = load('starter-progress', []);
+  progressFinishDates = load('progress-finish-dates', {});
   if (localWorkspaceAllowed && (!localDemoEnabled || localDemoSignedIn)) {
     repairStudentLinks();
     localStorage.setItem(localWorkspaceDataVersionKey, 'james-paid-v1');
@@ -2165,14 +2264,16 @@ workspaceData.then(async (value) => {
       liveSheetsStatus = { message: `Could not refresh; showing local data, which may be outdated. ${error.message}`, details: null };
     }
   }
-  if (localCalendarEnabled && (!localDemoEnabled || localDemoSignedIn)) await refreshLocalCalendar();
+  if (calendarEnabled && (!localDemoEnabled || localDemoSignedIn)) await refreshLocalCalendar();
   window.__ICC_LOCAL_STATE__ = { ...state };
   services.LibraryService.hydrateFromState(state);
   services.InventoryService.hydrateFromState(state);
   services.BorrowingService.hydrateFromState(state);
-  const hasApi = Boolean(getApiBaseUrl() && getAccessToken());
+  const hasApi = Boolean(getApiBaseUrl() && (getAccessToken() || iapAuthEnabled));
   if (!hasApi) { render(); return null; }
-  return services.load().catch(() => {
+  return services.load().catch((error) => {
+    console.error('Unable to refresh workspace services:', error);
+    setSaveStatus(`Some workspace data could not refresh: ${error.message}`, true);
     services.LibraryService.hydrateFromState(state);
     services.InventoryService.hydrateFromState(state);
     services.BorrowingService.hydrateFromState(state);

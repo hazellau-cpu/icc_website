@@ -1,15 +1,29 @@
 const http = require('node:http');
 const crypto = require('node:crypto');
+const fs = require('node:fs/promises');
+const path = require('node:path');
 const { query, transaction } = require('./db');
 const { createJamesRouter } = require('./james-router');
-const { createSheetsReadRouter } = require('./sheets-read-router');
+const { createSheetsReadRouter, spreadsheetDate, spreadsheetTime } = require('./sheets-read-router');
 const { createGoogleSheetsReader } = require('./google-sheets');
+const { createGoogleCalendarReader } = require('./google-calendar');
+const { createIapAuthenticator } = require('./iap-auth');
+const { merge: mergeLiveSheets } = require('../local-live-sheets');
 const { authenticatePassword } = require('./password-auth');
 
 const port = Number(process.env.PORT || 8080);
 const jwtSecret = process.env.JWT_SECRET || '';
 const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:8000';
-const jamesRouter = createJamesRouter({ query, jwtSecret });
+const approvalTokenSecret = process.env.JAMES_APPROVAL_TOKEN_SECRET || jwtSecret;
+const jamesRouter = createJamesRouter({ query, jwtSecret: approvalTokenSecret });
+const iapAudience = process.env.IAP_AUDIENCE || '';
+if (process.env.K_SERVICE && !iapAudience) {
+  throw new Error('IAP_AUDIENCE must be configured for Cloud Run.');
+}
+const iapAuthenticator = iapAudience ? createIapAuthenticator({ audience: iapAudience }) : null;
+const googleCalendarReader = createGoogleCalendarReader({
+  calendarId: process.env.GOOGLE_CALENDAR_ID || '',
+});
 const sheetsAllowedOrigins = (() => {
   const configured = process.env.SHEETS_READ_ALLOWED_ORIGINS || '';
   try {
@@ -23,19 +37,34 @@ const sheetsReadSource = process.env.SHEETS_READ_SOURCE || 'database';
 if (!['database', 'google'].includes(sheetsReadSource)) {
   throw new Error('SHEETS_READ_SOURCE must be either "database" or "google"');
 }
+const googleSheetsReader = sheetsReadSource === 'google'
+  ? createGoogleSheetsReader({
+    spreadsheetId: process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '',
+  })
+  : null;
 const sheetsReadRouter = createSheetsReadRouter({
   query,
   jwtSecret: process.env.SHEETS_READ_JWT_SECRET || '',
   clientId: process.env.SHEETS_READ_CLIENT_ID || '',
   clientSecret: process.env.SHEETS_READ_CLIENT_SECRET || '',
   allowedOrigins: sheetsAllowedOrigins,
-  readSpreadsheet: sheetsReadSource === 'google'
-    ? createGoogleSheetsReader({
-      spreadsheetId: process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '',
-      serviceAccountJson: process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_JSON || '',
-    })
-    : null,
+  readSpreadsheet: googleSheetsReader,
 });
+
+const sharedEditKeys = new Set([
+  'daily-lesson-drafts',
+  'daily-lesson-finalizations',
+  'robot-students',
+  'coding-students',
+  'math-students',
+  'robot-progress',
+  'component-items',
+  'robot-lessons',
+  'coding-lessons',
+  'math-lessons',
+  'starter-progress',
+  'progress-finish-dates',
+]);
 
 function send(response, status, body) {
   response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': corsOrigin, 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS' });
@@ -79,6 +108,24 @@ function readJson(request, maxBytes = 1024 * 1024) {
   });
 }
 async function protectedRoute(request, response) {
+  if (iapAuthenticator) {
+    let user;
+    try {
+      user = await iapAuthenticator(request.headers['x-goog-iap-jwt-assertion']);
+    } catch (error) {
+      console.error('IAP identity verification is unavailable:', error.message);
+      send(response, 503, { detail: 'Identity verification is unavailable' });
+      return false;
+    }
+    if (!user) {
+      send(response, 401, { detail: 'IAP authentication required' });
+      return false;
+    }
+    request.authenticatedUser = user;
+    console.log(JSON.stringify({ event: 'api_request', actor_email: user.email, method: request.method, path: new URL(request.url, `http://${request.headers.host}`).pathname, timestamp: new Date().toISOString() }));
+    return true;
+  }
+
   const authorization = request.headers.authorization || '';
   const user = authorization.startsWith('Bearer ') ? verifySessionToken(authorization.slice(7)) : null;
   if (!user || !user.sub || !Number.isInteger(user.tokenVersion)) { send(response, 401, { detail: 'Unauthorized' }); return false; }
@@ -92,11 +139,71 @@ async function protectedRoute(request, response) {
   return true;
 }
 
+async function getSharedEdits() {
+  const rows = await query('SELECT edit_key, edit_value, version FROM workspace_shared_edits');
+  return Object.fromEntries(rows.map((row) => {
+    const value = typeof row.edit_value === 'string' ? JSON.parse(row.edit_value) : row.edit_value;
+    return [row.edit_key, { value, version: Number(row.version) }];
+  }));
+}
+
+function sheetsForWorkspace(sheets) {
+  const result = {
+    Students: sheets.students.map((row) => ({
+      ...row.values,
+      'New Bill Start': spreadsheetDate(row.values['New Bill Start']),
+    })),
+  };
+  for (const log of sheets.progressLogs) {
+    result[log.sheet_name] = log.rows.map((row) => ({
+      ...row.values,
+      Date: spreadsheetDate(row.values.Date),
+      'Start Time': spreadsheetTime(row.values['Start Time']),
+      'End Time': spreadsheetTime(row.values['End Time']),
+    }));
+  }
+  return result;
+}
+
 function identifier(prefix) { return `${prefix}-${crypto.randomUUID()}`; }
 function databaseError(response, error) {
   console.error(error);
   const unavailable = /Database is not configured|ECONNREFUSED|ER_ACCESS_DENIED|PROTOCOL_CONNECTION/i.test(error.message);
   return send(response, unavailable ? 503 : 500, { detail: unavailable ? 'Database is unavailable' : 'Database request failed' });
+}
+
+const staticAssets = new Map([
+  ['/', ['index.html', 'text/html; charset=utf-8']],
+  ['/index.html', ['index.html', 'text/html; charset=utf-8']],
+  ['/icc-config.js', ['icc-config.js', 'text/javascript; charset=utf-8']],
+  ['/app.js', ['app.js', 'text/javascript; charset=utf-8']],
+  ['/services.js', ['services.js', 'text/javascript; charset=utf-8']],
+  ['/local-calendar-mapping.js', ['local-calendar-mapping.js', 'text/javascript; charset=utf-8']],
+  ['/local-pathways.js', ['local-pathways.js', 'text/javascript; charset=utf-8']],
+  ['/local-live-sheets.js', ['local-live-sheets.js', 'text/javascript; charset=utf-8']],
+  ['/styles.css', ['styles.css', 'text/css; charset=utf-8']],
+]);
+
+async function serveStatic(request, response, pathname) {
+  if (!['GET', 'HEAD'].includes(request.method)) return false;
+  const asset = staticAssets.get(pathname);
+  if (!asset) return false;
+  const publicFile = path.join(__dirname, '..', 'public', asset[0]);
+  const sourceFile = path.join(__dirname, '..', asset[0]);
+  let contents;
+  try {
+    contents = await fs.readFile(publicFile);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    contents = await fs.readFile(sourceFile);
+  }
+  response.writeHead(200, {
+    'Content-Type': asset[1],
+    'Cache-Control': asset[0] === 'index.html' || asset[0] === 'icc-config.js' ? 'no-store' : 'public, max-age=3600',
+    'X-Content-Type-Options': 'nosniff',
+  });
+  response.end(request.method === 'HEAD' ? undefined : contents);
+  return true;
 }
 
 function inventoryShape(row) {
@@ -227,7 +334,7 @@ async function getWorkspaceBootstrap() {
     codingStudents: studentRecords.filter((row) => row.studentType === 'Coding'),
     mathStudents: studentRecords.filter((row) => row.studentType === 'Math'),
   };
-  return {
+  const bootstrap = {
     ...studentLists,
     robotPrograms: programmes.map((row) => ({ ...row, Program: row.programme_name })),
     curriculum,
@@ -266,18 +373,38 @@ async function getWorkspaceBootstrap() {
     dailyLessonDrafts: [],
     dailyLessonFinalizations: [],
   };
+  const sharedEdits = await getSharedEdits();
+  if (!googleSheetsReader) return { ...bootstrap, sharedEdits };
+  const sheets = await googleSheetsReader();
+  const liveWorkspace = mergeLiveSheets(bootstrap, sheetsForWorkspace(sheets));
+  return { ...bootstrap, ...liveWorkspace, sharedEdits };
 }
 
 const server = http.createServer(async (request, response) => {
-  const url = new URL(request.url, `http://${request.headers.host}`);
+  const requestUrl = new URL(request.url, `http://${request.headers.host}`);
+  const url = new URL(requestUrl);
+  if (url.pathname === '/api') url.pathname = '/';
+  else if (url.pathname.startsWith('/api/')) url.pathname = url.pathname.slice(4);
+  const healthRequest = request.method === 'GET' && url.pathname === '/health';
+
+  if (iapAuthenticator && !healthRequest && !await protectedRoute(request, response)) return undefined;
+
   if (request.method === 'OPTIONS') {
-    if (url.pathname.startsWith('/api/sheets/')) return sheetsReadRouter.handleOptions(request, response);
+    if (requestUrl.pathname.startsWith('/api/sheets/')) return sheetsReadRouter.handleOptions(request, response);
     return send(response, 204, {});
   }
-  const sheetsHandled = await sheetsReadRouter.handle(request, response, url, readJson);
-  if (sheetsHandled) return undefined;
-  if (request.method === 'GET' && url.pathname === '/health') return send(response, 200, { status: 'ok', service: 'icc-backend' });
+  if (!iapAuthenticator) {
+    const sheetsHandled = await sheetsReadRouter.handle(request, response, requestUrl, readJson);
+    if (sheetsHandled) return undefined;
+  }
+  if (healthRequest) return send(response, 200, { status: 'ok', service: 'icc-backend' });
+  if (await serveStatic(request, response, url.pathname)) return undefined;
+  if (iapAuthenticator) {
+    const sheetsHandled = await sheetsReadRouter.handle(request, response, requestUrl, readJson);
+    if (sheetsHandled) return undefined;
+  }
   if (request.method === 'POST' && url.pathname === '/auth/password') {
+    if (iapAuthenticator) return send(response, 404, { detail: 'Password sign-in is disabled when IAP is enabled.' });
     try {
       if (jwtSecret.length < 32) return send(response, 503, { detail: 'Sign-in is not configured.' });
       const length = request.headers['content-length'];
@@ -299,11 +426,65 @@ const server = http.createServer(async (request, response) => {
     }
   }
   try {
-    if (!await protectedRoute(request, response)) return undefined;
+    if (!iapAuthenticator && !await protectedRoute(request, response)) return undefined;
+    if (request.method === 'GET' && url.pathname === '/auth/session') {
+      return send(response, 200, { user: request.authenticatedUser });
+    }
     const jamesHandled = await jamesRouter.handle(request, response, url, readJson, send);
     if (jamesHandled) return jamesHandled;
     if (request.method === 'GET' && url.pathname === '/workspace/bootstrap') {
       return send(response, 200, await getWorkspaceBootstrap());
+    }
+    const sharedEditMatch = url.pathname.match(/^\/workspace\/edits\/([a-z0-9-]+)$/);
+    if (request.method === 'PUT' && sharedEditMatch) {
+      const key = decodeURIComponent(sharedEditMatch[1]);
+      if (!sharedEditKeys.has(key)) return send(response, 404, { detail: 'Shared workspace edit not found' });
+      const body = await readJson(request);
+      if (!body || typeof body !== 'object' || Array.isArray(body)
+        || !Number.isSafeInteger(body.expected_version) || body.expected_version < 0
+        || !Object.hasOwn(body, 'value')) {
+        return send(response, 400, { detail: 'Invalid shared workspace edit' });
+      }
+      const serialized = JSON.stringify(body.value);
+      if (serialized === undefined || Buffer.byteLength(serialized) > 512 * 1024) {
+        return send(response, 413, { detail: 'Shared workspace edit is too large' });
+      }
+      if (body.expected_version === 0) {
+        try {
+          await query('INSERT INTO workspace_shared_edits (edit_key, edit_value, version, updated_by) VALUES (?, ?, 1, ?)', [
+            key, serialized, request.authenticatedUser.email,
+          ]);
+        } catch (error) {
+          if (error.code === 'ER_DUP_ENTRY') return send(response, 409, { detail: 'This shared edit changed in another session. Reload and retry.' });
+          throw error;
+        }
+      } else {
+        const result = await query('UPDATE workspace_shared_edits SET edit_value = ?, version = version + 1, updated_by = ? WHERE edit_key = ? AND version = ?', [
+          serialized, request.authenticatedUser.email, key, body.expected_version,
+        ]);
+        if (!result.affectedRows) return send(response, 409, { detail: 'This shared edit changed in another session. Reload and retry.' });
+      }
+      return send(response, 200, { key, version: body.expected_version + 1 });
+    }
+    if (request.method === 'GET' && url.pathname === '/calendar/today') {
+      try {
+        return send(response, 200, await googleCalendarReader.readToday());
+      } catch (error) {
+        console.error('Google Calendar read failed:', error.message);
+        return send(response, 503, { detail: 'Google Calendar is unavailable' });
+      }
+    }
+    if (request.method === 'GET' && url.pathname === '/calendar/next') {
+      try {
+        return send(response, 200, await googleCalendarReader.readNext({
+          studentId: url.searchParams.get('studentId') || '',
+          courseType: url.searchParams.get('courseType') || '',
+        }));
+      } catch (error) {
+        console.error('Google Calendar read failed:', error.message);
+        const invalid = /Invalid student ID or course type/.test(error.message);
+        return send(response, invalid ? 400 : 503, { detail: invalid ? error.message : 'Google Calendar is unavailable' });
+      }
     }
     if (request.method === 'GET' && url.pathname === '/students') {
       const rows = await query(`SELECT student_id AS \`Student ID\`, student_name AS Name, course_type AS \`Course type\`,

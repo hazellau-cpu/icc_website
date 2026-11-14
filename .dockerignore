@@ -1,0 +1,12 @@
+.git
+.github
+.vscode
+**/node_modules
+**/.env*
+**/*.pem
+**/*.key
+**/*service-account*.json
+**/*credentials*.json
+secrets/
+exports/
+workspace-db.json

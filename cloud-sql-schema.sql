@@ -239,3 +239,11 @@ CREATE TABLE student_topic_progress (
   UNIQUE KEY uq_student_topic_progress (student_id, programme_id, level_number, topic),
   INDEX idx_student_topic_progress_student (student_id)
 );
+
+CREATE TABLE workspace_shared_edits (
+  edit_key VARCHAR(64) NOT NULL PRIMARY KEY,
+  edit_value JSON NOT NULL,
+  version INT UNSIGNED NOT NULL DEFAULT 1,
+  updated_by VARCHAR(254) NOT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
