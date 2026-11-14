@@ -5,7 +5,14 @@
   "description": "Minimal Cloud Run API for ICC service-layer verification",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test",
+    "preflight:data": "node preflight-import.js",
+    "import:data": "node import-workspace-data.js"
+  },
+  "dependencies": {
+    "google-auth-library": "^10.0.0",
+    "mysql2": "^3.14.4"
   },
   "engines": {
     "node": ">=20"

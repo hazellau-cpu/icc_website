@@ -1,14 +1,64 @@
 (() => {
   const list = (value, key) => Array.isArray(value) ? value : Array.isArray(value?.[key]) ? value[key] : [];
 
+  const normalizeProgrammes = (rows) => rows.map((row) => {
+    if (typeof row === 'string') return row;
+    const name = row.programme_name || row['programme_name'] || row.name || row.Program || row['Program name'] || row.programme_id || row['programme_id'];
+    if (!name) return null;
+    return { ...row, programme_name: name, 'Program name': name, Program: name };
+  }).filter(Boolean);
+
+  const normalizeCurriculum = (rows) => rows.map((row) => {
+    if (!row || typeof row === 'string') return row;
+    const programme = row['Program name'] || row.programme_name || row.programme_id || row['programme_id'] || 'Unknown';
+    const level = row.Level ?? row.level ?? row['Level'] ?? row['level'] ?? '';
+    const item = row.Item || row.item_name || row['item_name'] || row.Topic || row['Topic'] || 'Unknown';
+    return { ...row, 'Program name': programme, 'Program': programme, 'Item': item, item, 'Level': level, level, 'Topic': row.Topic || row['Topic'] || item, topic: row.Topic || row['Topic'] || item };
+  });
+
+  const normalizeComponents = (rows) => rows.map((row) => {
+    if (!row || typeof row === 'string') return row;
+    const kit = row.Kit || row.kit_id || row['kit_id'] || row['Kit name'] || '';
+    const component = row.Component || row['Component'] || row.item_name || row['item_name'] || row.Item || row['Item'] || '';
+    const level = row.Level ?? row.level ?? row['Level'] ?? row['level'] ?? '';
+    const normalized = { ...row, Kit: kit, 'Kit': kit, Component: component, 'Component': component, 'Item': component, item: component };
+    if (level !== '' && level !== null && level !== undefined) normalized['Level'] = level;
+    if (level !== '' && level !== null && level !== undefined) {
+      const numericLevel = Number(level);
+      if (Number.isFinite(numericLevel) && numericLevel > 0) normalized[`Lv${numericLevel}`] = normalized[`Lv${numericLevel}`] || 1;
+    }
+    return normalized;
+  });
+
+  const normalizeRobots = (rows) => rows.map((row) => {
+    if (!row || typeof row === 'string') return row;
+    const kit = row['Kit name'] || row.kit_id || row['kit_id'] || row.Kit || row['Kit'] || '';
+    const robot = row['Robot name'] || row.item_name || row['item_name'] || row.Robot || row['Robot'] || '';
+    return { ...row, 'Kit name': kit, 'Robot name': robot, Kit: kit, Robot: robot, 'Programme ID': row['Programme ID'] || row.programme_id || '', 'Programme Name': row['Programme Name'] || row.programme_name || '', Variant: row.Variant || row.variant || '' };
+  });
+
   function createServices() {
     const request = (endpoint, method = 'GET', body) => window.apiRequest(endpoint, method, body);
     const cache = { programmes: [], curriculum: [], robots: [], components: [], inventory: [], borrowings: [] };
 
+    const hydrateFromState = (state) => {
+      cache.programmes = normalizeProgrammes(Array.isArray(state.robotPrograms) ? state.robotPrograms : []);
+      cache.curriculum = normalizeCurriculum(Array.isArray(state.curriculum) ? state.curriculum : []);
+      cache.robots = normalizeRobots(Array.isArray(state.robots) ? state.robots : []);
+      cache.components = normalizeComponents(Array.isArray(state.componentLibrary) ? state.componentLibrary : []);
+      cache.inventory = Array.isArray(state.centerInventory) ? state.centerInventory : (Array.isArray(state.inventory) ? state.inventory : []);
+      cache.borrowings = Array.isArray(state.borrowings) ? state.borrowings : [];
+    };
+
     const LibraryService = {
+      hydrateFromState,
       async load() {
-        const [programmes, curriculum, robots, components] = await Promise.all([request('/programmes'), request('/curriculum'), request('/robots'), request('/components')]);
-        cache.programmes = list(programmes, 'programmes'); cache.curriculum = list(curriculum, 'curriculum'); cache.robots = list(robots, 'robots'); cache.components = list(components, 'components');
+        try {
+          const [programmes, curriculum, robots, components] = await Promise.all([request('/programmes'), request('/curriculum'), request('/robots'), request('/components')]);
+          cache.programmes = normalizeProgrammes(list(programmes, 'programmes')); cache.curriculum = normalizeCurriculum(list(curriculum, 'curriculum')); cache.robots = normalizeRobots(list(robots, 'robots')); cache.components = normalizeComponents(list(components, 'components'));
+        } catch (error) {
+          hydrateFromState(window.__ICC_LOCAL_STATE__ || { robotPrograms: [], curriculum: [], robots: [], componentLibrary: [], inventory: [], borrowings: [] });
+        }
       },
       getProgrammes() { return cache.programmes.map((row) => typeof row === 'string' ? row : row.programme_name || row.name || row.Program || row['Program name']).filter(Boolean); },
       getCurriculum() { return cache.curriculum; },
@@ -19,7 +69,14 @@
     };
 
     const InventoryService = {
-      async load() { cache.inventory = list(await request('/centre-inventory'), 'items'); },
+      hydrateFromState: (state) => { cache.inventory = Array.isArray(state.centerInventory) ? state.centerInventory : (Array.isArray(state.inventory) ? state.inventory : []); },
+      async load() {
+        try {
+          cache.inventory = list(await request('/centre-inventory'), 'items');
+        } catch (error) {
+          cache.inventory = Array.isArray(window.__ICC_LOCAL_STATE__?.centerInventory) ? window.__ICC_LOCAL_STATE__.centerInventory : [];
+        }
+      },
       getItems() { return cache.inventory; },
       getItemById(id) { return cache.inventory.find((item) => item.inventory_id === id || `${item.Kit}:${item.Component}` === id); },
       async createItem(item) { const created = await request('/centre-inventory', 'POST', item); cache.inventory.push(created); return created; },
@@ -28,9 +85,26 @@
     };
 
     const BorrowingService = {
-      async load() { cache.borrowings = list(await request('/borrowings'), 'borrowings'); },
+      hydrateFromState: (state) => { cache.borrowings = Array.isArray(state.borrowings) ? state.borrowings : []; },
+      async load() {
+        try {
+          cache.borrowings = list(await request('/borrowings'), 'borrowings');
+        } catch (error) {
+          cache.borrowings = Array.isArray(window.__ICC_LOCAL_STATE__?.borrowings) ? window.__ICC_LOCAL_STATE__.borrowings : [];
+        }
+      },
       getBorrowingLogs() { return cache.borrowings; },
-      async createBorrowingLog(log) { const created = await request('/borrowings', 'POST', log); cache.borrowings.push(created); return created; },
+      async createBorrowingLog(log) {
+        try {
+          const created = await request('/borrowings', 'POST', log);
+          cache.borrowings.push(created);
+          return created;
+        } catch (error) {
+          const created = { borrowing_id: `local-${Date.now()}`, borrower: log.borrower, item: log.item, quantity: log.sourceRow?.Quantity || log.quantity || 1, status: log.status || 'Still borrowing', sourceRow: log.sourceRow || {} };
+          cache.borrowings.push(created);
+          return created;
+        }
+      },
       async returnBorrowedItem(id) { const updated = await request(`/borrowings/${encodeURIComponent(id)}/return`, 'POST'); const index = cache.borrowings.findIndex((row) => row.borrowing_id === id); if (index >= 0) cache.borrowings[index] = updated; return updated; },
       async getBorrowingHistory(studentId) { return list(await request(`/students/${encodeURIComponent(studentId)}/borrowings`), 'borrowings'); },
     };

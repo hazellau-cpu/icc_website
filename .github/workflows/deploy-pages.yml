@@ -27,10 +27,35 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Build public frontend artifact
+        env:
+          ICC_API_BASE_URL: ${{ vars.ICC_API_BASE_URL }}
+        run: |
+          set -eu
+          if [ -z "$ICC_API_BASE_URL" ]; then
+            echo "Configure the non-secret ICC_API_BASE_URL repository variable before deploying Pages."
+            exit 1
+          fi
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const apiUrl = new URL(process.env.ICC_API_BASE_URL);
+          if (apiUrl.protocol !== 'https:' || apiUrl.username || apiUrl.password || apiUrl.search || apiUrl.hash) {
+            throw new Error('ICC_API_BASE_URL must be an HTTPS URL without credentials, query, or fragment.');
+          }
+          fs.mkdirSync('_site', { recursive: true });
+          for (const file of ['index.html', 'app.js', 'services.js', 'local-live-sheets.js', 'local-pathways.js', 'local-calendar-mapping.js', 'styles.css']) {
+            fs.copyFileSync(file, `_site/${file}`);
+          }
+          const apiBase = apiUrl.href.endsWith('/') ? apiUrl.href.slice(0, -1) : apiUrl.href;
+          fs.writeFileSync('_site/icc-config.js',
+            `window.ICC_API_BASE_URL = ${JSON.stringify(apiBase)};\n`);
+          if (fs.existsSync('_site/workspace-db.json')) throw new Error('Student data must never be included in the public Pages artifact.');
+          NODE
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment

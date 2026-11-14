@@ -1,4 +1,14 @@
 .vscode/
 __pycache__/
+node_modules/
 *.pyc
 .DS_Store
+/workspace-db.json
+.env
+.env.*
+!.env.example
+*service-account*.json
+*credentials*.json
+*.pem
+*.key
+/secrets/
