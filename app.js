@@ -245,6 +245,10 @@ function setSaveStatus(message, failed = false) {
   if (message && !failed) saveStatusTimer = setTimeout(() => { saveStatus.hidden = true; }, 4000);
 }
 const save = (key, value) => {
+  if (localUndatedProgressPreviewEnabled() && ['robot-progress', 'coding-progress', 'robot-progress-history'].includes(key)) {
+    setSaveStatus('Local preview: hidden undated progress is read-only.', true);
+    return;
+  }
   if (localWorkspaceAllowed) {
     localStorage.setItem(`icc-${key}`, JSON.stringify(value));
     return;
@@ -682,7 +686,11 @@ function quantityResult(expected, actual) {
   if (!Number.isFinite(expectedNumber) || !Number.isFinite(actualNumber)) return 'Missing';
   return actualNumber >= expectedNumber ? 'Enough' : 'Missing';
 }
-function header(title, description, action = '') { return `<div class="view-head"><div><div class="eyebrow">ICC CONTROL ROOM</div><h1>${text(title)}</h1><p>${text(description)}</p></div>${action}</div>`; }
+function header(title, description, action = '') {
+  const previewNotice = localUndatedProgressPreviewEnabled()
+    ? '<p class="table-hint">Local preview only: undated progress is hidden; saved rows are unchanged.</p>' : '';
+  return `<div class="view-head"><div><div class="eyebrow">ICC CONTROL ROOM</div><h1>${text(title)}</h1><p>${text(description)}</p>${previewNotice}</div>${action}</div>`;
+}
 function button(label, action, className = 'mini-button') { return `<button class="${className}" data-action="${action}">${label}</button>`; }
 
 function renderNav() {
@@ -908,6 +916,52 @@ function lessonDateKey(value) {
   if (!shortDate) return '';
   const year = shortDate[3] ? Number(shortDate[3].length === 2 ? `20${shortDate[3]}` : shortDate[3]) : new Date().getFullYear();
   return `${year}-${String(Number(shortDate[2])).padStart(2, '0')}-${String(Number(shortDate[1])).padStart(2, '0')}`;
+}
+
+const systemLaunchDate = '2026-11-11';
+const localUndatedProgressPreviewKey = 'icc-local-undated-progress-preview';
+const undatedProgressCollections = new Set(['robotProgress', 'codingProgress', 'robotProgressHistory']);
+function localUndatedProgressPreviewEnabled() {
+  return localWorkspaceAllowed && localStorage.getItem(localUndatedProgressPreviewKey) === 'true';
+}
+
+function historyRecordDate(record) {
+  const source = record?.sourceRow || {};
+  return lessonDateKey(record?.date || record?.reviewedOn || source['Lesson Date'] || source.Date
+    || source.date || record?.['Lesson Date'] || record?.Date || record?.['Lesson time']);
+}
+
+function applySystemLaunchHistoryCutoff() {
+  state.dailyLessonDrafts = load('daily-lesson-drafts', state.dailyLessonDrafts);
+  state.dailyLessonFinalizations = load('daily-lesson-finalizations', state.dailyLessonFinalizations);
+  const collections = [
+    ['robotLessons', 'robot-lessons', historyRecordDate],
+    ['codingLessons', 'coding-lessons', historyRecordDate],
+    ['mathLessons', 'math-lessons', historyRecordDate],
+    ['robotProgress', 'robot-progress', historyRecordDate],
+    ['codingProgress', 'coding-progress', historyRecordDate],
+    ['robotProgressHistory', 'robot-progress-history', historyRecordDate],
+    ['robotProgressReviews', 'robot-progress-reviews', historyRecordDate],
+    ['starterProgress', 'starter-progress', historyRecordDate],
+    ['dailyLessonDrafts', 'daily-lesson-drafts', historyRecordDate],
+    ['dailyLessonFinalizations', 'daily-lesson-finalizations', historyRecordDate],
+  ];
+  for (const [collection, storageKey, dateOf] of collections) {
+    const records = state[collection] || [];
+    const key = `icc-${storageKey}`;
+    if (localWorkspaceAllowed) {
+      const saved = localStorage.getItem(key);
+      if (saved !== null) {
+        const savedRecords = JSON.parse(saved);
+        if (!Array.isArray(savedRecords)) throw new Error(`Saved ${storageKey} data is invalid.`);
+        const filteredSaved = window.ICCLocalLiveSheets.filterRecordsFromDate(savedRecords, systemLaunchDate, dateOf);
+        if (filteredSaved.length !== savedRecords.length) localStorage.setItem(key, JSON.stringify(filteredSaved));
+      }
+    }
+    state[collection] = window.ICCLocalLiveSheets.filterRecordsFromDate(records, systemLaunchDate, dateOf, {
+      keepUndated: !(localUndatedProgressPreviewEnabled() && undatedProgressCollections.has(collection)),
+    });
+  }
 }
 
 function lessonStudentName(value) {
@@ -2226,13 +2280,21 @@ workspaceData.then(async (value) => {
   state.componentItems = state.componentItems.map((row) => { const saved = savedByKey.get(`${row.student}:${row.item}`); return saved ? { ...row, studentQty: saved.studentQty, quantityStatus: quantityResult(row.requiredQty, saved.studentQty), sourceRow: { ...row.sourceRow, Notes: saved.sourceRow?.Notes || row.sourceRow?.Notes || '' } } : row; });
   const savedInventory = localWorkspaceAllowed ? load('inventory', []) : []; const savedInventoryByKey = new Map(savedInventory.map((row) => [`${row.Kit}:${row.Component}`, row]));
   state.inventory = state.inventory.map((row) => { const saved = savedInventoryByKey.get(`${row.Kit}:${row.Component}`); return saved ? { ...row, 'Total center qty': saved['Total center qty'], 'Last counted': saved['Last counted'] || row['Last counted'], Notes: saved.Notes || row.Notes } : row; });
-  const savedProgress = load('robot-progress', []);
-  if (savedProgress.length && (!liveSheetsMode || localWorkspaceAllowed)) state.robotProgress = savedProgress;
+  const savedProgressRaw = localWorkspaceAllowed && useSavedLocalWorkspaceEdits
+    ? localStorage.getItem('icc-robot-progress') : null;
+  let savedProgress;
+  try {
+    savedProgress = savedProgressRaw === null ? load('robot-progress', []) : JSON.parse(savedProgressRaw);
+  } catch {
+    throw new Error('Saved Robot progress data is invalid.');
+  }
+  if (!Array.isArray(savedProgress)) throw new Error('Saved Robot progress data is invalid.');
+  if (savedProgressRaw !== null || (savedProgress.length && (!liveSheetsMode || localWorkspaceAllowed))) state.robotProgress = savedProgress;
   if (localWorkspaceAllowed) state.robotProgress = window.ICCLocalPathways.applyRobotProgressRemovals(state.robotProgress, state.localRobotProgressRemovals, localStorage);
   state.starterProgress = load('starter-progress', []);
   progressFinishDates = load('progress-finish-dates', {});
   if (localWorkspaceAllowed && (!localDemoEnabled || localDemoSignedIn)) {
-    repairStudentLinks();
+    if (savedProgressRaw === null || savedProgress.length) repairStudentLinks();
     localStorage.setItem(localWorkspaceDataVersionKey, 'james-paid-v1');
   }
   if (localLiveSheetsEnabled && (!localDemoEnabled || localDemoSignedIn)) {
@@ -2246,7 +2308,11 @@ workspaceData.then(async (value) => {
       const config = await response.json();
       const sheets = await window.ICCLocalLiveSheets.read(config.spreadsheetId);
       const { warnings, warningDetails, ...liveData } = window.ICCLocalLiveSheets.merge(state, sheets, {
-        includeRobotProgressUpdate: (student, row) => !window.ICCLocalPathways.afterPathwayChange(lessonDateKey(row.Date), pathwayFor(student, 'Robot')),
+        includeRobotProgressUpdate: (student, row) => {
+          const date = lessonDateKey(row.Date);
+          return date >= systemLaunchDate
+            && !window.ICCLocalPathways.afterPathwayChange(date, pathwayFor(student, 'Robot'));
+        },
         robotProgrammeForStudent: (student) => studentProgramme(student),
         lessonDate: (row) => lessonDateKey(row.Date),
         reviewMatchesCurrentRobot: (student, review) => programmeTemplate(student).robotSequence.filter((row) =>
@@ -2264,6 +2330,7 @@ workspaceData.then(async (value) => {
       liveSheetsStatus = { message: `Could not refresh; showing local data, which may be outdated. ${error.message}`, details: null };
     }
   }
+  applySystemLaunchHistoryCutoff();
   if (calendarEnabled && (!localDemoEnabled || localDemoSignedIn)) await refreshLocalCalendar();
   window.__ICC_LOCAL_STATE__ = { ...state };
   services.LibraryService.hydrateFromState(state);

@@ -3,7 +3,7 @@
   const typeForCourse = (value) => {
     const course = String(value || '').trim();
     if (/^(aikiro|robokit|uaro|robot)/i.test(course)) return 'Robot';
-    if (/^(cs\d|coding|codemonkey|code\s*combat)/i.test(course)) return 'Coding';
+    if (/^(cs\d|coding|codemonkey|code\s*(combat|academy))/i.test(course)) return 'Coding';
     if (/^math/i.test(course)) return 'Math';
     return '';
   };

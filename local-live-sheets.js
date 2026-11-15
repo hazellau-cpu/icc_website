@@ -32,6 +32,20 @@
     return result;
   }
 
+  function filterRecordsFromDate(records, startDate, dateOf, { keepUndated = true } = {}) {
+    const parsedStartDate = new Date(`${startDate}T00:00:00Z`);
+    const validStartDate = /^\d{4}-\d{2}-\d{2}$/.test(startDate)
+      && !Number.isNaN(parsedStartDate.getTime())
+      && parsedStartDate.toISOString().slice(0, 10) === startDate;
+    if (!Array.isArray(records) || !validStartDate || typeof dateOf !== 'function' || typeof keepUndated !== 'boolean') {
+      throw new Error('A record list, valid start date, and date selector are required.');
+    }
+    return records.filter((record) => {
+      const date = String(dateOf(record) || '').trim();
+      return date ? date >= startDate : keepUndated;
+    });
+  }
+
   function parseTable(text, name) {
     const match = text.match(/setResponse\(([\s\S]*)\);?\s*$/);
     if (!match) throw new Error(`${name}: unexpected Google Sheets response.`);
@@ -207,7 +221,7 @@
       warningDetails,
     };
   }
-  const api = { read, merge, parseTable, preserveIncludedRobotStudents };
+  const api = { read, merge, parseTable, preserveIncludedRobotStudents, filterRecordsFromDate };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.ICCLocalLiveSheets = api;
 })(globalThis);

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { merge, parseTable, preserveIncludedRobotStudents } = require('../local-live-sheets');
+const { merge, parseTable, preserveIncludedRobotStudents, filterRecordsFromDate } = require('../local-live-sheets');
 
 function data() {
   return {
@@ -28,6 +28,18 @@ function state() {
     robotProgress: [{ studentId: 'A', Robot: 'CannoBot', Status: 'Not started' }],
   };
 }
+
+test('filters dated history from an inclusive start date while preserving undated records', () => {
+  const rows = [
+    { date: '2026-11-10' },
+    { date: '2026-11-11' },
+    { sourceRow: { 'Lesson Date': '2026-11-12' } },
+    { status: 'Done' },
+  ];
+  assert.deepEqual(filterRecordsFromDate(rows, '2026-11-11', (row) => row.date || row.sourceRow?.['Lesson Date']), rows.slice(1));
+  assert.deepEqual(filterRecordsFromDate(rows, '2026-11-11', (row) => row.date || row.sourceRow?.['Lesson Date'], { keepUndated: false }), rows.slice(1, 3));
+  assert.throws(() => filterRecordsFromDate(rows, '2026-02-30', (row) => row.date), /valid start date/);
+});
 
 test('merges paid roster and live lessons without mutating starter progress', () => {
   const baseline = state();
@@ -108,6 +120,16 @@ test('merges CodeCombat students and coding lessons without changing their progr
   assert.equal(merge(state(), sheets).codingStudents[0].course, 'Code Combat');
   sheets.Students[1]['Course type'] = 'Unknown course';
   assert.throws(() => merge(state(), sheets), /unsupported course/);
+});
+
+test('merges Code Academy students and coding lessons as Coding', () => {
+  const sheets = data();
+  sheets.Students[1]['Course type'] = 'Code Academy';
+  sheets['Coding Progress Log'][0]['Course Type'] = 'Code Academy';
+  const result = merge(state(), sheets);
+  assert.equal(result.codingStudents[0].course, 'Code Academy');
+  assert.equal(result.codingStudents[0].studentType, 'Coding');
+  assert.equal(result.codingLessons.length, 2);
 });
 
 test('preserves local progress links when James IDs differ from original IDs', () => {
