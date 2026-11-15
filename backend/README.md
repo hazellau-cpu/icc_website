@@ -23,7 +23,7 @@ For the local preview, `workspace-db.json` may also contain private `robotPathwa
 An older unmatched lesson is accounted for when exactly one same-student, same-programme robot review (including its confirmed display name) covers it and applies to the current sequence; the lesson remains in history. Unknown statuses, ambiguous matches and lessons newer than the review still require attention.
 
 The starter Sheet snapshot is a one-time local import, not a live connection. Robots absent from the source can have an `Unknown` status rather than being assumed unfinished; unmatched entries are retained separately.
-For local Robot birth-year sync only, set `localStarterDemographics` to `true` in the ignored `workspace-db.json`, configure the ignored `secrets/local-starter-sheet.json` with `spreadsheetId`, `serviceAccount`, and the `account` allowed to impersonate it, then run `node local-starter-sheet-server.js`. Share the private starter Sheet with that service account as Viewer. The loopback reader uses the read-only Sheets scope, imports only student IDs and birth years, and refreshes on page load. Conflicting or invalid entries are reported rather than guessed. This separate local sync is not included in the deployed backend.
+For local Robot birth-year sync, set `localStarterDemographics` to `true` in the ignored `workspace-db.json`, configure the ignored `secrets/local-starter-sheet.json` with `spreadsheetId`, `serviceAccount`, and the `account` allowed to impersonate it, then run `node local-starter-sheet-server.js`. Share the private starter Sheet with that service account as Viewer. The loopback reader uses the read-only Sheets scope, imports only student IDs and birth years, and refreshes on page load. Conflicting or invalid entries are reported rather than guessed. For Cloud Run, set `STARTER_SHEET_SPREADSHEET_ID` and share the starter Sheet with the attached runtime service account as Viewer. The backend imports birth years during the authenticated bootstrap when the Google Sheets source is enabled.
 An explicitly reviewed student-specific `robotSequence` may retain that student's Sheet sequence instead of the shared library sequence. A later pathway change takes precedence.
 An optional `hidePreviousTrackerProgress` flag on a local pathway review hides that student's previous tracker table without deleting the saved records.
 
@@ -33,7 +33,7 @@ In ROBOKIT Lv3, CannoBot and GunBot refer to the same robot. The preview retains
 
 In AIKIRO Lv1 additional, Robot Fighter and Robot Wrestler refer to the same robot. The preview retains progress under either name; Frog Bot is not assumed to be Flag Bot, and its saved records remain separate.
 
-For temporary localhost testing only, `ICC_LOCAL_LIVE_SHEETS` reads a link-accessible Sheet using the ignored `secrets/local-sheets.json` (`spreadsheetId`). The browser reads the four tabs directly on each page load and does not write to the Sheet. Anyone with the Sheet link can read its student data independently of this website. The production backend instead reads the Sheet server-side using Google Application Default Credentials from its attached runtime service account. Reload local preview to refresh; local component edits remain browser-specific.
+For localhost testing, `ICC_LOCAL_LIVE_SHEETS` uses the loopback reader `node local-starter-sheet-server.js`. Configure the ignored `secrets/local-sheets.json` (`spreadsheetId`) and `secrets/local-starter-sheet.json` (`serviceAccount` and the `account` permitted to impersonate it), and share the automation Sheet with the service account as Viewer. The reader reads the four tabs using the read-only Sheets scope and never writes to the Sheet. The production backend reads server-side using Google Application Default Credentials from its attached runtime service account. Reload local preview to refresh; local component edits remain browser-specific. Existing link-sharing settings are not changed automatically.
 
 The local dataset can explicitly retain an individual Robot student in the roster with `includeWhenUnpaid`, without changing the Sheet's payment status. This exception is private and does not apply to other students or the shared backend. A `localBorrowingResetVersion` in the local dataset clears older browser-local borrowing records once per browser; new local borrowing entries are saved normally afterward. Neither mechanism changes a Sheet or a remote database.
 
@@ -70,13 +70,14 @@ The `Students` tab supplies the existing nine-column response. Progress rows are
 
 ## Cloud Run and IAP deployment
 
-The root `Dockerfile` builds one service that hosts both the frontend and API. Deploy it behind an HTTPS load balancer with IAP enabled for the frontend and backend; do not create a separate public Pages frontend. Configure IAP to permit only approved Google accounts. Keep the Cloud Run service inaccessible except through the load balancer/IAP path, and attach the existing Calendar reader service account (or another appropriately permissioned runtime identity) to Cloud Run. Grant it read access to the Sheet and Calendar; no service-account key is needed.
+The root `Dockerfile` builds one service that hosts both the frontend and API. Deploy it behind an HTTPS load balancer with IAP enabled for the frontend and backend; do not create a separate public Pages frontend. Configure IAP to permit only approved Google accounts. Keep the Cloud Run service inaccessible except through the load balancer/IAP path, and attach `icc-calendar-reader@icc-dashboard-509402.iam.gserviceaccount.com` (or another appropriately permissioned runtime identity) to Cloud Run. Grant it read access to both Sheets and the Calendar; no service-account key is needed.
 
 Configure these non-secret Cloud Run values:
 
 - `IAP_AUDIENCE`: the expected IAP JWT audience for the protected backend.
 - `DB_USER`, `DB_NAME`, and `INSTANCE_UNIX_SOCKET`: the Cloud SQL application user, database, and `/cloudsql/PROJECT_ID:REGION:INSTANCE_ID` socket path. Provide `DB_PASSWORD` using Secret Manager.
 - `SHEETS_READ_SOURCE=google` and `GOOGLE_SHEETS_SPREADSHEET_ID`: enable the live Sheets source for the control-room bootstrap and partner read endpoints.
+- `STARTER_SHEET_SPREADSHEET_ID`: enable Robot birth-year sync from the starter Sheet; grant the same runtime service account Viewer access.
 - `GOOGLE_CALENDAR_ID`: the private Calendar identifier.
 
 Set `ICC_API_BASE_URL=/api`, `ICC_AUTH_MODE=iap`, `ICC_LIVE_SHEETS=true`, and `ICC_CALENDAR_ENABLED=true` in [icc-config.js](../icc-config.js). These are already the repository's deployment defaults. The IAP setting is ignored on localhost, where the private local preview behavior remains available.

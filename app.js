@@ -2303,10 +2303,9 @@ workspaceData.then(async (value) => {
     sidebarUpdate.textContent = 'Google Sheet: loading…';
     liveSheetsStatus = { message: 'Loading live data…', details: null };
     try {
-      const response = await fetch('./secrets/local-sheets.json', { cache: 'no-store' });
-      if (!response.ok) throw new Error('Local Sheet configuration is unavailable.');
-      const config = await response.json();
-      const sheets = await window.ICCLocalLiveSheets.read(config.spreadsheetId);
+      const response = await fetch('http://127.0.0.1:8791/automation', { cache: 'no-store', signal: AbortSignal.timeout(45000) });
+      if (!response.ok) throw new Error(`The local Sheet reader returned HTTP ${response.status}.`);
+      const sheets = await response.json();
       const { warnings, warningDetails, ...liveData } = window.ICCLocalLiveSheets.merge(state, sheets, {
         includeRobotProgressUpdate: (student, row) => {
           const date = lessonDateKey(row.Date);

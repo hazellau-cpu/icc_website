@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createGoogleSheetsReader } = require('./google-sheets');
+const { createGoogleSheetsReader, sheetsForWorkspace } = require('./google-sheets');
 
 const STUDENTS_HEADERS = ['Student ID', 'Name', 'Course type', 'Paid Status', 'Total Hours', 'Remaining Hours', 'Hours Completed', 'New Bill Start', 'Remarks'];
 const ROBOT_HEADERS = ['Date', 'Student ID', 'Tutor', 'Course Type', 'Comment', 'Robot Name', 'Progress Status', 'Remarks', 'Start Time', 'End Time', 'Attendance Status'];
@@ -69,4 +69,18 @@ test('rejects a template tab with missing required headers', async () => {
     fetchImpl,
   });
   await assert.rejects(readSpreadsheet(), /Students.*missing required columns/);
+});
+
+test('preserves textual billing notes while converting Sheet date and time values', () => {
+  const dateSerial = (Date.parse('2026-11-14T00:00:00Z') - Date.UTC(1899, 11, 30)) / 86400000;
+  const result = sheetsForWorkspace({
+    students: [
+      { values: { 'New Bill Start': 'not yet start' } },
+      { values: { 'New Bill Start': dateSerial } },
+    ],
+    progressLogs: [{ sheet_name: 'Robot Progress Log', rows: [{ values: { Date: dateSerial, 'Start Time': 0.5, 'End Time': 0.625 } }] }],
+  });
+  assert.equal(result.Students[0]['New Bill Start'], 'not yet start');
+  assert.equal(result.Students[1]['New Bill Start'], '2026-11-14');
+  assert.deepEqual(result['Robot Progress Log'][0], { Date: '2026-11-14', 'Start Time': '12:00', 'End Time': '15:00' });
 });

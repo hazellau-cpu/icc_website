@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { merge, parseTable, preserveIncludedRobotStudents, filterRecordsFromDate } = require('../local-live-sheets');
+const { merge, preserveIncludedRobotStudents, filterRecordsFromDate } = require('../local-live-sheets');
 
 function data() {
   return {
@@ -238,9 +238,4 @@ test('links older progress without IDs only through an unambiguous existing stud
   const result = merge(baseline, data());
   assert.equal(result.robotProgress[0].Status, 'Not started');
   assert.equal(result.warnings.unmatchedRobots, 2);
-});
-
-test('rejects missing headers in the Google response', () => {
-  const response = `google.visualization.Query.setResponse(${JSON.stringify({ status: 'ok', table: { cols: [{ label: 'Student ID' }], rows: [] } })});`;
-  assert.throws(() => parseTable(response, 'Students'), /missing columns/);
 });

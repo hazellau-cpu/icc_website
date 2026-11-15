@@ -154,6 +154,13 @@ test('reads student and latest progress rows from the live template tabs', async
   assert.equal(studentResponse.body.rows[0].row_number, 8);
   assert.deepEqual(studentResponse.body.rows[0].values, ['ST001', 'Demo Student', 'ROBOKIT Lv1', 'Paid', '10', '6', '4', '2026-09-01', '']);
 
+  sheets.students[0].values['New Bill Start'] = 'not yet start';
+  const noteResponse = makeResponse();
+  await router.handle({ method: 'GET', headers: { authorization: `Bearer ${token}` } }, noteResponse,
+    new URL('http://local/api/sheets/students?student_id=ST001&student_name=Demo%20Student'), async () => ({}));
+  assert.equal(noteResponse.status, 200);
+  assert.equal(noteResponse.body.rows[0].values[7], 'not yet start');
+
   const progressResponse = makeResponse();
   await router.handle({ method: 'GET', headers: { authorization: `Bearer ${token}` } }, progressResponse,
     new URL('http://local/api/sheets/progress/latest?student_id=ST001&student_name=Demo%20Student'), async () => ({}));

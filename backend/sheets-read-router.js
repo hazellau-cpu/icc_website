@@ -94,6 +94,10 @@ function spreadsheetDate(value) {
   throw new Error('Google Sheets dates must be real date cells, ISO dates, or unambiguous day/month dates');
 }
 
+function spreadsheetStudentDate(value) {
+  return typeof value === 'number' ? spreadsheetDate(value) : String(value ?? '').trim();
+}
+
 function spreadsheetTime(value) {
   if (value === null || value === undefined || value === '') return '';
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -261,7 +265,7 @@ function createSheetsReadRouter({ query, jwtSecret, clientId, clientSecret, allo
             const row = {
               row_number: Number(student.row_number) || 2,
               values: STUDENT_COLUMNS.map((column) => column === 'New Bill Start'
-                ? spreadsheetDate(student.values[column])
+                ? spreadsheetStudentDate(student.values[column])
                 : stringValue(student.values[column])),
             };
             send(response, 200, { sheet_name: 'Students', ...page([row], STUDENT_COLUMNS, pagination.limit, pagination.offset) }, request);
@@ -377,6 +381,7 @@ module.exports = {
   issueReadToken,
   verifyReadToken,
   spreadsheetDate,
+  spreadsheetStudentDate,
   spreadsheetTime,
   STUDENT_COLUMNS,
   PROGRESS_COLUMNS,

@@ -4,11 +4,13 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { query, transaction } = require('./db');
 const { createJamesRouter } = require('./james-router');
-const { createSheetsReadRouter, spreadsheetDate, spreadsheetTime } = require('./sheets-read-router');
-const { createGoogleSheetsReader } = require('./google-sheets');
+const { createSheetsReadRouter } = require('./sheets-read-router');
+const { createGoogleSheetsReader, sheetsForWorkspace } = require('./google-sheets');
+const { createGoogleAccessTokenProvider } = require('./google-access-token');
+const { readStarterDemographics } = require('./starter-demographics');
 const { createGoogleCalendarReader } = require('./google-calendar');
 const { createIapAuthenticator } = require('./iap-auth');
-const { merge: mergeLiveSheets } = require('../local-live-sheets');
+const { merge: mergeLiveSheets, applyStarterBirthYears } = require('../local-live-sheets');
 const { authenticatePassword } = require('./password-auth');
 
 const port = Number(process.env.PORT || 8080);
@@ -41,6 +43,10 @@ const googleSheetsReader = sheetsReadSource === 'google'
   ? createGoogleSheetsReader({
     spreadsheetId: process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '',
   })
+  : null;
+const starterSheetId = process.env.STARTER_SHEET_SPREADSHEET_ID || '';
+const starterSheetToken = starterSheetId
+  ? createGoogleAccessTokenProvider({ scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] })
   : null;
 const sheetsReadRouter = createSheetsReadRouter({
   query,
@@ -145,24 +151,6 @@ async function getSharedEdits() {
     const value = typeof row.edit_value === 'string' ? JSON.parse(row.edit_value) : row.edit_value;
     return [row.edit_key, { value, version: Number(row.version) }];
   }));
-}
-
-function sheetsForWorkspace(sheets) {
-  const result = {
-    Students: sheets.students.map((row) => ({
-      ...row.values,
-      'New Bill Start': spreadsheetDate(row.values['New Bill Start']),
-    })),
-  };
-  for (const log of sheets.progressLogs) {
-    result[log.sheet_name] = log.rows.map((row) => ({
-      ...row.values,
-      Date: spreadsheetDate(row.values.Date),
-      'Start Time': spreadsheetTime(row.values['Start Time']),
-      'End Time': spreadsheetTime(row.values['End Time']),
-    }));
-  }
-  return result;
 }
 
 function identifier(prefix) { return `${prefix}-${crypto.randomUUID()}`; }
@@ -377,6 +365,12 @@ async function getWorkspaceBootstrap() {
   if (!googleSheetsReader) return { ...bootstrap, sharedEdits };
   const sheets = await googleSheetsReader();
   const liveWorkspace = mergeLiveSheets(bootstrap, sheetsForWorkspace(sheets));
+  if (starterSheetToken) {
+    const records = await readStarterDemographics({ spreadsheetId: starterSheetId, getAccessToken: starterSheetToken });
+    const result = applyStarterBirthYears(liveWorkspace.robotStudents, records);
+    if (result.unmatched) console.warn(`Starter Sheet birth years: ${result.unmatched} student IDs not in the Robot roster.`);
+    liveWorkspace.robotStudents = result.students;
+  }
   return { ...bootstrap, ...liveWorkspace, sharedEdits };
 }
 

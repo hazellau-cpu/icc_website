@@ -1,10 +1,4 @@
 (function (root) {
-  const tabs = {
-    Students: ['Student ID', 'Name', 'Course type', 'Paid Status', 'Total Hours', 'Remaining Hours', 'Hours Completed', 'New Bill Start', 'Remarks'],
-    'Robot Progress Log': ['Date', 'Student ID', 'Tutor', 'Course Type', 'Comment', 'Robot Name', 'Progress Status', 'Remarks', 'Start Time', 'End Time', 'Attendance Status'],
-    'Coding Progress Log': ['Date', 'Student ID', 'Tutor', 'Course Type', 'Starting Level', 'Ending Level', 'Comment', 'Progress', 'Remarks', 'Start Time', 'End Time', 'Attendance Status'],
-    'Math Progress Log': ['Date', 'Student ID', 'Tutor', 'Course Type', 'Comment', 'Topic', 'Remarks', 'Start Time', 'End Time', 'Attendance Status'],
-  };
   const id = (value) => String(value || '').trim().toUpperCase();
   const { typeForCourse: courseType } = typeof module !== 'undefined' && module.exports
     ? require('./local-calendar-mapping')
@@ -66,36 +60,6 @@
       const date = String(dateOf(record) || '').trim();
       return date ? date >= startDate : keepUndated;
     });
-  }
-
-  function parseTable(text, name) {
-    const match = text.match(/setResponse\(([\s\S]*)\);?\s*$/);
-    if (!match) throw new Error(`${name}: unexpected Google Sheets response.`);
-    const result = JSON.parse(match[1]);
-    if (result.status !== 'ok' || !result.table || !Array.isArray(result.table.cols) || !Array.isArray(result.table.rows)) {
-      throw new Error(`${name}: Google Sheets could not read this tab.`);
-    }
-    const headers = result.table.cols.map((column) => String(column.label || '').trim());
-    const missing = tabs[name].filter((header) => !headers.includes(header));
-    if (missing.length) throw new Error(`${name}: missing columns ${missing.join(', ')}.`);
-    return result.table.rows.map((row) => Object.fromEntries(headers.map((header, index) => {
-      const cell = row.c?.[index];
-      return [header, cell?.f ?? cell?.v ?? ''];
-    })));
-  }
-
-  async function read(spreadsheetId, fetchImpl = fetch) {
-    if (!/^[a-zA-Z0-9_-]+$/.test(spreadsheetId)) throw new Error('Invalid local Sheets configuration.');
-    const entries = await Promise.all(Object.keys(tabs).map(async (name) => {
-      const url = new URL(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq`);
-      url.searchParams.set('sheet', name);
-      url.searchParams.set('headers', '1');
-      url.searchParams.set('tq', 'select *');
-      const response = await fetchImpl(url, { cache: 'no-store', signal: AbortSignal.timeout(15000) });
-      if (!response.ok) throw new Error(`${name}: Google Sheets returned HTTP ${response.status}.`);
-      return [name, parseTable(await response.text(), name)];
-    }));
-    return Object.fromEntries(entries);
   }
 
   function merge(state, sheets, { includeRobotProgressUpdate = () => true, robotProgrammeForStudent = (student) => student.program, lessonDate = (row) => row.Date, reviewMatchesCurrentRobot = () => false } = {}) {
@@ -243,7 +207,7 @@
       warningDetails,
     };
   }
-  const api = { read, merge, parseTable, preserveIncludedRobotStudents, filterRecordsFromDate, applyStarterBirthYears };
+  const api = { merge, preserveIncludedRobotStudents, filterRecordsFromDate, applyStarterBirthYears };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.ICCLocalLiveSheets = api;
 })(globalThis);

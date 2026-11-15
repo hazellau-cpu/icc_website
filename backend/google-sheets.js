@@ -1,4 +1,5 @@
 const { createGoogleAccessTokenProvider } = require('./google-access-token');
+const { spreadsheetDate, spreadsheetStudentDate, spreadsheetTime } = require('./sheets-read-router');
 
 const SHEETS_API_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
 const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
@@ -22,7 +23,7 @@ function createGoogleSheetsReader({ spreadsheetId, authClientProvider = null, fe
     for (const sheet of SHEETS) url.searchParams.append('ranges', sheet.range);
     url.searchParams.set('valueRenderOption', 'UNFORMATTED_VALUE');
     url.searchParams.set('dateTimeRenderOption', 'SERIAL_NUMBER');
-    const response = await fetchImpl(url, { headers: { Authorization: `Bearer ${token}` } });
+    const response = await fetchImpl(url, { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw new Error(`Google Sheets read failed with status ${response.status}`);
     const body = await response.json();
     if (!Array.isArray(body.valueRanges) || body.valueRanges.length !== SHEETS.length) {
@@ -51,4 +52,22 @@ function createGoogleSheetsReader({ spreadsheetId, authClientProvider = null, fe
   };
 }
 
-module.exports = { createGoogleSheetsReader };
+function sheetsForWorkspace(sheets) {
+  const result = {
+    Students: sheets.students.map((row) => ({
+      ...row.values,
+      'New Bill Start': spreadsheetStudentDate(row.values['New Bill Start']),
+    })),
+  };
+  for (const log of sheets.progressLogs) {
+    result[log.sheet_name] = log.rows.map((row) => ({
+      ...row.values,
+      Date: spreadsheetDate(row.values.Date),
+      'Start Time': spreadsheetTime(row.values['Start Time']),
+      'End Time': spreadsheetTime(row.values['End Time']),
+    }));
+  }
+  return result;
+}
+
+module.exports = { createGoogleSheetsReader, sheetsForWorkspace };
