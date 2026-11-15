@@ -2330,6 +2330,21 @@ workspaceData.then(async (value) => {
       liveSheetsStatus = { message: `Could not refresh; showing local data, which may be outdated. ${error.message}`, details: null };
     }
   }
+  if (localWorkspaceAllowed && state.localStarterDemographics === true && (!localDemoEnabled || localDemoSignedIn)) {
+    try {
+      if (!localLiveSheetsReady) throw new Error('The live student roster is unavailable.');
+      const response = await fetch('http://127.0.0.1:8791/birth-years', { cache: 'no-store', signal: AbortSignal.timeout(45000) });
+      if (!response.ok) throw new Error(`The local starter Sheet reader returned HTTP ${response.status}.`);
+      const { records } = await response.json();
+      const result = window.ICCLocalLiveSheets.applyStarterBirthYears(state.robotStudents, records);
+      state.robotStudents = result.students;
+      liveSheetsStatus.message += ` Starter Sheet birth years loaded; ${result.unmatched} student IDs not in the Robot roster.`;
+    } catch (error) {
+      console.error('Unable to refresh starter Sheet birth years:', error);
+      liveSheetsStatus.message += ` Starter Sheet birth years could not refresh: ${error.message}`;
+      document.querySelector('#liveSheetsUpdate').textContent += ' · birth years unavailable';
+    }
+  }
   applySystemLaunchHistoryCutoff();
   if (calendarEnabled && (!localDemoEnabled || localDemoSignedIn)) await refreshLocalCalendar();
   window.__ICC_LOCAL_STATE__ = { ...state };

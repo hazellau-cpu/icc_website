@@ -32,6 +32,28 @@
     return result;
   }
 
+  function applyStarterBirthYears(students, records) {
+    if (!Array.isArray(students) || !Array.isArray(records)) throw new Error('Invalid starter Sheet birth-year data.');
+    const years = new Map();
+    for (const record of records) {
+      const studentId = id(record?.studentId);
+      const year = String(record?.yearOfBirth ?? '').trim();
+      if (!studentId || !/^\d{4}$/.test(year) || years.has(studentId)) {
+        throw new Error('Invalid or duplicate starter Sheet birth-year record.');
+      }
+      years.set(studentId, year);
+    }
+    const matched = new Set();
+    const result = students.map((student) => {
+      const studentId = id(student.jamesStudentId);
+      if (!years.has(studentId)) return student;
+      if (matched.has(studentId)) throw new Error('Multiple Robot students have the same Sheet student ID.');
+      matched.add(studentId);
+      return { ...student, yob: years.get(studentId) };
+    });
+    return { students: result, unmatched: years.size - matched.size };
+  }
+
   function filterRecordsFromDate(records, startDate, dateOf, { keepUndated = true } = {}) {
     const parsedStartDate = new Date(`${startDate}T00:00:00Z`);
     const validStartDate = /^\d{4}-\d{2}-\d{2}$/.test(startDate)
@@ -221,7 +243,7 @@
       warningDetails,
     };
   }
-  const api = { read, merge, parseTable, preserveIncludedRobotStudents, filterRecordsFromDate };
+  const api = { read, merge, parseTable, preserveIncludedRobotStudents, filterRecordsFromDate, applyStarterBirthYears };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.ICCLocalLiveSheets = api;
 })(globalThis);

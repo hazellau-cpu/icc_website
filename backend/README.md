@@ -23,6 +23,7 @@ For the local preview, `workspace-db.json` may also contain private `robotPathwa
 An older unmatched lesson is accounted for when exactly one same-student, same-programme robot review (including its confirmed display name) covers it and applies to the current sequence; the lesson remains in history. Unknown statuses, ambiguous matches and lessons newer than the review still require attention.
 
 The starter Sheet snapshot is a one-time local import, not a live connection. Robots absent from the source can have an `Unknown` status rather than being assumed unfinished; unmatched entries are retained separately.
+For local Robot birth-year sync only, set `localStarterDemographics` to `true` in the ignored `workspace-db.json`, configure the ignored `secrets/local-starter-sheet.json` with `spreadsheetId`, `serviceAccount`, and the `account` allowed to impersonate it, then run `node local-starter-sheet-server.js`. Share the private starter Sheet with that service account as Viewer. The loopback reader uses the read-only Sheets scope, imports only student IDs and birth years, and refreshes on page load. Conflicting or invalid entries are reported rather than guessed. This separate local sync is not included in the deployed backend.
 An explicitly reviewed student-specific `robotSequence` may retain that student's Sheet sequence instead of the shared library sequence. A later pathway change takes precedence.
 An optional `hidePreviousTrackerProgress` flag on a local pathway review hides that student's previous tracker table without deleting the saved records.
 
