@@ -159,6 +159,25 @@ test('matches robot names across capitalization and spacing without guessing bet
   assert.deepEqual(ambiguous.robotProgress.map((row) => row.Status), ['Not started', 'Not started']);
 });
 
+test('matches reordered Robot and Bot lesson names without changing unrelated progress', () => {
+  const baseline = state();
+  baseline.robotProgress = [
+    { studentId: 'A', Robot: 'Robot Dancer', Status: 'Not started' },
+    { studentId: 'A', Robot: 'Robot Dog', Status: 'Not started' },
+  ];
+  const sheets = data();
+  sheets['Robot Progress Log'] = [{ 'Student ID': 'A', Date: '2026-01-01', 'Robot Name': 'dAnCeR bOt', 'Progress Status': 'finished' }];
+  const result = merge(baseline, sheets);
+  assert.deepEqual(result.robotProgress.map((row) => row.Status), ['Done', 'Not started']);
+  assert.equal(result.robotProgress[0].Robot, 'Robot Dancer');
+  assert.equal(result.warnings.unmatchedRobots, 0);
+
+  baseline.robotProgress.push({ studentId: 'A', Robot: 'Dancer Bot', Status: 'In progress' });
+  const ambiguous = merge(baseline, sheets);
+  assert.equal(ambiguous.warningDetails.robots[0].reason, 'Multiple matching robot progress records');
+  assert.deepEqual(ambiguous.robotProgress.map((row) => row.Status), ['Not started', 'Not started', 'In progress']);
+});
+
 test('matches GunBot and CannoBot only for ROBOKIT Lv3', () => {
   const baseline = state();
   baseline.robotStudents[0].program = 'ROBOKIT Lv3';

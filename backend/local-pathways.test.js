@@ -58,6 +58,28 @@ test('confirming a CodeCombat level with its CS alias does not reset progress', 
   assert.deepEqual(records[0].history, []);
 });
 
+test('matches robot name variants without guessing between different names', () => {
+  const programme = 'AIKIRO Lv1 additional';
+  for (const variant of ['dancerbot', '  DANCER  BOT ', 'Robot Dancer', 'robotdancer', 'Robot Dancer Bot']) {
+    assert.equal(pathways.robotNameKey(variant, programme), pathways.robotNameKey('Robot Dancer', programme));
+  }
+  assert.notEqual(pathways.robotNameKey('Robot Dancer', programme), pathways.robotNameKey('Dance Bot', programme));
+  assert.notEqual(pathways.robotNameKey('Robot Fish', programme), pathways.robotNameKey('Robot Dog', programme));
+  assert.notEqual(pathways.robotNameKey('Robot', programme), pathways.robotNameKey('', programme));
+  assert.notEqual(pathways.robotNameKey('Robot', programme), pathways.robotNameKey('Ro', programme));
+});
+
+test('flags ambiguous curriculum name variants rather than assigning one progress record twice', () => {
+  const programme = 'AIKIRO Lv1 original';
+  const template = [{ 'Robot name': 'Robot Dancer' }, { 'Robot name': 'Dancer Bot' }];
+  const progress = [{ Robot: 'dancerbot', Status: 'Done' }];
+  const result = pathways.reconcileRobotProgress(programme, template, progress, { name: 'Student', studentId: 'S1' });
+  assert.deepEqual(result.rows.map((row) => row.Status), ['Needs review', 'Needs review']);
+  assert.deepEqual(result.conflicts, progress);
+  const reviews = [{ programme, robot: 'Robot Dancer', status: 'Done', reviewedOn: '2026-11-14' }];
+  assert.deepEqual(pathways.applyRobotReviews(result.rows, reviews, programme, []).map((row) => row.Status), ['Needs review', 'Needs review']);
+});
+
 test('reconciles the Lv3 sequence without transferring retired robot progress to FrogBot', () => {
   const template = ['InvertBot', 'FrogBot', 'GunBot'].map((name, index) => ({ 'Robot name': name, Sequence: String(index + 1), Level: '3' }));
   const progress = [
@@ -177,6 +199,7 @@ test('removes explicitly identified legacy generated progress without touching a
     { Student: 'Student Two', Level: 'Lv2', Robot: 'Old Bot' },
     { Student: 'Student One', studentId: 'S2', Level: 'Lv2', Robot: 'Old Bot' },
     { Student: 'Student One', Level: 'Lv2', Robot: 'Other Bot' },
+    { Student: 'Student One', Level: 'Lv2', Robot: 'Robot Old' },
     { Student: 'Student One', Level: 'Lv2', Robot: 'Old Bot', sourceRow: { 'Programme ID': 'OTHER' } },
   ];
   const values = new Map([['icc-robot-progress', JSON.stringify(rows)]]);

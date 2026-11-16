@@ -13,25 +13,31 @@
     const match = programme.match(/^code\s*combat\s*(?:lv\.?|level|cs)?\s*(\d+)$/i);
     return match ? `CS${Number(match[1])}` : programme;
   }
+  const compactRobotName = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, '').replace('cannonbot', 'cannobot');
   function robotNameKey(value, programme) {
-    const name = String(value || '').trim().toLowerCase().replace(/\s+/g, '');
-    if (/^robokit\s*lv\s*3\b/i.test(String(programme || '').trim()) && ['gunbot', 'cannobot', 'cannonbot'].includes(name)) return 'gunbot';
-    if (normaliseProgramme(programme) === 'aikiro lv1 additional' && ['robotfighter', 'robotwrestler'].includes(name)) return 'robotwrestler';
-    return name.replace('cannonbot', 'cannobot');
+    let name = compactRobotName(value);
+    if (name.startsWith('robot') && name.length > 5) name = name.slice(5);
+    if (name !== 'robot' && name.endsWith('bot') && name.length > 3) name = name.slice(0, -3);
+    if (/^robokit\s*lv\s*3\b/i.test(String(programme || '').trim()) && ['gun', 'canno'].includes(name)) return 'gun';
+    if (normaliseProgramme(programme) === 'aikiro lv1 additional' && ['fighter', 'wrestler'].includes(name)) return 'wrestler';
+    return name;
   }
 
   function reconcileRobotProgress(programme, template, progress, student) {
     const used = new Set();
     const rows = template.map((item) => {
-      const matches = progress.filter((row) => robotNameKey(row.Robot, programme) === robotNameKey(item['Robot name'], programme));
+      const key = robotNameKey(item['Robot name'], programme);
+      const matches = progress.filter((row) => robotNameKey(row.Robot, programme) === key);
+      const ambiguous = matches.length > 1 || (matches.length > 0
+        && template.filter((row) => robotNameKey(row['Robot name'], programme) === key).length > 1);
       matches.forEach((row) => used.add(row));
-      const source = matches.length === 1 ? matches[0] : null;
+      const source = matches.length === 1 && !ambiguous ? matches[0] : null;
       return {
         ...(source || { Student: student.name, studentId: student.studentId, Status: 'Not started' }),
         Robot: item['Robot name'], Sequence: item.Sequence, Level: item.Level,
         sourceProgress: source,
-        conflict: matches.length > 1,
-        ...(matches.length > 1 ? { Status: 'Needs review' } : {}),
+        conflict: ambiguous,
+        ...(ambiguous ? { Status: 'Needs review' } : {}),
       };
     });
     return { rows, retired: progress.filter((row) => !used.has(row)), conflicts: progress.filter((row) => used.has(row) && rows.some((item) => item.conflict && robotNameKey(item.Robot, programme) === robotNameKey(row.Robot, programme))) };
@@ -80,6 +86,9 @@
         && robotNameKey(review.robot, programme) === robotNameKey(row.Robot, programme));
       if (matches.length > 1) throw new Error('Duplicate reviewed robot progress.');
       if (!matches.length) return row;
+      if (rows.filter((item) => robotNameKey(item.Robot, programme) === robotNameKey(row.Robot, programme)).length > 1) {
+        return { ...row, Status: 'Needs review', conflict: true };
+      }
       const review = matches[0];
       const names = [review.robot, review.displayRobot || review.robot].map((name) => robotNameKey(name, programme));
       const later = lessons.filter((lesson) => isDate(lesson.date) && lesson.date > review.reviewedOn
@@ -116,7 +125,7 @@
         const names = [row.Student, row['Student (linked)']].filter((value) => identity(value));
         const sameName = names.length > 0 && names.every((value) => identity(value) === identity(legacy.studentName));
         const sameLevel = identity(row.Level).replace(/^LV\s*/, '') === identity(legacy.level).replace(/^LV\s*/, '');
-        const sameRobot = legacy.robots.some((robot) => robotNameKey(robot, '') === robotNameKey(row.Robot, ''));
+        const sameRobot = legacy.robots.some((robot) => compactRobotName(robot) === compactRobotName(row.Robot));
         return !(sameName && ids.every((value) => identity(value) === identity(removal.studentId)) && sameLevel && sameRobot);
       };
       const raw = storage.getItem('icc-robot-progress');

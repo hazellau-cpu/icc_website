@@ -628,7 +628,7 @@ function icon(name) {
 }
 function progressMarkup(value, label = '') {
   const percent = Math.max(0, Math.min(100, Number.parseInt(String(value), 10) || 0));
-  return `<div class="progress-cell"><div class="progress-track"><span style="width:${percent}%"></span></div><strong>${percent}%</strong>${label ? `<small>${text(label)}</small>` : ''}</div>`;
+  return `<div class="progress-cell"><div class="progress-track" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${percent}%"></span></div><strong>${percent}%</strong>${label ? `<small>${text(label)}</small>` : ''}</div>`;
 }
 function attendanceMarkup(value) {
   const raw = String(value || '').toLowerCase();
@@ -1516,7 +1516,7 @@ function renderCodingStudents(studentType = 'Coding') {
     const topic = String(studentType === 'Math' ? latestMathTopic(student) : dashboard.curriculumUnavailable ? 'Select CodeCombat level' : dashboard.currentConcept || 'Foundations').split('→').map((item) => item.trim()).filter(Boolean).pop() || 'Foundations';
     const level = dashboard.isCodeMonkeyPart2 ? dashboard.currentLevel : dashboard.finishedLevel;
     const baseCells = [
-      `<button class="student-link" data-${studentType === 'Math' ? 'math' : 'coding'}-profile="${index}" aria-label="View ${studentType} progress for ${escapeHtml(student.name)}"><span class="student-avatar coding-avatar">${text(student.name).charAt(0)}</span><span><strong>${text(student.name)}</strong><small>View progress</small></span></button>`,
+      `<button class="student-link" data-${studentType === 'Math' ? 'math' : 'coding'}-profile="${index}" aria-label="View ${studentType} progress for ${escapeHtml(student.name)}"><span class="student-avatar">${text(student.name).charAt(0)}</span><span><strong>${text(student.name)}</strong><small>View progress</small></span></button>`,
       `<span class="programme-chip">${icon('code')}<span>${text(studentProgramme(student) || 'Programme not set')}</span></span>`,
       `<span class="topic-chip">${icon('code')}<span>${text(topic)}</span></span>`
     ];
@@ -1524,7 +1524,7 @@ function renderCodingStudents(studentType = 'Coding') {
   });
   const title = studentType === 'Math' ? 'Math Students' : 'Coding Students';
   const summary = studentType === 'Math' ? `<div class="dashboard-strip"><div><strong>${students.length}</strong><span>Math students</span></div></div>` : `<div class="dashboard-strip"><div><strong>${students.length}</strong><span>Coding students</span></div><div><strong>${students.filter((student) => Number.parseInt(student.completion, 10) >= 80).length}</strong><span>Near next level</span></div></div>`;
-  content.innerHTML = header(title, studentType === 'Math' ? 'Tutor control center for imported Math topics.' : 'Tutor control center for current learning concepts and progress.') + summary + table(['Student', 'Programme', studentType === 'Math' ? 'Last topic' : 'Current topic', ...(studentType === 'Math' ? [] : ['Progress'])], rows);
+  content.innerHTML = header(title, studentType === 'Math' ? 'Tutor control center for imported Math topics.' : 'Tutor control center for current learning concepts and progress.') + `<div class="student-category ${studentType === 'Math' ? 'math-category' : 'coding-category'}">${summary}${table(['Student', 'Programme', studentType === 'Math' ? 'Last topic' : 'Current topic', ...(studentType === 'Math' ? [] : ['Progress'])], rows)}</div>`;
   document.querySelectorAll(`[data-${studentType === 'Math' ? 'math' : 'coding'}-profile]`).forEach((item) => item.onclick = () => {
     const student = students[Number(studentType === 'Math' ? item.dataset.mathProfile : item.dataset.codingProfile)];
     if (!student) return;
