@@ -1649,22 +1649,10 @@ function renderCodingProfile(student) {
   const quickNoteHistory = finalizedQuickNotes(student, 'Coding');
   const demographics = studentDemographics(student);
 
-  const curriculumProgress = lessons.map((row) => {
-    const source = row.sourceRow || {};
-    const topic = row.topic || row.topics || row.progress || row.project || source.Topic || source.Progress || '';
-    return {
-      level: numericLevel(row.level_number ?? row.Level ?? row.level ?? row.next ?? source.Level ?? source['Finished Level']),
-      topic: Array.isArray(topic) ? topic.join(', ') : topic,
-      status: row.status || source.Status || 'Recorded',
-    };
-  }).filter((row) => row.topic || row.level || row.status !== 'Recorded').sort((left, right) => (left.level || 0) - (right.level || 0));
-  const curriculumProgressMarkup = curriculumProgress.length
-    ? table(['Level', 'Topic', 'Status'], curriculumProgress.map((row) => [text(row.level ?? '—'), text(row.topic || '—'), text(row.status)]), 'quick-note-table')
-    : '<div class="empty-state">No curriculum progress records have been imported for this student yet.</div>';
   const historyMarkup = history.length
-    ? `<div class="history-list"><div class="history-row history-head"><span>Date</span><span>Start</span><span>End</span><span>Topics Covered</span></div>${history.map((row) => {
-        return `<div class="history-row"><span>${text(row.date)}</span><span>${text(row.startLevel ?? '—')}</span><span>${text(row.endLevel ?? '—')}</span><span>${text(row.topics.join(', ') || 'No curriculum topic mapped')}</span></div>`;
-      }).join('')}</div>`
+    ? `<div class="records source-table"><table class="data-table"><thead><tr><th>Date</th><th>Start</th><th>End</th><th>Topics Covered</th></tr></thead><tbody>${history.map((row) =>
+        `<tr><td>${text(row.date)}</td><td>${text(row.startLevel ?? '—')}</td><td>${text(row.endLevel ?? '—')}</td><td>${text(row.topics.join(', ') || 'No curriculum topic mapped')}</td></tr>`
+      ).join('')}</tbody></table></div>`
     : '<div class="empty-state">No recent lessons recorded for this student.</div>';
 
   const roadmapMarkup = `
@@ -1732,13 +1720,8 @@ function renderCodingProfile(student) {
         </div>
       </div>
       ${pathwayFor(student, 'Coding')?.startedOn ? '<p class="auth-help">Sheet lessons after the change date are assumed to belong to this programme. Earlier lessons remain in history.</p>' : ''}
-      <div class="dashboard-grid">
-        <div class="main-column">
-          ${dashboard.curriculumUnavailable ? '<div class="empty-state">Select the student’s CodeCombat level using Update pathway to show the matching CS curriculum.</div>' : roadmapMarkup}
-        </div>
-
-        <div class="side-column">
-          ${dashboard.curriculumUnavailable ? '' : `<div class="context-card">
+      ${dashboard.curriculumUnavailable ? '<div class="empty-state">Select the student’s CodeCombat level using Update pathway to show the matching CS curriculum.</div>' : roadmapMarkup}
+      ${dashboard.curriculumUnavailable ? '' : `<div class="context-card">
             <div class="section-header compact">
               <div>
                 <span class="eyebrow">CURRENT LEARNING CONTEXT</span>
@@ -1764,19 +1747,7 @@ function renderCodingProfile(student) {
               </div>
             </div>
           </div>`}
-
-          <div class="history-card">
-            <div class="section-header compact">
-              <div>
-                <span class="eyebrow">LESSON HISTORY</span>
-                <h2>Recent lessons</h2>
-              </div>
-            </div>
-            ${historyMarkup}
-          </div>
-        </div>
-      </div>
-      <div class="profile-panel quick-note-history"><div class="section-header compact"><div><span class="eyebrow">CURRICULUM PROGRESS</span><h2>Student progress records</h2></div></div>${curriculumProgressMarkup}</div>
+      <div class="profile-panel quick-note-history"><div class="section-header compact"><div><span class="eyebrow">LESSON HISTORY</span><h2>Recent lessons</h2></div></div>${historyMarkup}</div>
       <div class="profile-panel quick-note-history"><div class="section-header compact"><div><span class="eyebrow">END-OF-DAY NOTES</span><h2>Quick Note History</h2></div></div>${quickNoteHistory.length ? table(['Date', 'Tutor', 'Note'], quickNoteHistory.map((record) => [text(record.date), text(record.tutor || 'Not recorded'), text(record.quickNotes || '—')]), 'quick-note-table') : '<div class="empty-state">No finalized quick notes for this student yet.</div>'}</div>
     </div>
   `;

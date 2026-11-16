@@ -1290,18 +1290,16 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .math-dashboard .snapshot-item.accent-item { background: rgba(180,95,63,.09); border-color: rgba(180,95,63,.24); }
 .snapshot-label { color: var(--muted); font: 10px 'DM Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
 .snapshot-item strong { color: var(--text); font-size: .98rem; }
-.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr); gap: 16px; align-items: start; }
-.main-column, .side-column { display: flex; flex-direction: column; gap: 16px; }
 .section-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
 .section-header.compact { margin-bottom: 12px; }
 .section-header h2 { margin: 4px 0 0; font-size: 1.1rem; color: var(--text); }
-.roadmap-card, .context-card, .history-card { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: var(--shadow); }
+.roadmap-card, .context-card { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: var(--shadow); }
 .roadmap-card { border-top: 3px solid var(--accent); }
 .context-card { border-top: 3px solid var(--accent-2); }
-.history-card { border-top: 3px solid var(--accent-3); }
 .math-dashboard .roadmap-card { border-top-color: var(--accent-3); }
 .math-dashboard .context-card { border-top-color: var(--accent-2); }
 .roadmap-track { display: grid; gap: 10px; }
+.coding-dashboard:not(.math-dashboard) .roadmap-track, .coding-dashboard:not(.math-dashboard) .context-stack { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .roadmap-step { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,.42); }
 .roadmap-step.completed { background: rgba(48,158,104,.08); border-color: rgba(48,158,104,.2); }
 .roadmap-step.current { background: rgba(209,132,63,.08); border-color: rgba(209,132,63,.2); }
@@ -1320,11 +1318,6 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .chip-success { background: rgba(48,158,104,.09); border-color: rgba(48,158,104,.2); color: #1f6d46; }
 .chip-muted { background: rgba(100,118,129,.05); border-color: var(--line); color: var(--text-soft); }
 .chip-neutral { background: rgba(154,170,177,.08); border-color: var(--line); color: var(--text-soft); }
-.history-list { display: flex; flex-direction: column; gap: 8px; }
-.history-row { display: grid; grid-template-columns: 1fr .55fr .55fr minmax(0, 1.8fr); gap: 8px; align-items: center; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #f8fafb; font-size: 12px; color: var(--text-soft); }
-.history-row:first-child, .history-row.history-head { background: #edf4f6; }
-.history-head { color: var(--muted); font: 10px 'DM Mono', monospace; letter-spacing: .06em; text-transform: uppercase; }
-.history-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .empty-state { padding: 14px; border-radius: 10px; background: #f7fafb; color: var(--text-soft); border: 1px dashed var(--line); }
 
 /* Keep profile facts and history readable against the light workspace. */
@@ -1344,15 +1337,14 @@ nav button:hover, nav button.active { background: rgba(99,240,214,.1); border-co
 .mini-row strong { color: #172c35; }
 .roadmap-card,
 .context-card,
-.history-card,
 .profile-panel,
 .journey-panel,
 .check-panel { background: #ffffff; border-color: #afc3ca; }
 .data-table th { background: #e3eef2; color: #3f5c67; border-bottom: 1px solid #afc3ca; }
 .data-table td { background: #ffffff; color: #314851; border-top-color: #c3d1d6; }
 .data-table td:first-child { color: #172c35; }
-@media (max-width: 1100px) { .snapshot-grid { grid-template-columns: repeat(3, minmax(110px, 1fr)); } .dashboard-grid { grid-template-columns: 1fr; } }
-@media (max-width: 760px) { .student-summary { align-items: flex-start; } .snapshot-grid { grid-template-columns: repeat(2, minmax(110px, 1fr)); } .history-row { grid-template-columns: 1fr 1fr; } .history-row span:nth-child(2), .history-row span:nth-child(3) { display: none; } }
+@media (max-width: 1100px) { .snapshot-grid { grid-template-columns: repeat(3, minmax(110px, 1fr)); } }
+@media (max-width: 760px) { .student-summary { align-items: flex-start; } .snapshot-grid { grid-template-columns: repeat(2, minmax(110px, 1fr)); } .coding-dashboard:not(.math-dashboard) .roadmap-track, .coding-dashboard:not(.math-dashboard) .context-stack { grid-template-columns: 1fr; } }
 
 /* Light industrial theme: paper, graphite, brass, and signal blue. */
 :root {
