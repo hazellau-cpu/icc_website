@@ -1616,11 +1616,17 @@ function codingLessonHistory(student) {
     const endLevel = numericLevel(source["Today's Finished Level"] ?? lesson["Today's Finished Level"] ?? source['Finished Level'] ?? source['Ending Level']);
     const lower = Math.min(startLevel ?? endLevel ?? 0, endLevel ?? startLevel ?? 0);
     const upper = Math.max(startLevel ?? endLevel ?? 0, endLevel ?? startLevel ?? 0);
-    const date = lessonDateKey(source['Lesson Date'] || lesson['Lesson Date'] || lesson['Lesson time']);
+    const date = lessonDateKey(source['Lesson Date'] || source.Date || lesson['Lesson Date'] || lesson['Lesson time']);
     const appliesToPathway = !pathway?.startedOn || window.ICCLocalPathways.afterPathwayChange(date, pathway);
     const topics = lower && appliesToPathway ? [...new Set(curriculum.filter((row) => Number(row.Level) >= lower && Number(row.Level) <= upper).map((row) => String(row.Topic || '').trim()).filter(Boolean))] : [];
-    return { date, startLevel, endLevel, topics, matches: studentRecordMatches({ ...lesson, name }, student) };
-  }).filter((lesson) => lesson.matches && lesson.date).sort((left, right) => right.date.localeCompare(left.date));
+    return {
+      date, startLevel, endLevel, topics,
+      tutor: lesson.Tutor || source.Tutor || source['Tutor Name'] || '',
+      comment: source.Comment || lesson.Comment || '',
+      remarks: source.Remarks || lesson.Remarks || '',
+      matches: studentRecordMatches({ ...lesson, name }, student),
+    };
+  }).filter((lesson) => lesson.matches).sort((left, right) => right.date.localeCompare(left.date));
 }
 
 function buildCodingDashboard(student, lessons) {
@@ -1685,16 +1691,17 @@ function buildCodingDashboard(student, lessons) {
 
 function renderCodingProfile(student) {
   const lessons = state.codingProgress.filter((row) => studentRecordMatches(row, student));
-  const history = codingLessonHistory(student).slice(0, 8);
+  const history = codingLessonHistory(student);
   const dashboard = buildCodingDashboard(student, lessons);
   const lessonSchedule = studentLessonSchedule(student, 'Coding');
   const quickNoteHistory = finalizedQuickNotes(student, 'Coding');
   const demographics = studentDemographics(student);
 
+  const historyCell = (value) => `<span>${escapeHtml(String(value ?? '') || '—')}</span>`;
   const historyMarkup = history.length
-    ? `<div class="records source-table"><table class="data-table"><thead><tr><th>Date</th><th>Start</th><th>End</th><th>Topics Covered</th></tr></thead><tbody>${history.map((row) =>
-        `<tr><td>${text(row.date)}</td><td>${text(row.startLevel ?? '—')}</td><td>${text(row.endLevel ?? '—')}</td><td>${text(row.topics.join(', ') || 'No curriculum topic mapped')}</td></tr>`
-      ).join('')}</tbody></table></div>`
+    ? table(['Date', 'Tutor', 'Start', 'End', 'Topics Covered', 'Comment', 'Remarks'], history.map((row) =>
+      [row.date, row.tutor, row.startLevel, row.endLevel, row.topics.join(', ') || 'No curriculum topic mapped', row.comment, row.remarks].map(historyCell)
+    ), 'quick-note-table')
     : '<div class="empty-state">No recent lessons recorded for this student.</div>';
 
   const roadmapMarkup = `
@@ -1789,7 +1796,7 @@ function renderCodingProfile(student) {
               </div>
             </div>
           </div>`}
-      <div class="profile-panel quick-note-history"><div class="section-header compact"><div><span class="eyebrow">LESSON HISTORY</span><h2>Recent lessons</h2></div></div>${historyMarkup}</div>
+      <div class="profile-panel quick-note-history"><div class="section-header compact"><div><span class="eyebrow">LESSON HISTORY</span><h2>Coding lesson history</h2></div></div>${historyMarkup}</div>
       <div class="profile-panel quick-note-history"><div class="section-header compact"><div><span class="eyebrow">END-OF-DAY NOTES</span><h2>Quick Note History</h2></div></div>${quickNoteHistory.length ? table(['Date', 'Tutor', 'Note'], quickNoteHistory.map((record) => [text(record.date), text(record.tutor || 'Not recorded'), text(record.quickNotes || '—')]), 'quick-note-table') : '<div class="empty-state">No finalized quick notes for this student yet.</div>'}</div>
     </div>
   `;
