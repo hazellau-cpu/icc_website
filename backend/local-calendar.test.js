@@ -46,7 +46,7 @@ test('matches only student ID and course; keeps missing and ambiguous records fo
   assert.deepEqual(result.matched.map((row) => row.type), ['Coding', 'Robot']);
   assert.equal(result.matched[0].lessonTime, '11:00 - 12:00');
   assert.equal(result.matched[1].lessonTime, 'All day');
-  assert.deepEqual(result.unmatched.map((row) => row.reason), ['Student not in paid roster', 'Missing student ID']);
+  assert.deepEqual(result.unmatched.map((row) => row.reason), ['Student not in active roster', 'Missing student ID']);
   state.codingStudents.push({ studentId: 'ST1', name: 'Another student' });
   assert.equal(matchEvents([events[0]], state).unmatched[0].reason, 'Ambiguous student ID');
   state.codingStudents[1] = { studentId: 'ST2', name: 'Student' };

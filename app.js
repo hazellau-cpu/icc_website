@@ -1390,7 +1390,7 @@ function renderTodaysStudents() {
 function renderStudents() {
   const kits = ['AIKIRO', 'ROBOKIT', 'UARO'];
   const studentRow = (student, index) => [
-    `<button class="student-link" data-profile="${index}" aria-label="View Robot progress for ${escapeHtml(student.name)}"><span class="student-avatar">${text(student.name).charAt(0)}</span><span><strong>${text(student.name)}</strong><small>${text(student.sourceRow?.Tutor || student.tutor || 'Robot student')}</small>${student.includeWhenUnpaid && String(student.paidStatus).trim().toLowerCase() !== 'paid' ? '<small>Payment status not used for visibility</small>' : ''}<small>View progress</small></span></button>`,
+    `<button class="student-link" data-profile="${index}" aria-label="View Robot progress for ${escapeHtml(student.name)}"><span class="student-avatar">${text(student.name).charAt(0)}</span><span><strong>${text(student.name)}</strong><small>${text(student.sourceRow?.Tutor || student.tutor || 'Robot student')}</small><small>View progress</small></span></button>`,
     `<span class="programme-chip">${icon('bot')}<span>${text(programmeLabel(studentProgramme(student)))}</span></span>`,
     `<span class="robot-chip">${icon('bot')}<span>${text(nextRobotForStudent(student))}</span></span>`,
     progressMarkup(robotCompletion(student)),

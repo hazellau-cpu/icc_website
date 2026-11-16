@@ -7,7 +7,7 @@ function data() {
     Students: [
       { 'Student ID': 'A', Name: 'Student A', 'Course type': 'AIKIRO', 'Paid Status': 'Paid' },
       { 'Student ID': 'B', Name: 'Student B', 'Course type': 'CS1', 'Paid Status': 'Paid' },
-      { 'Student ID': 'C', Name: 'Student C', 'Course type': 'Math', 'Paid Status': 'Unpaid' },
+      { 'Student ID': 'C', Name: 'Student C', 'Course type': 'Math', 'Paid Status': 'Inactive' },
     ],
     'Robot Progress Log': [
       { 'Student ID': 'A', Date: '2026-01-01', 'Robot Name': 'Cannon Bot', 'Progress Status': 'finished' },
@@ -41,7 +41,7 @@ test('filters dated history from an inclusive start date while preserving undate
   assert.throws(() => filterRecordsFromDate(rows, '2026-02-30', (row) => row.date), /valid start date/);
 });
 
-test('merges paid roster and live lessons without mutating starter progress', () => {
+test('merges active roster and live lessons without mutating starter progress', () => {
   const baseline = state();
   const result = merge(baseline, data());
   assert.equal(result.robotStudents[0].program, 'AIKIRO Lv1');
@@ -53,7 +53,7 @@ test('merges paid roster and live lessons without mutating starter progress', ()
   assert.deepEqual(result.warningDetails.students, [{ studentId: 'B', name: 'Student B', course: 'CS1' }]);
   assert.deepEqual(result.warningDetails.lessons, [{
     date: '2026-01-01', studentId: 'C', name: 'Student C', course: 'Robot',
-    robot: 'Other', status: 'finished', reason: 'No paid Robot student matches this ID.',
+    robot: 'Other', status: 'finished', reason: 'No active Robot student matches this ID.',
   }]);
   assert.deepEqual(result.warningDetails.robots, [{
     date: '2026-01-02', studentId: 'A', name: 'Student A',
@@ -61,20 +61,29 @@ test('merges paid roster and live lessons without mutating starter progress', ()
   }]);
 });
 
-test('includes an explicitly retained unpaid robot student without changing payment status', () => {
+test('includes every non-inactive status across courses without changing payment status', () => {
   const baseline = state();
   baseline.robotStudents[0].includeWhenUnpaid = true;
   const sheets = data();
-  sheets.Students[0]['Paid Status'] = 'Unpaid';
+  sheets.Students[0]['Paid Status'] = 'Payment Due';
+  sheets.Students[1]['Paid Status'] = '';
+  sheets.Students[2]['Paid Status'] = 'Unpaid';
   const result = merge(baseline, sheets);
   assert.equal(result.robotStudents.length, 1);
-  assert.equal(result.robotStudents[0].paidStatus, 'Unpaid');
+  assert.equal(result.robotStudents[0].paidStatus, 'Payment Due');
+  assert.equal(result.codingStudents[0].paidStatus, '');
+  assert.equal(result.mathStudents[0].paidStatus, 'Unpaid');
   assert.equal(result.robotProgress[0].Status, 'Done');
   assert.equal(result.robotLessons.length, 2);
-  assert.equal(result.robotStudents.some((student) => student.studentId === 'C'), false);
 
-  baseline.robotStudents[0].includeWhenUnpaid = false;
-  assert.equal(merge(baseline, sheets).robotStudents.length, 0);
+  sheets.Students.forEach((row) => { row['Paid Status'] = '  InAcTiVe  '; });
+  const inactive = merge(baseline, sheets);
+  assert.equal(inactive.robotStudents.length, 0);
+  assert.equal(inactive.codingStudents.length, 0);
+  assert.equal(inactive.mathStudents.length, 0);
+  assert.equal(inactive.robotLessons.length, 0);
+  assert.equal(inactive.codingLessons.length, 0);
+  assert.equal(inactive.robotProgress[0].Status, 'Not started');
 });
 
 test('restores explicitly included students omitted by a saved browser roster', () => {
@@ -102,10 +111,10 @@ test('preserves older robot progress when later lessons belong to a new pathway'
   assert.equal(result.robotLessons.length, 2);
 });
 
-test('rejects duplicate paid IDs within a course', () => {
+test('rejects duplicate active IDs within a course', () => {
   const sheets = data();
   sheets.Students.push({ ...sheets.Students[0] });
-  assert.throws(() => merge(state(), sheets), /duplicate paid student IDs/);
+  assert.throws(() => merge(state(), sheets), /duplicate active student IDs/);
 });
 
 test('merges CodeCombat students and coding lessons without changing their programme', () => {

@@ -88,14 +88,13 @@
     let unmatchedStudents = 0;
     const warningDetails = { students: [], lessons: [], robots: [] };
     for (const row of sheets.Students) {
-      const paid = String(row['Paid Status']).trim().toLowerCase() === 'paid';
+      const inactive = String(row['Paid Status'] ?? '').trim().toLowerCase() === 'inactive';
       const studentId = id(row['Student ID']);
       const type = courseType(row['Course type']);
-      if (!paid && (!studentId || type !== 'Robot'
-        || !existing.Robot.some((student) => student.includeWhenUnpaid === true && id(student.jamesStudentId || student.studentId) === studentId))) continue;
-      if (!studentId || !row.Name || !type) throw new Error('A paid student has a missing ID, name, or unsupported course.');
+      if (inactive) continue;
+      if (!studentId || !String(row.Name || '').trim() || !type) throw new Error('An active student has a missing ID, name, or unsupported course.');
       const key = `${type}:${studentId}`;
-      if (index.has(key)) throw new Error('The Sheet contains duplicate paid student IDs for the same course.');
+      if (index.has(key)) throw new Error('The Sheet contains duplicate active student IDs for the same course.');
       const matches = existing[type].filter((student) => id(student.jamesStudentId || student.studentId) === studentId);
       if (matches.length > 1) throw new Error('The local roster contains duplicate IDs for the same course.');
       const original = matches[0];
@@ -133,7 +132,7 @@
           warningDetails.lessons.push({
             date: row.Date, studentId: row['Student ID'], name: knownName(row['Student ID']),
             course: type, robot: row['Robot Name'] || '', status: row['Progress Status'] || '',
-            reason: `No paid ${type} student matches this ID.`,
+            reason: `No active ${type} student matches this ID.`,
           });
           continue;
         }

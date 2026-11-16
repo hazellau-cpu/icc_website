@@ -25,7 +25,7 @@
       const students = type && studentId ? lists[type].filter((student) => normalizeId(student.jamesStudentId || student.studentId) === studentId) : [];
       const nameIsAmbiguous = students.length === 1 && lists[type].filter((student) => String(student.name || '').trim().toLowerCase() === String(students[0].name || '').trim().toLowerCase()).length !== 1;
       if (!event.id || !type || !studentId || students.length !== 1 || nameIsAmbiguous) {
-        unmatched.push({ ...event, reason: !event.id ? 'Missing event ID' : !studentId ? 'Missing student ID' : !type ? 'Unknown course' : students.length !== 1 ? students.length ? 'Ambiguous student ID' : 'Student not in paid roster' : 'Ambiguous student name' });
+        unmatched.push({ ...event, reason: !event.id ? 'Missing event ID' : !studentId ? 'Missing student ID' : !type ? 'Unknown course' : students.length !== 1 ? students.length ? 'Ambiguous student ID' : 'Student not in active roster' : 'Ambiguous student name' });
         continue;
       }
       matched.push({ event, type, student: students[0], lessonTime: timeLabel(event) });
