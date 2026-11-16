@@ -10,7 +10,12 @@ function reader(tabs) {
     fetchImpl: async (url, options) => {
       assert.equal(options.headers.Authorization, 'Bearer test-token');
       if (String(url).includes('values:batchGet')) {
-        return { ok: true, json: async () => ({ valueRanges: tabs.map((tab) => ({ values: tab.rows })) }) };
+        const ranges = new URL(url).searchParams.getAll('ranges');
+        return { ok: true, json: async () => ({ valueRanges: ranges.map((range) => {
+          const tab = tabs.find((entry) => range === `'${entry.name.replace(/'/g, "''")}'!A3:E`);
+          assert.ok(tab, `Unexpected range: ${range}`);
+          return { values: tab.rows };
+        }) }) };
       }
       return { ok: true, json: async () => ({ sheets: tabs.map((tab) => ({ properties: { title: tab.name } })) }) };
     },
@@ -28,6 +33,15 @@ test('reads birth years by Sheet ID and applies them without replacing other stu
   const result = applyStarterBirthYears(original, records);
   assert.deepEqual(result, { students: [{ ...original[0], yob: '2020' }, original[1]], unmatched: 1 });
   assert.equal(original[0].yob, undefined);
+});
+
+test('ignores dashboard storage tabs while retaining starter demographics', async () => {
+  assert.deepEqual(await reader([
+    { name: 'First', rows: [header, ['ST1', 'A', '', '', '2020']] },
+    { name: 'Dashboard Library', rows: [['Collection', 'Record']] },
+    { name: 'Dashboard State', rows: [['Key', 'Version']] },
+  ]), [{ studentId: 'ST1', yearOfBirth: '2020' }]);
+  await assert.rejects(reader([{ name: 'Dashboard Library', rows: [] }, { name: 'Dashboard State', rows: [] }]), /no student tabs/);
 });
 
 test('rejects invalid, conflicting, or unidentifiable birth years', async () => {

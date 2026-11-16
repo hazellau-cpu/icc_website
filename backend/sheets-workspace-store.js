@@ -7,6 +7,8 @@ const STATE_KEYS = [
   'inventory', 'borrowings', 'robot-progress-reviews',
 ];
 const LIBRARY_KEYS = ['robotPrograms', 'curriculum', 'robots', 'componentLibrary', 'inventory'];
+const DASHBOARD_SHEET_NAMES = ['Dashboard Library', 'Dashboard State'];
+const [LIBRARY_SHEET, STATE_SHEET] = DASHBOARD_SHEET_NAMES;
 const CHUNK_SIZE = 40000;
 const CHUNK_COUNT = 16;
 const MAX_BYTES = 512 * 1024;
@@ -127,12 +129,12 @@ function createSheetsWorkspaceStore({ spreadsheetId, authClientProvider = null, 
     return result.valueRanges.map((range) => range.values || []);
   }
   async function read() {
-    const [library, state] = await readRanges(["'Dashboard Library'!A:B", "'Dashboard State'!A:S"]);
+    const [library, state] = await readRanges([`'${LIBRARY_SHEET}'!A:B`, `'${STATE_SHEET}'!A:S`]);
     return { libraries: libraryRows(library), edits: stateRows(state) };
   }
   async function initialize(libraries) {
     return locked(async () => {
-      const [existingLibraries, existingState] = await readRanges(["'Dashboard Library'", "'Dashboard State'"]);
+      const [existingLibraries, existingState] = await readRanges([`'${LIBRARY_SHEET}'`, `'${STATE_SHEET}'`]);
       if (existingLibraries.length || existingState.length) throw new Error('Dashboard sheets must both be empty');
       const rows = [LIBRARY_HEADER];
       for (const key of LIBRARY_KEYS) {
@@ -150,8 +152,8 @@ function createSheetsWorkspaceStore({ spreadsheetId, authClientProvider = null, 
         body: JSON.stringify({
           valueInputOption: 'RAW',
           data: [
-            { range: "'Dashboard Library'!A:B", values: rows },
-            { range: "'Dashboard State'!A:S", values: [STATE_HEADER, ...STATE_KEYS.map((key) => [key, 0])] },
+            { range: `'${LIBRARY_SHEET}'!A:B`, values: rows },
+            { range: `'${STATE_SHEET}'!A:S`, values: [STATE_HEADER, ...STATE_KEYS.map((key) => [key, 0])] },
           ],
         }),
       });
@@ -168,11 +170,11 @@ function createSheetsWorkspaceStore({ spreadsheetId, authClientProvider = null, 
       if (serialized === undefined || Buffer.byteLength(serialized) > MAX_BYTES) {
         throw new Error('Shared workspace edit is too large');
       }
-      const [rows] = await readRanges(["'Dashboard State'!A:S"]);
+      const [rows] = await readRanges([`'${STATE_SHEET}'!A:S`]);
       const edits = stateRows(rows);
       if ((edits[key]?.version || 0) !== expectedVersion) throw new WorkspaceConflictError();
       const row = [key, expectedVersion + 1, actor, ...splitText(serialized)];
-      const range = `'Dashboard State'!A${index + 2}:S${index + 2}`;
+      const range = `'${STATE_SHEET}'!A${index + 2}:S${index + 2}`;
       await request(`${baseUrl()}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -184,4 +186,4 @@ function createSheetsWorkspaceStore({ spreadsheetId, authClientProvider = null, 
   return { read, update, initialize };
 }
 
-module.exports = { createSheetsWorkspaceStore, STATE_KEYS, STATE_HEADER, LIBRARY_KEYS, LIBRARY_HEADER, WorkspaceConflictError };
+module.exports = { createSheetsWorkspaceStore, STATE_KEYS, STATE_HEADER, LIBRARY_KEYS, LIBRARY_HEADER, DASHBOARD_SHEET_NAMES, WorkspaceConflictError };

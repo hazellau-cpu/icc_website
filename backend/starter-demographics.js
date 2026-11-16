@@ -1,3 +1,5 @@
+const { DASHBOARD_SHEET_NAMES } = require('./sheets-workspace-store');
+
 async function readStarterDemographics({ spreadsheetId, getAccessToken, fetchImpl = fetch }) {
   if (!/^[a-zA-Z0-9_-]+$/.test(spreadsheetId || '')) throw new Error('Invalid starter Sheet configuration.');
   const token = await getAccessToken();
@@ -11,14 +13,16 @@ async function readStarterDemographics({ spreadsheetId, getAccessToken, fetchImp
     || metadata.sheets.some((sheet) => typeof sheet.properties?.title !== 'string' || !sheet.properties.title)) {
     throw new Error('Starter Sheet tab list is invalid.');
   }
+  const starterSheets = metadata.sheets.filter((sheet) => !DASHBOARD_SHEET_NAMES.includes(sheet.properties.title));
+  if (!starterSheets.length) throw new Error('Starter Sheet has no student tabs.');
   const url = new URL(`${base}/values:batchGet`);
-  for (const sheet of metadata.sheets) {
+  for (const sheet of starterSheets) {
     url.searchParams.append('ranges', `'${sheet.properties.title.replace(/'/g, "''")}'!A3:E`);
   }
   const valuesResponse = await fetchImpl(url, options);
   if (!valuesResponse.ok) throw new Error(`Starter Sheet data returned HTTP ${valuesResponse.status}.`);
   const values = await valuesResponse.json();
-  if (!Array.isArray(values.valueRanges) || values.valueRanges.length !== metadata.sheets.length) {
+  if (!Array.isArray(values.valueRanges) || values.valueRanges.length !== starterSheets.length) {
     throw new Error('Starter Sheet data is incomplete.');
   }
   const years = new Map();
