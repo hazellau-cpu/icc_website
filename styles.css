@@ -339,23 +339,6 @@ kbd {
   cursor: pointer;
 }
 
-.avatar {
-  background: linear-gradient(135deg, var(--accent-2), var(--accent));
-  flex: 0 0 34px;
-  width: 34px;
-  min-width: 34px;
-  max-width: 34px;
-  height: 34px;
-  min-height: 34px;
-  max-height: 34px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font: 700 11px 'DM Mono';
-  color: #06151a;
-}
-
 .menu-button { display: none; }
 .sidebar-toggle { margin-left: auto; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--text-soft); width: 28px; height: 28px; cursor: pointer; font-size: 20px; line-height: 1; }
 .sidebar.collapsed { width: 76px; padding-left: 12px; padding-right: 12px; }
@@ -1374,7 +1357,6 @@ nav button.active { box-shadow: inset 3px 0 var(--accent); }
 .topbar { background: rgba(244, 247, 248, .9); border-bottom-color: var(--line); }
 .breadcrumbs, .breadcrumbs strong { color: var(--text-soft); }
 .search, .icon-button, .outline-button, .filter { background: #fff; border-color: var(--line); color: var(--text-soft); }
-.avatar { background: var(--accent); color: #fff; }
 .notion-title-row { border-bottom-color: var(--line); }
 .notion-title-row h1, .view-head h1 { color: var(--text); }
 .notion-title-row p, .view-head p, .notion-table td, .data-table td { color: var(--text-soft); }
