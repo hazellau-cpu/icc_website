@@ -1829,6 +1829,7 @@ function showLibrarySection(section) {
 function showLibrary(name) {
   const target = document.querySelector('#subLibraryTable') || document.querySelector('#libraryTable');
   let headers = [], rows = [];
+  let sortIndex = 0;
   if (activeLibrarySection === 'Robot Library' && programmeVariants().includes(name)) {
     const robotRows = Array.isArray(window.__ICC_LOCAL_STATE__?.robots) ? window.__ICC_LOCAL_STATE__.robots : services.LibraryService.getRobotLibrary();
     const exactRows = robotRows
@@ -1858,6 +1859,7 @@ function showLibrary(name) {
   if (/^CS[1-5] curriculum$/.test(name)) {
     const programme = name.replace(' curriculum', '').toLowerCase();
     headers = ['Item', 'Level', 'Topic', 'Program'];
+    sortIndex = 1;
     rows = services.LibraryService.getCurriculum()
       .filter((row) => String(row['Program name'] || row.programme_id).toLowerCase() === programme)
       .map((row) => [row.Item || row.item, row.Level || row.level, row.Topic || row.topic, row['Program name'] || row.programme_id]);
@@ -1865,6 +1867,7 @@ function showLibrary(name) {
   if (name === 'CodeMonkey Part 1' || name === 'CodeMonkey Part 2') {
     const partTwo = name === 'CodeMonkey Part 2';
     headers = ['Item', 'Level', 'Topic', 'Program'];
+    sortIndex = 1;
     rows = services.LibraryService.getCurriculum()
       .filter((row) => {
         const programme = String(row['Program name'] || row.programme_id).toLowerCase();
@@ -1881,7 +1884,7 @@ function showLibrary(name) {
       return [row['Component ID'], row.Component, row.Tier, row.Kit, expected, actual, quantityResult(expected, actual)];
     });
   }
-  target.innerHTML = table(headers, rows);
+  target.innerHTML = table(headers, rows, '', sortIndex);
 }
 
 function renderOperations() {
