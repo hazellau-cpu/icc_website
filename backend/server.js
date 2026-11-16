@@ -12,6 +12,8 @@ const { createGoogleCalendarReader } = require('./google-calendar');
 const { createIapAuthenticator } = require('./iap-auth');
 const { merge: mergeLiveSheets, applyStarterBirthYears } = require('../local-live-sheets');
 const { authenticatePassword } = require('./password-auth');
+const { createSheetsWorkspaceStore } = require('./sheets-workspace-store');
+const { createSheetsWorkspaceRouter, WorkspaceConflictError } = require('./sheets-workspace');
 
 const port = Number(process.env.PORT || 8080);
 const jwtSecret = process.env.JWT_SECRET || '';
@@ -48,6 +50,29 @@ const starterSheetId = process.env.STARTER_SHEET_SPREADSHEET_ID || '';
 const starterSheetToken = starterSheetId
   ? createGoogleAccessTokenProvider({ scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] })
   : null;
+const workspaceStorage = process.env.WORKSPACE_STORAGE || 'database';
+if (!['database', 'sheets'].includes(workspaceStorage)) {
+  throw new Error('WORKSPACE_STORAGE must be either "database" or "sheets"');
+}
+if (workspaceStorage === 'sheets' && (!iapAuthenticator || !googleSheetsReader
+  || !process.env.DASHBOARD_SPREADSHEET_ID || process.env.DASHBOARD_SINGLE_WRITER !== 'true')) {
+  throw new Error('Sheets workspace requires IAP, the Google Sheets source, a dashboard spreadsheet and single-writer configuration.');
+}
+if (workspaceStorage === 'sheets' && process.env.DASHBOARD_SPREADSHEET_ID === process.env.GOOGLE_SHEETS_SPREADSHEET_ID) {
+  throw new Error('The dashboard spreadsheet must be separate from the source spreadsheet.');
+}
+const sheetsWorkspace = workspaceStorage === 'sheets' ? createSheetsWorkspaceRouter({
+  store: createSheetsWorkspaceStore({ spreadsheetId: process.env.DASHBOARD_SPREADSHEET_ID }),
+  readSpreadsheet: googleSheetsReader,
+  applyDemographics: async (workspace) => {
+    if (!starterSheetToken) return workspace;
+    const records = await readStarterDemographics({ spreadsheetId: starterSheetId, getAccessToken: starterSheetToken });
+    const result = applyStarterBirthYears(workspace.robotStudents, records);
+    if (result.unmatched) console.warn(`Starter Sheet birth years: ${result.unmatched} student IDs not in the Robot roster.`);
+    return { ...workspace, robotStudents: result.students };
+  },
+}) : null;
+const sheetsJamesRouter = sheetsWorkspace ? createJamesRouter({ storage: sheetsWorkspace.jamesStorage, jwtSecret: approvalTokenSecret }) : null;
 const sheetsReadRouter = createSheetsReadRouter({
   query,
   jwtSecret: process.env.SHEETS_READ_JWT_SECRET || '',
@@ -73,7 +98,7 @@ const sharedEditKeys = new Set([
 ]);
 
 function send(response, status, body) {
-  response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': corsOrigin, 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS' });
+  response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': corsOrigin, 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS' });
   response.end(JSON.stringify(body));
 }
 function base64url(value) { return Buffer.from(value).toString('base64url'); }
@@ -423,6 +448,24 @@ const server = http.createServer(async (request, response) => {
     if (!iapAuthenticator && !await protectedRoute(request, response)) return undefined;
     if (request.method === 'GET' && url.pathname === '/auth/session') {
       return send(response, 200, { user: request.authenticatedUser });
+    }
+    if (sheetsWorkspace) {
+      try {
+        if (await sheetsWorkspace.handle(request, response, url, readJson, send)) return undefined;
+        if (url.pathname === '/robot-progress/preview' || url.pathname === '/robot-progress/accept') {
+          if (approvalTokenSecret.length < 32) return send(response, 503, { detail: 'Robot progress review is not configured.' });
+          if (await sheetsJamesRouter.handle(request, response, url, readJson, send)) return undefined;
+        }
+      } catch (error) {
+        if (error instanceof WorkspaceConflictError) return send(response, 409, { detail: error.message });
+        if (error instanceof SyntaxError) return send(response, 400, { detail: 'Invalid request body' });
+        if (error.statusCode) return send(response, error.statusCode, { detail: error.message });
+        console.error('Sheets workspace request failed:', error.message);
+        return send(response, 503, { detail: 'Dashboard Sheets are unavailable. Contact the administrator.' });
+      }
+      if (!['/calendar/today', '/calendar/next'].includes(url.pathname)) {
+        return send(response, 501, { detail: 'This endpoint is not available in Sheets workspace mode.' });
+      }
     }
     const jamesHandled = await jamesRouter.handle(request, response, url, readJson, send);
     if (jamesHandled) return jamesHandled;

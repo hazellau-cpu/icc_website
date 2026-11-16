@@ -1,6 +1,6 @@
 # ICC Control Room deployment
 
-The production deployment serves the frontend and API from one Cloud Run service. Google Cloud IAP protects the website and API; the application does not issue browser login tokens in IAP mode. The service reads roster and lesson progress from the shared Google Sheet using its attached runtime service account, stores shared dashboard edits in Cloud SQL, and reads Calendar events with the same service identity. Do not deploy the local workspace file or credentials.
+The production deployment serves the frontend and API from one Cloud Run service. Google Cloud IAP protects the website and API; the application does not issue browser login tokens in IAP mode. The service reads roster and lesson progress from the shared Google Sheet and Calendar events with its attached runtime service account. Shared dashboard edits can use a separate Google Sheet or the existing Cloud SQL backend. Do not deploy the local workspace file or credentials.
 
 ## Local run
 
@@ -68,7 +68,28 @@ Set `SHEETS_READ_SOURCE=google` to read the partner endpoints directly from a li
 
 The `Students` tab supplies the existing nine-column response. Progress rows are combined from the three log tabs, with `Robot Name`/`Progress Status` mapped to the robot fields, `Progress` or `Topic` mapped to the common progress field, and `Start Time`/`End Time` mapped to `Lesson Time`. The workbook has no `Programme ID`, `Tutor ID`, or `Progress Percent` columns, so those response values are blank; `Programme Name` comes from the student's `Course type`. Spreadsheet dates should be actual date cells, ISO dates, or unambiguous day/month dates. The existing database source remains available with `SHEETS_READ_SOURCE=database` (the default).
 
-## Cloud Run and IAP deployment
+## Cloud Run with Sheets workspace
+
+This mode does not require Cloud SQL. It uses the existing automation Sheet as a read-only source, plus a separate private dashboard spreadsheet for the library and shared edits. The starter Sheet and Calendar remain separate read-only sources. The initial dashboard state is empty: local browser edits, student-specific corrections, borrowing records and inventory counts are not migrated. Student pathways that cannot be identified from the automation Sheet must be selected in the dashboard.
+
+**Operational limitation:** This mode is for one editor and one active browser session at a time. The Sheets API does not provide a conditional update for the state rows. The backend serializes writes and checks versions within one running instance, but cannot prevent lost updates across multiple instances or manual Sheet edits. Set Cloud Run maximum instances to 1 and concurrency to 1, use only one active revision, pause edits during deployment, and do not manually edit the dashboard tabs. Back up the dashboard spreadsheet. These restrictions are required; IAP does not enforce them.
+
+1. Create a new private Google spreadsheet, separate from the automation and starter Sheets. Add two empty tabs named `Dashboard Library` and `Dashboard State`. Share the dashboard spreadsheet with the Cloud Run runtime service account as Editor. Keep its access to the automation and starter Sheets at Viewer, and grant the Calendar access described below.
+2. Prepare and review the library-only export described in **Cloud SQL preparation** below. It excludes student collections and stock counts, but review its contents before sharing. Transfer it securely to the person initializing the spreadsheet; do not commit it.
+3. With Google Application Default Credentials for an account authorized to edit the new spreadsheet, from the repository root run:
+
+   ```bash
+   node backend/initialize-sheets-workspace.js DASHBOARD_SPREADSHEET_ID /private/path/icc-libraries.json
+   ```
+
+   Initialization requires both named tabs to be empty and does not modify the source workbook. It writes the reference libraries and an empty shared state. Do not run it against an existing dashboard spreadsheet.
+4. Build the image from the repository root and deploy behind IAP. Set `WORKSPACE_STORAGE=sheets`, `DASHBOARD_SPREADSHEET_ID` to the new spreadsheet ID, `DASHBOARD_SINGLE_WRITER=true`, `SHEETS_READ_SOURCE=google`, `GOOGLE_SHEETS_SPREADSHEET_ID` to the existing automation spreadsheet ID, and `IAP_AUDIENCE` to the expected IAP audience. Set `STARTER_SHEET_SPREADSHEET_ID` and `GOOGLE_CALENDAR_ID` if those integrations are used. Enable the Google Sheets and Calendar APIs in the appropriate project. No `DB_*` settings are required in this mode.
+5. Restrict IAP access to the approved Google accounts and keep the Cloud Run service protected. Set an appropriately random `JAMES_APPROVAL_TOKEN_SECRET` through Secret Manager if the optional robot-progress review API is needed. It is not a browser login token.
+6. After deploying, sign in through IAP and verify `/api/workspace/bootstrap` returns 200, the roster and libraries load, a shared edit persists across reload, and Calendar works. Verify the one-editor restrictions and make a backup before using real edits.
+
+The attached Cloud Run service account uses Google Application Default Credentials; no service-account key is needed. The dashboard spreadsheet ID must differ from the source spreadsheet ID. If the dashboard Sheet is unavailable or malformed, the workspace fails explicitly instead of falling back to an empty workspace.
+
+## Cloud Run with Cloud SQL (legacy)
 
 The root `Dockerfile` builds one service that hosts both the frontend and API. Deploy it behind an HTTPS load balancer with IAP enabled for the frontend and backend; do not create a separate public Pages frontend. Configure IAP to permit only approved Google accounts. Keep the Cloud Run service inaccessible except through the load balancer/IAP path, and attach `icc-calendar-reader@icc-dashboard-509402.iam.gserviceaccount.com` (or another appropriately permissioned runtime identity) to Cloud Run. Grant it read access to both Sheets and the Calendar; no service-account key is needed.
 
@@ -138,7 +159,7 @@ The accept endpoint revalidates the student, programme, Robot Library row, statu
 
 The frontend should treat `accepted: false` as a review queue item, never auto-submit it. The current fuzzy matching is deliberately conservative: spaces and capitalization are normalized, and a small edit distance may be suggested, but ambiguous matches require manual correction.
 
-The optional password-auth flow is retained for deployments that do not enable IAP. In the agreed production setup, Google IAP authenticates the user, and `/workspace/bootstrap` merges the live Sheet with database-backed reference data and shared edits. The local `workspace-db.json` preview path remains restricted to localhost.
+The optional password-auth flow is retained for deployments that do not enable IAP. In Cloud SQL mode, Google IAP authenticates the user, and `/workspace/bootstrap` merges the live Sheet with database-backed reference data and shared edits. The local `workspace-db.json` preview path remains restricted to localhost.
 
 ## Health check
 
@@ -165,4 +186,12 @@ DB_USER='icc_app' DB_PASSWORD='replace-this-secret' DB_NAME='icc' INSTANCE_UNIX_
 ```
 
 The import reads the self-contained `../workspace-db.json`. It includes the embedded source records and no longer requires the external CSV folder.
+
+To prepare a separate library-only JSON export for review, run from the repository root:
+
+```bash
+node backend/export-libraries.js workspace-db.json /private/path/icc-libraries.json
+```
+
+The export selects library fields only and excludes student collections, inventory counts, and notes. Review the contents before sharing. The output must not already exist. The export alone does not configure the dashboard or enable Sheets workspace mode.
 James integration routing lives in [james-router.js](james-router.js), separate from the core API server. Keep James request-shape changes, fuzzy matching, approval-token handling, and review persistence in that module.

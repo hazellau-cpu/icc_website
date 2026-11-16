@@ -57,6 +57,7 @@
           const [programmes, curriculum, robots, components] = await Promise.all([request('/programmes'), request('/curriculum'), request('/robots'), request('/components')]);
           cache.programmes = normalizeProgrammes(list(programmes, 'programmes')); cache.curriculum = normalizeCurriculum(list(curriculum, 'curriculum')); cache.robots = normalizeRobots(list(robots, 'robots')); cache.components = normalizeComponents(list(components, 'components'));
         } catch (error) {
+          if (window.__ICC_SHEETS_WORKSPACE__) throw error;
           hydrateFromState(window.__ICC_LOCAL_STATE__ || { robotPrograms: [], curriculum: [], robots: [], componentLibrary: [], inventory: [], borrowings: [] });
         }
       },
@@ -74,6 +75,7 @@
         try {
           cache.inventory = list(await request('/centre-inventory'), 'items');
         } catch (error) {
+          if (window.__ICC_SHEETS_WORKSPACE__) throw error;
           cache.inventory = Array.isArray(window.__ICC_LOCAL_STATE__?.centerInventory) ? window.__ICC_LOCAL_STATE__.centerInventory : [];
         }
       },
@@ -90,6 +92,7 @@
         try {
           cache.borrowings = list(await request('/borrowings'), 'borrowings');
         } catch (error) {
+          if (window.__ICC_SHEETS_WORKSPACE__) throw error;
           cache.borrowings = Array.isArray(window.__ICC_LOCAL_STATE__?.borrowings) ? window.__ICC_LOCAL_STATE__.borrowings : [];
         }
       },
@@ -100,12 +103,13 @@
           cache.borrowings.push(created);
           return created;
         } catch (error) {
+          if (window.__ICC_SHEETS_WORKSPACE__) throw error;
           const created = { borrowing_id: `local-${Date.now()}`, borrower: log.borrower, item: log.item, quantity: log.sourceRow?.Quantity || log.quantity || 1, status: log.status || 'Still borrowing', sourceRow: log.sourceRow || {} };
           cache.borrowings.push(created);
           return created;
         }
       },
-      async returnBorrowedItem(id) { const updated = await request(`/borrowings/${encodeURIComponent(id)}/return`, 'POST'); const index = cache.borrowings.findIndex((row) => row.borrowing_id === id); if (index >= 0) cache.borrowings[index] = updated; return updated; },
+      async returnBorrowedItem(id, date) { const updated = await request(`/borrowings/${encodeURIComponent(id)}/return`, 'POST', date ? { returned_on: date } : undefined); const index = cache.borrowings.findIndex((row) => row.borrowing_id === id); if (index >= 0) cache.borrowings[index] = updated; return updated; },
       async getBorrowingHistory(studentId) { return list(await request(`/students/${encodeURIComponent(studentId)}/borrowings`), 'borrowings'); },
     };
 

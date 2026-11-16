@@ -50,6 +50,7 @@ const calendarEnabled = localCalendarEnabled || remoteCalendarEnabled;
 let calendarState = { status: 'loading', date: '', events: [], error: '' };
 let calendarRefresh = null;
 let sharedEdits = {};
+let sheetsWorkspaceMode = false;
 const sharedEditVersions = {};
 const sharedSaveQueues = new Map();
 const localWorkspaceDataVersionKey = 'icc-local-workspace-data-version';
@@ -99,7 +100,8 @@ function updateAuthButton() {
   if (workspaceMode) workspaceMode.textContent = localWorkspaceAllowed ? 'Local workspace' : 'Protected workspace';
   if (workspaceModeDetail) workspaceModeDetail.textContent = localWorkspaceAllowed
     ? 'Changes saved in this browser'
-    : iapAuthEnabled ? 'Access controlled by Google IAP'
+    : sheetsWorkspaceMode ? 'Shared Sheets · one editor at a time'
+      : iapAuthEnabled ? 'Access controlled by Google IAP'
       : getAccessToken() ? 'Connected to the protected backend' : 'Sign in to continue';
 }
 function showAuth(message = '') {
@@ -204,7 +206,7 @@ async function handlePasswordSignIn(event) {
     submitButton.disabled = false;
   }
 }
-async function apiRequest(endpoint, method = 'GET', body, timeoutMs = 8000) {
+async function apiRequest(endpoint, method = 'GET', body, timeoutMs = sheetsWorkspaceMode ? 70000 : 8000) {
   if (window.ICC_FORCE_LOCAL_PREVIEW) {
     throw new Error('Local CSV preview mode is active. The app is using the local database instead of the API.');
   }
@@ -226,6 +228,7 @@ async function apiRequest(endpoint, method = 'GET', body, timeoutMs = 8000) {
     }
     throw new Error(iapAuthEnabled ? 'IAP authentication required' : 'Authentication required');
   }
+  if (response.status === 204) return null;
   const contentType = response.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await response.json() : await response.text();
   if (!response.ok) throw new Error(typeof data === 'string' ? data || `API request failed (${response.status})` : data.detail || data.message || `API request failed (${response.status})`);
@@ -256,12 +259,12 @@ const save = (key, value) => {
   if (!iapAuthEnabled || ['borrowings', 'inventory'].includes(key)) return;
   const snapshot = JSON.parse(JSON.stringify(value));
   const previous = sharedSaveQueues.get(key) || Promise.resolve();
-  const write = previous.catch(() => {}).then(async () => {
+  const write = (sheetsWorkspaceMode ? previous : previous.catch(() => {})).then(async () => {
     setSaveStatus('Saving shared changes…');
     const response = await apiRequest(`/workspace/edits/${encodeURIComponent(key)}`, 'PUT', {
       expected_version: sharedEditVersions[key] || 0,
       value: snapshot,
-    });
+    }, sheetsWorkspaceMode ? 70000 : 8000);
     sharedEditVersions[key] = response.version;
     sharedEdits[key] = { value: snapshot, version: response.version };
     setSaveStatus('Shared changes saved.');
@@ -271,6 +274,7 @@ const save = (key, value) => {
     console.error(`Unable to save shared workspace edit "${key}":`, error);
     setSaveStatus(`Could not save changes: ${error.message}`, true);
   });
+  return write;
 };
 function mergeSharedStudentEdits(current, saved) {
   const identity = (student) => String(student.jamesStudentId || student.jamesData?.['Student ID'] || student.studentId || student.sourceRow?.['Student ID'] || '').trim().toUpperCase();
@@ -314,15 +318,17 @@ if (localWorkspaceAllowed) {
   }
 }
 function pathwayFor(student, courseType = student?.studentType) {
-  if (!localWorkspaceAllowed || !student || !courseType || !student.studentId) return null;
+  if ((!localWorkspaceAllowed && !sheetsWorkspaceMode) || !student || !courseType || !student.studentId) return null;
   const saved = window.ICCLocalPathways.find(localPathways, courseType, student.studentId);
-  const review = courseType === 'Robot' ? state.robotPathwayReviews.find((item) => item.studentId === student.studentId) : null;
+  const review = localWorkspaceAllowed && courseType === 'Robot' ? state.robotPathwayReviews.find((item) => item.studentId === student.studentId) : null;
   return window.ICCLocalPathways.reviewedRobotPathway(saved, review);
 }
 function pathwayEditorButton(student, courseType) {
-  if (!localWorkspaceAllowed || !student.studentId) return '';
+  if ((!localWorkspaceAllowed && !sheetsWorkspaceMode) || !student.studentId) return '';
   const pathway = pathwayFor(student, courseType);
-  return `<div class="pathway-controls"><button type="button" class="mini-button" id="editPathway">Update pathway</button><small>${pathway?.reviewed ? 'Reviewed · local preview only' : pathway ? 'Manually recorded · this browser only' : 'Not confirmed · this browser only'}</small>${localPathwayError ? `<small role="alert">${text(localPathwayError)}</small>` : ''}</div>`;
+  const description = sheetsWorkspaceMode ? (pathway ? 'Shared pathway' : 'Pathway not confirmed')
+    : pathway?.reviewed ? 'Reviewed · local preview only' : pathway ? 'Manually recorded · this browser only' : 'Not confirmed · this browser only';
+  return `<div class="pathway-controls"><button type="button" class="mini-button" id="editPathway">Update pathway</button><small>${description}</small>${localPathwayError ? `<small role="alert">${text(localPathwayError)}</small>` : ''}</div>`;
 }
 function openPathwayEditor(student, courseType, renderProfile) {
   if (localPathwayError) {
@@ -340,17 +346,31 @@ function openPathwayEditor(student, courseType, renderProfile) {
     : `<select name="programme" required><option value="" ${selected ? '' : 'selected'} disabled>Select a programme</option>${options.map((option) => `<option value="${escapeHtml(option)}" ${option === selected ? 'selected' : ''}>${text(courseType === 'Coding' && /^CS\d+$/.test(option) ? `${option} (CodeCombat Lv${option.slice(2)})` : option)}</option>`).join('')}</select>`;
   const history = current?.history || [];
   document.querySelector('#modalTitle').textContent = 'Update student pathway';
-  document.querySelector('#recordForm').innerHTML = `<p class="auth-help">Saved only in this browser; the Google Sheet is not changed. A new Robot or Coding programme starts at its first level. Lessons on the change date or earlier stay in history; later lessons are assumed to belong to the new path.</p><label>${courseType === 'Math' ? 'Math programme or level' : 'Programme'}${control}</label>${history.length ? `<p class="auth-help">Previous pathways: ${history.map((entry) => `${text(entry.programme)} (until ${text(entry.endedOn)})`).join(', ')}</p>` : ''}<div class="auth-error" role="alert" hidden></div><button class="primary-button" type="submit">Save pathway</button>`;
+  const storageDescription = sheetsWorkspaceMode ? 'Saved to the shared dashboard Sheet; the source Sheet is not changed.' : 'Saved only in this browser; the Google Sheet is not changed.';
+  const lessonDescription = sheetsWorkspaceMode
+    ? 'For an initial selection, matching earlier Sheet lessons are treated as part of this pathway. Changing a recorded programme starts a new path; lessons on the change date or earlier remain in history.'
+    : 'A new Robot or Coding programme starts at its first level. Lessons on the change date or earlier stay in history; later lessons are assumed to belong to the new path.';
+  document.querySelector('#recordForm').innerHTML = `<p class="auth-help">${storageDescription} ${lessonDescription}</p><label>${courseType === 'Math' ? 'Math programme or level' : 'Programme'}${control}</label>${history.length ? `<p class="auth-help">Previous pathways: ${history.map((entry) => `${text(entry.programme)} (until ${text(entry.endedOn)})`).join(', ')}</p>` : ''}<div class="auth-error" role="alert" hidden></div><button class="primary-button" type="submit">Save pathway</button>`;
   document.querySelector('#modalBackdrop').hidden = false;
-  document.querySelector('#recordForm').onsubmit = (event) => {
+  document.querySelector('#recordForm').onsubmit = async (event) => {
     event.preventDefault();
     const errorElement = event.target.querySelector('[role="alert"]');
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
     const programme = String(new FormData(event.target).get('programme') || '').trim();
     try {
       if (courseType !== 'Math' && !options.includes(programme)) throw new Error('Choose a listed programme.');
       const records = window.ICCLocalPathways.update(localPathways, {
-        courseType, studentId: student.studentId, programme, previousProgramme: currentProgramme === '—' ? '' : currentProgramme, date: today(),
+        courseType, studentId: student.studentId, programme,
+        previousProgramme: currentProgramme === '—' || (sheetsWorkspaceMode && !current && !selected) ? '' : currentProgramme,
+        date: today(),
       });
+      if (sheetsWorkspaceMode) {
+        await save('student-pathways', records);
+        await Promise.all(sharedSaveQueues.values());
+        window.location.reload();
+        return;
+      }
       window.ICCLocalPathways.write(localStorage, records);
       localPathways = records;
       document.querySelector('#modalBackdrop').hidden = true;
@@ -358,7 +378,8 @@ function openPathwayEditor(student, courseType, renderProfile) {
     } catch (error) {
       console.error('Unable to save student pathway:', error);
       errorElement.hidden = false;
-      errorElement.textContent = 'Could not save the pathway. Check your selection and browser storage.';
+      errorElement.textContent = sheetsWorkspaceMode ? `Could not save the pathway: ${error.message}` : 'Could not save the pathway. Check your selection and browser storage.';
+      submitButton.disabled = false;
     }
   };
 }
@@ -885,7 +906,7 @@ function renderSystemStatus() {
     detailsTable('Unmatched robot updates', ['Date', 'Student', 'Student ID', 'Robot', 'Status', 'Reason'], details.robots.map((row) => [row.date, row.name, row.studentId, row.robot, row.status, row.reason])),
   ].join('') : ''}` : '';
   const sessionStatus = iapAuthEnabled ? 'Access controlled by Google IAP' : getAccessToken() ? 'Signed in for this browser session' : 'Not signed in';
-  content.innerHTML = header('System Status', 'Verify the frontend, service layer, Cloud Run API, and Cloud SQL connection.') + `<div class="status-dashboard"><div class="status-panel"><div class="section-header compact"><div><span class="eyebrow">CLOUD ARCHITECTURE</span><h2>Connection checks</h2></div><button class="primary-button" data-action="check-system-status">Run checks</button></div><div id="systemStatusRows"><div class="service-status loading"><span></span><strong>Loading</strong><span>Run checks to verify backend services.</span></div></div></div><div class="status-panel developer-panel"><div class="section-header compact"><div><span class="eyebrow">WORKSPACE CONFIGURATION</span><h2>API access</h2></div></div><p class="settings-value">Backend: <strong>${getApiBaseUrl() ? escapeHtml(getApiBaseUrl()) : 'Not configured'}</strong></p><p class="settings-value">Session: <strong>${sessionStatus}</strong></p></div></div>${sheetsPanel ? `<div class="sheet-status-details">${sheetsPanel}</div>` : ''}`;
+  content.innerHTML = header('System Status', 'Verify the frontend, service layer, Cloud Run API, and workspace storage.') + `<div class="status-dashboard"><div class="status-panel"><div class="section-header compact"><div><span class="eyebrow">CLOUD ARCHITECTURE</span><h2>Connection checks</h2></div><button class="primary-button" data-action="check-system-status">Run checks</button></div><div id="systemStatusRows"><div class="service-status loading"><span></span><strong>Loading</strong><span>Run checks to verify backend services.</span></div></div></div><div class="status-panel developer-panel"><div class="section-header compact"><div><span class="eyebrow">WORKSPACE CONFIGURATION</span><h2>API access</h2></div></div><p class="settings-value">Backend: <strong>${getApiBaseUrl() ? escapeHtml(getApiBaseUrl()) : 'Not configured'}</strong></p><p class="settings-value">Session: <strong>${sessionStatus}</strong></p></div></div>${sheetsPanel ? `<div class="sheet-status-details">${sheetsPanel}</div>` : ''}`;
 }
 async function checkSystemStatus() {
   const target = document.querySelector('#systemStatusRows');
@@ -1422,7 +1443,7 @@ function renderStudentProfile() {
   if (!student) return renderStudents();
   const hasProgress = state.robotProgress.some((row) => belongsToStudent(row, student));
   const hasChecklist = state.componentItems.some((row) => belongsToStudent(row, student));
-  if ((!hasProgress || !hasChecklist) && !pathwayFor(student, 'Robot')) {
+  if ((!hasProgress || !hasChecklist) && !pathwayFor(student, 'Robot') && !sheetsWorkspaceMode) {
     replaceStudentProgramme(student, student.program);
   }
   const progress = state.robotProgress.filter((row) => belongsToStudent(row, student));
@@ -1798,12 +1819,22 @@ function renderComponents() {
   const priceFor = (item) => item['Unit Price'] || services.LibraryService.getComponentLibrary().find((libraryItem) => libraryItem.Component === item.Component && libraryItem.Kit === item.Kit)?.['Unit Price'] || '';
   const filtered = inventory.filter((item) => kit === 'ALL' || item.Kit === kit);
   const kits = [...new Set(inventory.map((item) => item.Kit).filter(Boolean))].sort();
-  const inventoryRows = filtered.map((item) => { const index = inventory.indexOf(item); const itemPrice = priceFor(item); const sourceInventory = state.inventory.find((row) => row.Component === item.Component && row.Kit === item.Kit); const libraryItem = services.LibraryService.getComponentLibrary().find((row) => row.Component === item.Component && row.Kit === item.Kit); const levelAppeared = item['Appears in'] || item['Level appeared'] || sourceInventory?.['Appears in'] || libraryItem?.['Appears in'] || libraryItem?.['Appears in levels'] || libraryItem?.Levels || '—'; return [item.Component, itemPrice ? `HK$${itemPrice}` : 'Not priced', levelAppeared, `<input class="inline-input inventory-qty-input" type="number" min="0" data-center-inventory-qty="${index}" value="${escapeHtml(item['Total center qty'] || '0')}">`, `<input class="inline-input inventory-date-input" type="date" data-center-inventory-date="${index}" value="${escapeHtml(item['Last counted'] || '')}">`, `<textarea class="inventory-note-input" data-center-inventory-note="${index}" rows="2" placeholder="Add note">${escapeHtml(item.Notes || '')}</textarea>`]; });
+  const inventoryRows = filtered.map((item) => { const index = inventory.indexOf(item); const itemPrice = priceFor(item); const sourceInventory = state.inventory.find((row) => row.Component === item.Component && row.Kit === item.Kit); const libraryItem = services.LibraryService.getComponentLibrary().find((row) => row.Component === item.Component && row.Kit === item.Kit); const levelAppeared = item['Appears in'] || item['Level appeared'] || sourceInventory?.['Appears in'] || libraryItem?.['Appears in'] || libraryItem?.['Appears in levels'] || libraryItem?.Levels || '—'; const quantity = sheetsWorkspaceMode ? item['Total center qty'] ?? '' : item['Total center qty'] || '0'; return [item.Component, itemPrice ? `HK$${itemPrice}` : 'Not priced', levelAppeared, `<input class="inline-input inventory-qty-input" type="number" min="0" data-center-inventory-qty="${index}" value="${escapeHtml(quantity)}">`, `<input class="inline-input inventory-date-input" type="date" data-center-inventory-date="${index}" value="${escapeHtml(item['Last counted'] || '')}">`, `<textarea class="inventory-note-input" data-center-inventory-note="${index}" rows="2" placeholder="Add note">${escapeHtml(item.Notes || '')}</textarea>`]; });
   const kitTabs = ['ALL', ...kits].map((value) => `<button class="tab-button ${activeInventoryKit === value ? 'active' : ''}" data-action="inventory-kit:${value}">${value === 'ALL' ? 'All Kits' : text(value)}</button>`).join('');
   content.innerHTML = header('Center Inventory', 'Centre-owned stock ledger, separate from student component requirements.') + `<div class="library-tabs inventory-kit-tabs">${kitTabs}</div><div class="inventory-summary"><strong>${filtered.length}</strong><span>${activeInventoryKit === 'ALL' ? 'All centre components' : `${activeInventoryKit} centre components`}</span></div>${table(['Component', 'Price', 'Level appeared', 'Centre qty', 'Last counted', 'Notes'], inventoryRows)}`;
-  document.querySelectorAll('[data-center-inventory-qty]').forEach((input) => input.onchange = async () => { await services.InventoryService.updateItem(`${inventory[Number(input.dataset.centerInventoryQty)].Kit}:${inventory[Number(input.dataset.centerInventoryQty)].Component}`, { 'Total center qty': input.value }); });
-  document.querySelectorAll('[data-center-inventory-date]').forEach((input) => input.onchange = async () => { await services.InventoryService.updateItem(`${inventory[Number(input.dataset.centerInventoryDate)].Kit}:${inventory[Number(input.dataset.centerInventoryDate)].Component}`, { 'Last counted': input.value }); });
-  document.querySelectorAll('[data-center-inventory-note]').forEach((input) => input.onchange = async () => { await services.InventoryService.updateItem(`${inventory[Number(input.dataset.centerInventoryNote)].Kit}:${inventory[Number(input.dataset.centerInventoryNote)].Component}`, { Notes: input.value }); });
+  const updateInventory = async (item, changes) => {
+    try {
+      await services.InventoryService.updateItem(`${item.Kit}:${item.Component}`, changes);
+      if (sheetsWorkspaceMode) setSaveStatus('Shared changes saved.');
+    } catch (error) {
+      console.error('Unable to update inventory:', error);
+      setSaveStatus(`Could not save inventory: ${error.message}`, true);
+      renderComponents();
+    }
+  };
+  document.querySelectorAll('[data-center-inventory-qty]').forEach((input) => input.onchange = () => updateInventory(inventory[Number(input.dataset.centerInventoryQty)], { 'Total center qty': input.value }));
+  document.querySelectorAll('[data-center-inventory-date]').forEach((input) => input.onchange = () => updateInventory(inventory[Number(input.dataset.centerInventoryDate)], { 'Last counted': input.value }));
+  document.querySelectorAll('[data-center-inventory-note]').forEach((input) => input.onchange = () => updateInventory(inventory[Number(input.dataset.centerInventoryNote)], { Notes: input.value }));
 }
 
 function renderLibraries(active = 'AIKIRO') {
@@ -1880,8 +1911,8 @@ function showLibrary(name) {
     headers = ['Component ID', 'Component', 'Tier', 'Kit', 'Expected qty', 'Centre qty', 'Result'];
     rows = services.InventoryService.getItems().map((row) => {
       const expected = row['Required Qty'] || row['Demo qty'] || '0';
-      const actual = row['Total center qty'] || '0';
-      return [row['Component ID'], row.Component, row.Tier, row.Kit, expected, actual, quantityResult(expected, actual)];
+      const actual = sheetsWorkspaceMode ? row['Total center qty'] ?? '' : row['Total center qty'] || '0';
+      return [row['Component ID'], row.Component, row.Tier, row.Kit, expected, actual || (actual === 0 ? 0 : 'Not recorded'), actual === '' ? 'Not recorded' : quantityResult(expected, actual)];
     });
   }
   target.innerHTML = table(headers, rows, '', sortIndex);
@@ -1895,10 +1926,34 @@ function showOperation(name) {
   const target = document.querySelector('#operationTable');
   if (name === 'Borrowing') {
     target.innerHTML = `<div class="section-header compact"><div><span class="eyebrow">STUDENT BORROWING</span><h2>Current records</h2></div>${button('Log borrowing +', 'new-borrowing', 'primary-button')}</div>` + table(['Date', 'Student', 'Borrowed component', 'Qty', 'Status', 'Return date'], services.BorrowingService.getBorrowingLogs().map((row, index) => [text(row.sourceRow?.['Borrowed on'] || today()), text(row.borrower || row.sourceRow?.Student), text(row.item), text(row.sourceRow?.Quantity), `<button class="status-button borrowing-status" data-borrowing="${index}">${text(row.status)}</button>`, row.status === 'Returned' || row.sourceRow?.['Returned on'] ? text(row.sourceRow?.['Returned on'] || 'Returned') : `<input class="inline-input borrowing-return-date" type="date" data-borrowing-return-date="${index}" aria-label="Return date">`]));
-    document.querySelectorAll('[data-borrowing]').forEach((item) => item.onclick = () => { services.BorrowingService.returnBorrowedItem(item.dataset.borrowing); showOperation('Borrowing'); });
-    document.querySelectorAll('[data-borrowing-return-date]').forEach((input) => input.onchange = () => {
+    document.querySelectorAll('[data-borrowing]').forEach((item) => item.onclick = async () => {
+      if (!sheetsWorkspaceMode) { services.BorrowingService.returnBorrowedItem(item.dataset.borrowing); showOperation('Borrowing'); return; }
+      const row = services.BorrowingService.getBorrowingLogs()[Number(item.dataset.borrowing)];
+      if (!row || row.status === 'Returned') return;
+      try {
+        await services.BorrowingService.returnBorrowedItem(row.borrowing_id, today());
+        setSaveStatus('Shared changes saved.');
+        showOperation('Borrowing');
+      } catch (error) {
+        console.error('Unable to return borrowing:', error);
+        setSaveStatus(`Could not save return: ${error.message}`, true);
+      }
+    });
+    document.querySelectorAll('[data-borrowing-return-date]').forEach((input) => input.onchange = async () => {
       const row = services.BorrowingService.getBorrowingLogs()[Number(input.dataset.borrowingReturnDate)];
       if (!row) return;
+      if (sheetsWorkspaceMode) {
+        try {
+          await services.BorrowingService.returnBorrowedItem(row.borrowing_id, input.value);
+          setSaveStatus('Shared changes saved.');
+          showOperation('Borrowing');
+        } catch (error) {
+          console.error('Unable to return borrowing:', error);
+          setSaveStatus(`Could not save return: ${error.message}`, true);
+          showOperation('Borrowing');
+        }
+        return;
+      }
       row.status = 'Returned';
       row.sourceRow = { ...(row.sourceRow || {}), Status: 'Returned', 'Returned on': input.value };
       state.borrowings = services.BorrowingService.getBorrowingLogs();
@@ -1921,7 +1976,7 @@ function openForm(title, fields, submit) {
 }
 function openBorrowingForm(studentOptions) {
   document.querySelector('#modalTitle').textContent = 'Log borrowing';
-  document.querySelector('#recordForm').innerHTML = `<label>Student<select name="student" id="borrowStudent" required>${studentOptions}</select></label><label>Borrowed component<select name="component" id="borrowComponent" required></select></label><label>Quantity<select name="quantity" required>${Array.from({ length: 21 }, (_, value) => `<option value="${value}">${value}</option>`).join('')}</select></label><button class="primary-button" type="submit">Save borrowing</button>`;
+  document.querySelector('#recordForm').innerHTML = `<label>Student<select name="student" id="borrowStudent" required>${studentOptions}</select></label><label>Borrowed component<select name="component" id="borrowComponent" required></select></label><label>Quantity<select name="quantity" required>${Array.from({ length: sheetsWorkspaceMode ? 20 : 21 }, (_, index) => sheetsWorkspaceMode ? index + 1 : index).map((value) => `<option value="${value}">${value}</option>`).join('')}</select></label><div class="auth-error" role="alert" hidden></div><button class="primary-button" type="submit">Save borrowing</button>`;
   const studentSelect = document.querySelector('#borrowStudent');
   const componentSelect = document.querySelector('#borrowComponent');
   const updateComponents = () => {
@@ -1937,11 +1992,22 @@ function openBorrowingForm(studentOptions) {
     const checklist = state.componentItems.filter((row) => row.student === data.student);
     const component = checklist.find((row) => row.item === data.component);
     if (!component) return;
-    await services.BorrowingService.createBorrowingLog({ item: component.item, borrower: data.student, status: 'Still borrowing', sourceRow: { Student: data.student, Component: component.item, Quantity: data.quantity, Kit: component.kit, Status: 'Still borrowing', 'Borrowed on': today(), 'Returned on': '' } });
-    state.borrowings = services.BorrowingService.getBorrowingLogs();
-    save('borrowings', state.borrowings);
-    document.querySelector('#modalBackdrop').hidden = true;
-    showOperation('Borrowing');
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    try {
+      await services.BorrowingService.createBorrowingLog({ item: component.item, borrower: data.student, status: 'Still borrowing', sourceRow: { Student: data.student, Component: component.item, Quantity: data.quantity, Kit: component.kit, Status: 'Still borrowing', 'Borrowed on': today(), 'Returned on': '' } });
+      state.borrowings = services.BorrowingService.getBorrowingLogs();
+      save('borrowings', state.borrowings);
+      document.querySelector('#modalBackdrop').hidden = true;
+      if (sheetsWorkspaceMode) setSaveStatus('Shared changes saved.');
+      showOperation('Borrowing');
+    } catch (error) {
+      console.error('Unable to save borrowing:', error);
+      const notice = event.target.querySelector('[role="alert"]');
+      notice.hidden = false;
+      notice.textContent = `Could not save borrowing: ${error.message}`;
+      submitButton.disabled = false;
+    }
   };
 }
 
@@ -2196,7 +2262,7 @@ const workspaceData = localDemoEnabled && !localDemoSignedIn
     return response.json();
   })
   : (getAccessToken() || iapAuthEnabled) && getApiBaseUrl()
-    ? apiRequest('/workspace/bootstrap')
+    ? apiRequest('/workspace/bootstrap', 'GET', undefined, 70000)
     : iapAuthEnabled ? Promise.reject(new Error('The same-origin /api route is not configured for this IAP deployment.'))
     : Promise.resolve({});
 if (!localWorkspaceAllowed && !getAccessToken() && !iapAuthEnabled) {
@@ -2212,8 +2278,14 @@ if (!localWorkspaceAllowed && iapAuthEnabled && !getApiBaseUrl()) {
 }
 workspaceData.then(async (value) => {
   const { sharedEdits: savedEdits = {}, ...workspace } = value;
+  sheetsWorkspaceMode = !localWorkspaceAllowed && workspace.storageMode === 'sheets';
+  window.__ICC_SHEETS_WORKSPACE__ = sheetsWorkspaceMode;
+  updateAuthButton();
   sharedEdits = savedEdits;
   for (const [key, edit] of Object.entries(sharedEdits)) sharedEditVersions[key] = edit.version;
+  if (sheetsWorkspaceMode) {
+    localPathways = window.ICCLocalPathways.read({ getItem: () => JSON.stringify(load('student-pathways', [])) });
+  }
   Object.assign(state, workspace);
   if (liveSheetsMode) {
     localLiveSheetsReady = true;
