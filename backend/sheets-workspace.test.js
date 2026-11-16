@@ -71,6 +71,46 @@ test('marks progress unknown when no Sheet lesson confirms it', () => {
   assert.equal(result.robotProgress[0].Status, 'Unknown');
 });
 
+test('starter tabs provide current programme and robots; lesson logs override starter status', () => {
+  const starter = { demographics: [], robotHistory: [
+    { studentId: 'A', programme: 'AIKIRO Lv1', robot: 'Robot Dancer', status: 'Unfinished' },
+    { studentId: 'A', programme: 'AIKIRO Lv1', robot: 'Extra Robot', status: 'Finished' },
+    { studentId: 'A', programme: 'AIKIRO Lv1', robot: 'Unknown Robot', status: 'Unexpected' },
+  ] };
+  const result = buildWorkspace(libraries, {}, sheetData, starter);
+  assert.equal(result.robotStudents[0].program, 'AIKIRO Lv1');
+  assert.deepEqual(result.robotProgress.map((row) => [row.Robot, row.Status]), [
+    ['Robot Dancer', 'Done'], ['Extra Robot', 'Done'], ['Unknown Robot', 'Unknown'],
+  ]);
+  assert.match(result.robotProgress[2].starterStatusIssue, /Unrecognized/);
+  assert.equal(result.starterProgressSource, true);
+});
+
+test('students with no or multiple starter programmes remain unassigned', () => {
+  const starter = { demographics: [], robotHistory: [
+    { studentId: 'A', programme: 'AIKIRO Lv1', robot: 'Robot Dancer', status: 'Finished' },
+    { studentId: 'A', programme: 'AIKIRO Lv2', robot: 'Other Robot', status: 'Finished' },
+  ] };
+  const multi = buildWorkspace(libraries, { 'student-pathways': { value: [path], version: 1 } }, sheetData, starter);
+  assert.equal(multi.robotStudents[0].program, 'Not assigned');
+  assert.match(multi.robotStudents[0].starterProgrammeIssue, /Multiple/);
+  assert.equal(multi.robotProgress.length, 0);
+  const empty = buildWorkspace(libraries, { 'student-pathways': { value: [path], version: 1 } }, sheetData, { ...starter, robotHistory: [] });
+  assert.equal(empty.robotStudents[0].program, 'Not assigned');
+  assert.equal(empty.robotProgress.length, 0);
+});
+
+test('duplicate starter robot names are flagged and do not receive ambiguous lesson updates', () => {
+  const starter = { demographics: [], robotHistory: [
+    { studentId: 'A', programme: 'AIKIRO Lv1', robot: 'Robot Dancer', status: 'Unfinished' },
+    { studentId: 'A', programme: 'AIKIRO Lv1', robot: 'Dancer Bot', status: 'Unfinished' },
+  ] };
+  const result = buildWorkspace(libraries, {}, sheetData, starter);
+  assert.deepEqual(result.robotProgress.map((row) => row.Status), ['Not started', 'Not started']);
+  assert.ok(result.robotProgress.every((row) => /Multiple starter robots/.test(row.starterStatusIssue)));
+  assert.equal(result.warnings.unmatchedRobots, 1);
+});
+
 test('persists shared edits, inventory and borrowing returns', async () => {
   const { call, router } = fixture();
   assert.equal((await call('PUT', '/workspace/edits/daily-lesson-drafts', { expected_version: 0, value: [{ note: 'test' }] })).status, 200);

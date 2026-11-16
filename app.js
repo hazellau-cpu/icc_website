@@ -11,7 +11,7 @@ const groups = [
 const tools = [];
 const state = {
   files: [], robotStudents: [], codingStudents: [], codingProgress: [], borrowings: [],
-  componentItems: [], robotProgress: [], robotProgressHistory: [], robotPathwayReviews: [], robotProgressReviews: [], localRobotProgressRemovals: [], codingLessons: [], robotLessons: [], mathLessons: [], curriculum: [], mathStudents: [], starterProgress: [],
+  componentItems: [], robotProgress: [], robotProgressHistory: [], starterRobotHistory: [], robotPathwayReviews: [], robotProgressReviews: [], localRobotProgressRemovals: [], codingLessons: [], robotLessons: [], mathLessons: [], curriculum: [], mathStudents: [], starterProgress: [],
   componentLibrary: [], inventory: [], centerInventory: [], robotPrograms: [], robots: [], reminders: [], dailyLessonDrafts: [], dailyLessonFinalizations: [],
 };
 let activeView = 'Robot Students';
@@ -34,8 +34,8 @@ const apiTokenKey = 'icc-api-access-token';
 const userEmailKey = 'icc-authenticated-user-email';
 const localDemoSessionKey = 'icc-local-demo-email';
 const isLocalHost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
-const localWorkspaceAllowed = window.ICC_FORCE_LOCAL_PREVIEW
-  || isLocalHost;
+const sheetsReadOnlyPreview = isLocalHost && window.ICC_LOCAL_SHEETS_WORKSPACE_PREVIEW === true;
+const localWorkspaceAllowed = !sheetsReadOnlyPreview && (window.ICC_FORCE_LOCAL_PREVIEW || isLocalHost);
 const localDemoEnabled = isLocalHost && window.ICC_LOCAL_DEMO_LOGIN === true;
 const localDemoSignedIn = localDemoEnabled && Boolean(sessionStorage.getItem(localDemoSessionKey));
 const localGoogleSignInEnabled = localDemoEnabled && window.ICC_LOCAL_GOOGLE_SIGN_IN === true;
@@ -56,11 +56,11 @@ const sharedSaveQueues = new Map();
 const localWorkspaceDataVersionKey = 'icc-local-workspace-data-version';
 const useSavedLocalWorkspaceEdits = localWorkspaceAllowed
   && localStorage.getItem(localWorkspaceDataVersionKey) === 'james-paid-v1';
-if (!localWorkspaceAllowed) {
+if (!localWorkspaceAllowed && !sheetsReadOnlyPreview) {
   for (const key of Object.keys(localStorage)) {
     if (key.startsWith('icc-')) localStorage.removeItem(key);
   }
-} else {
+} else if (localWorkspaceAllowed) {
   localStorage.removeItem(apiTokenKey);
   localStorage.removeItem(userEmailKey);
 }
@@ -319,12 +319,16 @@ if (localWorkspaceAllowed) {
 }
 function pathwayFor(student, courseType = student?.studentType) {
   if ((!localWorkspaceAllowed && !sheetsWorkspaceMode) || !student || !courseType || !student.studentId) return null;
+  if (state.starterProgressSource && courseType === 'Robot') return null;
   const saved = window.ICCLocalPathways.find(localPathways, courseType, student.studentId);
   const review = localWorkspaceAllowed && courseType === 'Robot' ? state.robotPathwayReviews.find((item) => item.studentId === student.studentId) : null;
   return window.ICCLocalPathways.reviewedRobotPathway(saved, review);
 }
 function pathwayEditorButton(student, courseType) {
   if ((!localWorkspaceAllowed && !sheetsWorkspaceMode) || !student.studentId) return '';
+  if (state.starterProgressSource && courseType === 'Robot') {
+    return `<div class="pathway-controls"><small>${text(student.starterProgrammeIssue || 'Programme comes from the starter Sheet.')}</small></div>`;
+  }
   const pathway = pathwayFor(student, courseType);
   const description = sheetsWorkspaceMode ? (pathway ? 'Shared pathway' : 'Pathway not confirmed')
     : pathway?.reviewed ? 'Reviewed · local preview only' : pathway ? 'Manually recorded · this browser only' : 'Not confirmed · this browser only';
@@ -840,6 +844,7 @@ function reviewedProgrammeRobotProgress(student, rows) {
 }
 
 function programmeRobotProgress(student) {
+  if (state.starterProgressSource) return state.robotProgress.filter((row) => belongsToStudent(row, student));
   const pathway = pathwayFor(student, 'Robot');
   if (pathway?.startedOn) {
     const records = programmeTemplate(student).robotSequence.map((row) => ({
@@ -879,12 +884,14 @@ function programmeRobotProgress(student) {
 
 function robotCompletion(student) {
   const progress = programmeRobotProgress(student);
+  if (state.starterProgressSource && !progress.length) return 'Not assigned';
   if (!progress.length) return student.completion || '0%';
   return `${Math.round(progress.filter((row) => String(row.Status).toLowerCase() === 'done').length * 100 / progress.length)}%`;
 }
 
 function nextRobotForStudent(student) {
   const progress = programmeRobotProgress(student).sort((left, right) => Number(left.Sequence || 0) - Number(right.Sequence || 0));
+  if (state.starterProgressSource && !progress.length) return 'Not assigned';
   const template = programmeTemplate(student);
   const review = localWorkspaceAllowed ? state.robotPathwayReviews.find((item) => item.studentId === student.studentId) : null;
   if (window.ICCLocalPathways.reviewedRobotSequence([], pathwayFor(student, 'Robot'), review).length) {
@@ -1410,6 +1417,8 @@ function renderTodaysStudents() {
 
 function renderStudents() {
   const kits = ['AIKIRO', 'ROBOKIT', 'UARO'];
+  const unmatchedStarterRows = state.starterRobotHistory.filter((row) =>
+    !state.robotStudents.some((student) => starterProgressMatches(row, student))).length;
   const studentRow = (student, index) => [
     `<button class="student-link" data-profile="${index}" aria-label="View Robot progress for ${escapeHtml(student.name)}"><span class="student-avatar">${text(student.name).charAt(0)}</span><span><strong>${text(student.name)}</strong><small>${text(student.sourceRow?.Tutor || student.tutor || 'Robot student')}</small><small>View progress</small></span></button>`,
     `<span class="programme-chip">${icon('bot')}<span>${text(programmeLabel(studentProgramme(student)))}</span></span>`,
@@ -1418,10 +1427,18 @@ function renderStudents() {
     carryMasterMarkup(student)
   ];
   const sections = kits.map((kit) => {
-    const students = state.robotStudents.map((student, index) => ({ student, index })).filter(({ student }) => String(studentProgramme(student)).toUpperCase().startsWith(kit));
+    const students = state.robotStudents.map((student, index) => ({ student, index })).filter(({ student }) =>
+      String(state.starterProgressSource && student.program === 'Not assigned' ? student.sourceRow?.['Course type'] : studentProgramme(student)).toUpperCase().startsWith(kit));
     return `<section class="robot-student-group robot-group-${kit.toLowerCase()}"><div class="section-header compact"><div><span class="eyebrow">ROBOT PROGRAMME</span><h2>${kit} Students</h2></div><span class="group-count">${students.length} students</span></div>${table(['Student', 'Programme', 'Current robot', 'Progress', 'Robot carry status'], students.map(({ student, index }) => studentRow(student, index)), `robot-master-table robot-master-${kit.toLowerCase()}`)}</section>`;
   }).join('');
-  content.innerHTML = header('Robot Students', 'Tutor control center for every robot student and current kit status.') + `<div class="dashboard-strip"><div><strong>${state.robotStudents.length}</strong><span>Robot students</span></div></div><div class="robot-student-groups">${sections}</div>`;
+  const starterWarning = unmatchedStarterRows
+    ? `<div class="notion-note" role="status">${unmatchedStarterRows} starter tracker records do not match a current Robot student. Check student IDs and active status in the source Sheets.</div>`
+    : '';
+  const ambiguousProgrammes = state.robotStudents.filter((student) => student.starterProgrammeIssue).length;
+  const programmeWarning = ambiguousProgrammes
+    ? `<div class="notion-note" role="status">${ambiguousProgrammes} Robot students appear on multiple starter programme tabs and need review.</div>`
+    : '';
+  content.innerHTML = header('Robot Students', 'Tutor control center for every robot student and current kit status.') + `<div class="dashboard-strip"><div><strong>${state.robotStudents.length}</strong><span>Robot students</span></div></div>${starterWarning}${programmeWarning}<div class="robot-student-groups">${sections}</div>`;
 }
 
 function renderStudentChecklist() {
@@ -1473,6 +1490,10 @@ function renderStudentProfile() {
   const previousRobotsMarkup = previousRobots.length
     ? `<div class="profile-panel quick-note-history"><div class="section-header compact"><div><span class="eyebrow">TRACKER HISTORY</span><h2>Other recorded robots</h2></div></div><p>These entries are retained separately because they do not match the current programme list.</p>${table(['Robot', 'Status', 'Tracker sequence', 'Notes'], previousRobots.map((row) => [text(row.robot), text(row.status), text(row.sequence || '—'), text(row.notes || '—')]), 'quick-note-table')}</div>`
     : '';
+  const starterIssues = programmeProgress.filter((row) => row.starterStatusIssue);
+  const starterIssuesMarkup = starterIssues.length
+    ? `<p class="auth-help" role="status">${starterIssues.map((row) => `${text(row.Robot)}: ${text(row.starterStatusIssue)}`).join('; ')}</p>`
+    : '';
   const savedProgressMarkup = !(localWorkspaceAllowed && review?.hidePreviousTrackerProgress)
     && pathwayFor(student, 'Robot')?.startedOn && progress.length
     ? `<div class="profile-panel quick-note-history"><div class="section-header compact"><h2>Previous tracker progress</h2></div><p>These saved records are retained separately; their programme may not be recorded.</p>${table(['Robot', 'Level', 'Status', 'Notes'], progress.map((row) => [text(row.Robot), text(row.Level || '—'), text(row.Status), text(row.Notes || '—')]), 'quick-note-table')}</div>`
@@ -1490,14 +1511,14 @@ function renderStudentProfile() {
         <div class="summary-grid">
           <div class="summary-item"><span>Programme</span><strong>${text(programmeLabel(studentProgramme(student)))}</strong>${pathwayEditorButton(student, 'Robot')}</div>
           <div class="summary-item"><span>Current Robot</span><strong>${text(currentRobot)}</strong></div>
-          <div class="summary-item"><span>Robot Completion</span><strong>${Math.round((completedRobots / totalRobots) * 100)}%</strong></div>
-          <div class="summary-item"><span>Completed Robots</span><strong>${completedRobots} / ${totalRobots}</strong></div>
+          <div class="summary-item"><span>Robot Completion</span><strong>${state.starterProgressSource && !programmeProgress.length ? 'Not assigned' : `${Math.round((completedRobots / totalRobots) * 100)}%`}</strong></div>
+          <div class="summary-item"><span>Completed Robots</span><strong>${state.starterProgressSource && !programmeProgress.length ? '—' : `${completedRobots} / ${totalRobots}`}</strong></div>
           <div class="summary-item"><span>Last Lesson</span><strong>${text(lessons.last)}</strong></div>
           <div class="summary-item"><span>Next Lesson</span>${nextLessonMarkup(lessons.next)}</div>
         </div>
       </div>
       <div class="journey-layout">
-        <div class="journey-panel"><div class="section-header compact"><div><span class="eyebrow">ROBOT LEARNING JOURNEY</span><h2>Current path</h2></div></div>${pathwayFor(student, 'Robot')?.startedOn ? '<p class="auth-help">Sheet lessons after the change date are assumed to belong to this pathway. The checklist still reflects the previous pathway.</p>' : ''}<div class="journey-track">
+        <div class="journey-panel"><div class="section-header compact"><div><span class="eyebrow">ROBOT LEARNING JOURNEY</span><h2>Current path</h2></div></div>${pathwayFor(student, 'Robot')?.startedOn ? '<p class="auth-help">Sheet lessons after the change date are assumed to belong to this pathway. The checklist still reflects the previous pathway.</p>' : ''}${starterIssuesMarkup}<div class="journey-track">
           ${journeySteps.length ? journeySteps.map(({ row, label }, index) => `<div class="journey-step ${label}"><span class="journey-icon">${label === 'completed' ? icon('check') : label === 'current' ? icon('bot') : icon('clock')}</span><div><strong>${text(normalizeRobotName(row.Robot) || 'Robot')}</strong><small>${row.Status === 'Unknown' ? 'Status unknown' : label === 'completed' ? 'Completed' : label === 'current' ? 'Current robot' : 'Upcoming'}</small></div><button class="status-button" data-progress="${index}" ${row.conflict ? 'disabled title="Multiple saved records need review"' : localLiveSheetsEnabled || liveSheetsMode || pathwayFor(student, 'Robot')?.startedOn || row.reviewedProgress ? 'disabled title="Progress is read-only"' : ''}>${text(row.Status || 'Not started')}</button></div>`).join('') : '<div class="empty-state">No robot learning path is available yet.</div>'}
         </div></div>
       </div>
@@ -2292,7 +2313,13 @@ workspaceData.then(async (value) => {
     const sidebarUpdate = document.querySelector('#liveSheetsUpdate');
     sidebarUpdate.hidden = false;
     sidebarUpdate.textContent = 'Google Sheet: live';
-    liveSheetsStatus = { message: 'Roster and lesson progress loaded from Google Sheets.', details: null };
+    const warnings = workspace.warnings;
+    liveSheetsStatus = {
+      message: warnings
+        ? `Roster and lesson progress loaded from Google Sheets. Unmatched lessons: ${warnings.unmatchedLogs}; unmatched robot updates: ${warnings.unmatchedRobots}.`
+        : 'Roster and lesson progress loaded from Google Sheets.',
+      details: workspace.warningDetails || null,
+    };
   }
   if (localWorkspaceAllowed) window.ICCLocalPathways.validateRobotReviews(state.robotPathwayReviews, state.robotProgressReviews);
   window.__ICC_LOCAL_STATE__ = { ...state };

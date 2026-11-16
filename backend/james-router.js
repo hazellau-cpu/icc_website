@@ -20,7 +20,7 @@ function editDistance(left, right) {
   return matrix[left.length][right.length];
 }
 
-function createJamesRouter({ query, jwtSecret, storage = null }) {
+function createJamesRouter({ query, jwtSecret, storage = null, reviewDisabledReason = '' }) {
   const persistence = storage || {
     async getStudent(studentId) {
       const students = await query(`SELECT s.student_id, s.student_name, s.programme_id, p.programme_name
@@ -85,10 +85,12 @@ function createJamesRouter({ query, jwtSecret, storage = null }) {
   return {
     async handle(request, response, url, readJson, send) {
       if (request.method === 'POST' && url.pathname === '/robot-progress/preview') {
+        if (reviewDisabledReason) { send(response, 409, { accepted: false, reasons: [reviewDisabledReason] }); return true; }
         send(response, 200, await validateRobotProgress(await readJson(request)));
         return true;
       }
       if (request.method === 'POST' && url.pathname === '/robot-progress/accept') {
+        if (reviewDisabledReason) { send(response, 409, { detail: reviewDisabledReason }); return true; }
         const body = await readJson(request);
         const approval = verifyApproval(body.approval_token);
         if (!approval) { send(response, 401, { detail: 'Invalid or expired approval token' }); return true; }

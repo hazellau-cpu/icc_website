@@ -4,12 +4,12 @@ const Module = require('node:module');
 const sheets = require('./google-sheets');
 const { WorkspaceConflictError } = require('./sheets-workspace-store');
 
-test('protected Sheets-mode bootstrap and writes work without a database', async (t) => {
+for (const configured of [true, false]) test(`protected Sheets-mode bootstrap works ${configured ? 'with' : 'without'} a starter Sheet`, async (t) => {
   const env = {
     PORT: '0', K_SERVICE: 'test-service', IAP_AUDIENCE: 'test-audience',
     WORKSPACE_STORAGE: 'sheets', DASHBOARD_SPREADSHEET_ID: 'dashboard',
     DASHBOARD_SINGLE_WRITER: 'true', SHEETS_READ_SOURCE: 'google',
-    GOOGLE_SHEETS_SPREADSHEET_ID: 'source', STARTER_SHEET_SPREADSHEET_ID: '',
+    GOOGLE_SHEETS_SPREADSHEET_ID: 'source', STARTER_SHEET_SPREADSHEET_ID: configured ? 'starter' : '',
   };
   const previous = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));
   Object.assign(process.env, env);
@@ -41,6 +41,10 @@ test('protected Sheets-mode bootstrap and writes work without a database', async
       if (request === './iap-auth') return { createIapAuthenticator: () => async (assertion) => assertion === 'valid' ? { sub: 'test', email: 'editor@example.test' } : null };
       if (request === './google-sheets') return { ...sheets, createGoogleSheetsReader: () => async () => data };
       if (request === './sheets-workspace-store') return { createSheetsWorkspaceStore: () => store };
+      if (request === './starter-demographics') return { readStarterSheet: async () => ({
+        demographics: [{ studentId: 'A', yearOfBirth: '2020' }],
+        robotHistory: [{ studentId: 'A', programme: 'AIKIRO Lv1', robot: 'Robot Dancer', status: 'Finished' }],
+      }) };
     }
     return originalLoad.call(this, request, parent, isMain);
   };
@@ -48,6 +52,7 @@ test('protected Sheets-mode bootstrap and writes work without a database', async
   try { server = require('./server'); } finally { Module._load = originalLoad; }
   t.after(async () => {
     await new Promise((resolve) => server.close(resolve));
+    delete require.cache[require.resolve('./server')];
     for (const [key, value] of Object.entries(previous)) {
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
@@ -62,6 +67,29 @@ test('protected Sheets-mode bootstrap and writes work without a database', async
   const workspace = await initial.json();
   assert.equal(workspace.storageMode, 'sheets');
   assert.equal(workspace.robotStudents[0].studentId, 'A');
+  if (configured) {
+    assert.equal(workspace.robotStudents[0].yob, '2020');
+    assert.deepEqual(workspace.starterRobotHistory, [{ studentId: 'A', programme: 'AIKIRO Lv1', robot: 'Robot Dancer', status: 'Finished' }]);
+    assert.equal(workspace.robotStudents[0].program, 'AIKIRO Lv1');
+    assert.equal(workspace.robotProgress[0].Status, 'Done');
+    const review = await fetch(`${base}/robot-progress/preview`, {
+      method: 'POST', headers: { ...protectedHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ student_id: 'A', robot_name: 'Robot Dancer', status: 'Finished' }),
+    });
+    assert.equal(review.status, 409);
+    const pathwayEdit = await fetch(`${base}/workspace/edits/student-pathways`, {
+      method: 'PUT', headers: { ...protectedHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expected_version: 0, value: [{ courseType: 'Robot', studentId: 'A', programme: 'AIKIRO Lv2', startedOn: null, history: [] }] }),
+    });
+    assert.equal(pathwayEdit.status, 409);
+    const codingPathway = await fetch(`${base}/workspace/edits/student-pathways`, {
+      method: 'PUT', headers: { ...protectedHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expected_version: 0, value: [{ courseType: 'Coding', studentId: 'A', programme: 'CS1', startedOn: null, history: [] }] }),
+    });
+    assert.equal(codingPathway.status, 200);
+  } else {
+    assert.equal(workspace.starterRobotHistory, undefined);
+  }
   const write = await fetch(`${base}/workspace/edits/daily-lesson-drafts`, {
     method: 'PUT', headers: { ...protectedHeaders, 'Content-Type': 'application/json' },
     body: JSON.stringify({ expected_version: 0, value: [{ note: 'example' }] }),

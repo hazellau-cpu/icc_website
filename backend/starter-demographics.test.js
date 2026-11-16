@@ -1,10 +1,11 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { readStarterDemographics } = require('./starter-demographics');
+const { readStarterDemographics, readStarterSheet } = require('./starter-demographics');
 const { applyStarterBirthYears } = require('../local-live-sheets');
 
-function reader(tabs) {
-  return readStarterDemographics({
+function reader(tabs, includeProgress = false) {
+  const read = includeProgress ? readStarterSheet : readStarterDemographics;
+  return read({
     spreadsheetId: 'test-sheet',
     getAccessToken: async () => 'test-token',
     fetchImpl: async (url, options) => {
@@ -17,7 +18,7 @@ function reader(tabs) {
           return { values: tab.rows };
         }) }) };
       }
-      return { ok: true, json: async () => ({ sheets: tabs.map((tab) => ({ properties: { title: tab.name } })) }) };
+      return { ok: true, json: async () => ({ sheets: tabs.map((tab) => ({ properties: { title: tab.name }, merges: tab.merges || [] })) }) };
     },
   });
 }
@@ -50,4 +51,35 @@ test('rejects invalid, conflicting, or unidentifiable birth years', async () => 
   await assert.rejects(reader([{ name: 'First', rows: [header, ['ST1', '', '', '', '2020'], ['ST1', '', '', '', '2019']] }]), /conflicting/);
   await assert.rejects(reader([{ name: 'First', rows: [['Wrong']] }]), /missing.*header/);
   assert.throws(() => applyStarterBirthYears([{ jamesStudentId: 'ST1' }, { jamesStudentId: 'st1' }], [{ studentId: 'ST1', yearOfBirth: '2020' }]), /same Sheet student ID/);
+});
+
+test('reads undated tracker history using merged student ID cells', async () => {
+  const result = await reader([
+    {
+      name: "Robot's Lv1",
+      rows: [header, ['st1', 'A', 'Robot One', 'Finished', '2020'], ['', '', 'Robot Two', 'Unfinished'],
+        ['ST2', 'B', 'Robot Three', 'In progress']],
+      merges: [{ startColumnIndex: 0, endColumnIndex: 1, startRowIndex: 3, endRowIndex: 5 }],
+    },
+    { name: 'Dashboard State', rows: [['Key', 'Version']] },
+  ], true);
+  assert.deepEqual(result.demographics, [{ studentId: 'ST1', yearOfBirth: '2020' }]);
+  assert.deepEqual(result.robotHistory, [
+    { studentId: 'ST1', programme: "Robot's Lv1", robot: 'Robot One', status: 'Finished' },
+    { studentId: 'ST1', programme: "Robot's Lv1", robot: 'Robot Two', status: 'Unfinished' },
+    { studentId: 'ST2', programme: "Robot's Lv1", robot: 'Robot Three', status: 'In progress' },
+  ]);
+});
+
+test('rejects tracker rows with missing IDs or incomplete progress', async () => {
+  await assert.rejects(reader([{ name: 'First', rows: [header, ['', '', 'Robot', 'Finished']] }], true), /missing or conflicting student ID/);
+  await assert.rejects(reader([{ name: 'First', rows: [header, ['ST1', '', 'Robot', '']] }], true), /incomplete/);
+  await assert.rejects(reader([{ name: 'First', rows: [header, ['ST1', '', 'Robot', 'Finished'], ['ST2', '', 'Robot', 'Finished']], merges: [
+    { startColumnIndex: 0, endColumnIndex: 1, startRowIndex: 3, endRowIndex: 5 },
+  ] }], true), /missing or conflicting student ID/);
+  await assert.rejects(reader([{ name: 'First', rows: [header, ['ST1', '', 'Robot', 'Finished']], merges: [
+    { startColumnIndex: 0, endColumnIndex: 1, startRowIndex: 3, endRowIndex: 5 },
+    { startColumnIndex: 0, endColumnIndex: 1, startRowIndex: 3, endRowIndex: 4 },
+  ] }], true), /overlapping student ID ranges/);
+  await assert.rejects(reader([{ name: 'First', rows: [['Student ID (James)', 'Student Name', 'Wrong', 'Status', 'Year of Birth']] }], true), /invalid robot progress headers/);
 });

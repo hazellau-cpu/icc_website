@@ -7,7 +7,7 @@ const { createJamesRouter } = require('./james-router');
 const { createSheetsReadRouter } = require('./sheets-read-router');
 const { createGoogleSheetsReader, sheetsForWorkspace } = require('./google-sheets');
 const { createGoogleAccessTokenProvider } = require('./google-access-token');
-const { readStarterDemographics } = require('./starter-demographics');
+const { readStarterDemographics, readStarterSheet } = require('./starter-demographics');
 const { createGoogleCalendarReader } = require('./google-calendar');
 const { createIapAuthenticator } = require('./iap-auth');
 const { merge: mergeLiveSheets, applyStarterBirthYears } = require('../local-live-sheets');
@@ -64,15 +64,18 @@ if (workspaceStorage === 'sheets' && process.env.DASHBOARD_SPREADSHEET_ID === pr
 const sheetsWorkspace = workspaceStorage === 'sheets' ? createSheetsWorkspaceRouter({
   store: createSheetsWorkspaceStore({ spreadsheetId: process.env.DASHBOARD_SPREADSHEET_ID }),
   readSpreadsheet: googleSheetsReader,
-  applyDemographics: async (workspace) => {
-    if (!starterSheetToken) return workspace;
-    const records = await readStarterDemographics({ spreadsheetId: starterSheetId, getAccessToken: starterSheetToken });
-    const result = applyStarterBirthYears(workspace.robotStudents, records);
+  readStarter: starterSheetToken ? () => readStarterSheet({ spreadsheetId: starterSheetId, getAccessToken: starterSheetToken }) : null,
+  applyDemographics: async (workspace, starter) => {
+    if (!starter) return workspace;
+    const result = applyStarterBirthYears(workspace.robotStudents, starter.demographics);
     if (result.unmatched) console.warn(`Starter Sheet birth years: ${result.unmatched} student IDs not in the Robot roster.`);
     return { ...workspace, robotStudents: result.students };
   },
 }) : null;
-const sheetsJamesRouter = sheetsWorkspace ? createJamesRouter({ storage: sheetsWorkspace.jamesStorage, jwtSecret: approvalTokenSecret }) : null;
+const sheetsJamesRouter = sheetsWorkspace ? createJamesRouter({
+  storage: sheetsWorkspace.jamesStorage, jwtSecret: approvalTokenSecret,
+  reviewDisabledReason: starterSheetToken ? 'Robot progress is managed by the starter Sheet and lesson logs.' : '',
+}) : null;
 const sheetsReadRouter = createSheetsReadRouter({
   query,
   jwtSecret: process.env.SHEETS_READ_JWT_SECRET || '',
@@ -453,7 +456,7 @@ const server = http.createServer(async (request, response) => {
       try {
         if (await sheetsWorkspace.handle(request, response, url, readJson, send)) return undefined;
         if (url.pathname === '/robot-progress/preview' || url.pathname === '/robot-progress/accept') {
-          if (approvalTokenSecret.length < 32) return send(response, 503, { detail: 'Robot progress review is not configured.' });
+          if (!starterSheetToken && approvalTokenSecret.length < 32) return send(response, 503, { detail: 'Robot progress review is not configured.' });
           if (await sheetsJamesRouter.handle(request, response, url, readJson, send)) return undefined;
         }
       } catch (error) {

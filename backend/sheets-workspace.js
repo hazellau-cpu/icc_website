@@ -20,7 +20,7 @@ const inventoryFor = (libraries, edits) => arrayValue(edits, 'inventory', librar
   ...component, inventory_id: `INV-${component['Component ID']}`, 'Total center qty': '', 'Last counted': '', Notes: '',
 })));
 
-function buildWorkspace(libraries, edits, sheetData) {
+function buildWorkspace(libraries, edits, sheetData, starter = null) {
   const savedPathways = Object.hasOwn(edits, 'student-pathways') ? edits['student-pathways'].value : [];
   const validatedPathways = pathways.read({ getItem: () => JSON.stringify(savedPathways) });
   const empty = { robotStudents: [], codingStudents: [], mathStudents: [], robotProgress: [] };
@@ -29,6 +29,12 @@ function buildWorkspace(libraries, edits, sheetData) {
   for (const [type, key] of [['Robot', 'robotStudents'], ['Coding', 'codingStudents'], ['Math', 'mathStudents']]) {
     roster[key] = roster[key].map((student) => {
       const pathway = pathways.find(validatedPathways, type, student.studentId);
+      if (type === 'Robot' && starter) {
+        const records = starter.robotHistory.filter((row) => studentId(row.studentId) === studentId(student.studentId));
+        const programmes = [...new Set(records.map((row) => row.programme))];
+        return { ...student, program: programmes.length === 1 ? programmes[0] : 'Not assigned',
+          starterProgrammeIssue: programmes.length > 1 ? 'Multiple starter programme tabs; review the starter Sheet.' : '' };
+      }
       return pathway ? { ...student, ...(type === 'Robot' ? { program: pathway.programme } : { course: pathway.programme }) } : student;
     });
   }
@@ -38,11 +44,29 @@ function buildWorkspace(libraries, edits, sheetData) {
   for (const student of roster.robotStudents) {
     const programme = student.program;
     const pathway = pathways.find(validatedPathways, 'Robot', student.studentId);
-    const template = libraries.robots.filter((row) => normalize(row['Programme Name']) === normalize(programme));
+    const starterRows = starter ? starter.robotHistory.filter((row) => studentId(row.studentId) === studentId(student.studentId)
+      && normalize(row.programme) === normalize(programme)) : [];
+    const template = starter
+      ? starterRows.map((row, index) => ({
+        'Robot name': row.robot, Sequence: index + 1,
+        Level: programme.match(/\bLv(\d+)/i)?.[1] || '', status: row.status,
+      }))
+      : libraries.robots.filter((row) => normalize(row['Programme Name']) === normalize(programme));
     for (const row of template) {
+      const status = String(row.status || '').trim().toLowerCase();
+      const starterStatus = /^(finished|done|completed)$/.test(status) ? 'Done'
+        : /^(in progress|ongoing)$/.test(status) ? 'In progress'
+          : /^(unfinished|not started)$/.test(status) ? 'Not started' : 'Unknown';
+      const duplicate = starter && template.filter((item) =>
+        pathways.robotNameKey(item['Robot name'], programme) === pathways.robotNameKey(row['Robot name'], programme)).length > 1;
+      const starterIssues = [
+        ...(starter && starterStatus === 'Unknown' ? [`Unrecognized starter status: ${row.status}`] : []),
+        ...(duplicate ? ['Multiple starter robots have matching names; lesson updates require review'] : []),
+      ];
       robotProgress.push({
         studentId: student.studentId, Student: student.name, Robot: row['Robot name'],
-        Sequence: row.Sequence, Level: row.Level, Status: pathway?.startedOn ? 'Not started' : 'Unknown',
+        Sequence: row.Sequence, Level: row.Level, Status: starter ? starterStatus : pathway?.startedOn ? 'Not started' : 'Unknown',
+        ...(starterIssues.length ? { starterStatusIssue: starterIssues.join('; ') } : {}),
         sourceRow: { 'Student ID': student.studentId, 'Programme ID': row['Programme ID'] },
       });
     }
@@ -66,7 +90,7 @@ function buildWorkspace(libraries, edits, sheetData) {
   const live = mergeLiveSheets(base, sheets, {
     includeRobotProgressUpdate: (student, row) => {
       const pathway = pathways.find(validatedPathways, 'Robot', student.studentId);
-      return !pathway?.startedOn || pathways.afterPathwayChange(row.Date, pathway);
+      return starter || !pathway?.startedOn || pathways.afterPathwayChange(row.Date, pathway);
     },
   });
   const acceptedReviews = arrayValue(edits, 'robot-progress-reviews');
@@ -76,7 +100,7 @@ function buildWorkspace(libraries, edits, sheetData) {
     throw new Error('Saved robot progress reviews are invalid');
   }
   const currentReviews = [];
-  for (const student of live.robotStudents) {
+  for (const student of starter ? [] : live.robotStudents) {
     const pathway = pathways.find(validatedPathways, 'Robot', student.studentId);
     const latest = new Map();
     for (const review of acceptedReviews.filter((item) => studentId(item.studentId) === studentId(student.studentId)
@@ -102,6 +126,7 @@ function buildWorkspace(libraries, edits, sheetData) {
   return {
     ...live,
     storageMode: 'sheets',
+    ...(starter ? { starterProgressSource: true, starterRobotHistory: starter.robotHistory } : {}),
     robotPrograms: libraries.robotPrograms,
     curriculum: libraries.curriculum,
     robots: libraries.robots,
@@ -116,10 +141,10 @@ function buildWorkspace(libraries, edits, sheetData) {
   };
 }
 
-function createSheetsWorkspaceRouter({ store, readSpreadsheet, applyDemographics = async (workspace) => workspace }) {
+function createSheetsWorkspaceRouter({ store, readSpreadsheet, readStarter = null, applyDemographics = async (workspace) => workspace }) {
   async function bootstrap() {
-    const [{ libraries, edits }, sheets] = await Promise.all([store.read(), readSpreadsheet()]);
-    return applyDemographics(buildWorkspace(libraries, edits, sheets));
+    const [{ libraries, edits }, sheets, starter] = await Promise.all([store.read(), readSpreadsheet(), readStarter ? readStarter() : null]);
+    return applyDemographics(buildWorkspace(libraries, edits, sheets, starter), starter);
   }
   async function updateCollection(key, change, actor) {
     const { edits, libraries } = await store.read();
@@ -146,6 +171,7 @@ function createSheetsWorkspaceRouter({ store, readSpreadsheet, applyDemographics
       }));
     },
     async recordReview(approval, checked, request, body) {
+      if (readStarter) fail(409, 'Robot progress is managed by the starter Sheet and lesson logs.');
       const acceptedAt = new Date().toISOString();
       const reviewedOn = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Hong_Kong' }).format(new Date());
       const review = {
@@ -182,6 +208,14 @@ function createSheetsWorkspaceRouter({ store, readSpreadsheet, applyDemographics
       if (key === 'student-pathways') {
         try { pathways.read({ getItem: () => JSON.stringify(body.value) }); }
         catch { fail(400, 'Invalid student pathways'); }
+        if (readStarter) {
+          const { edits } = await store.read();
+          const oldRobots = arrayValue(edits, key).filter((record) => record.courseType === 'Robot');
+          const newRobots = body.value.filter((record) => record.courseType === 'Robot');
+          if (JSON.stringify(oldRobots) !== JSON.stringify(newRobots)) {
+            fail(409, 'Robot programmes are managed by the starter Sheet.');
+          }
+        }
       }
       if (Buffer.byteLength(JSON.stringify(body.value)) > 512 * 1024) {
         send(response, 413, { detail: 'Shared workspace edit is too large' });
